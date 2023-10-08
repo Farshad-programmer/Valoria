@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "ValoriaCharacter.h"
+
+#include "AIController.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "Components/DecalComponent.h"
@@ -10,6 +12,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
+#include "Navigation/PathFollowingComponent.h"
 
 AValoriaCharacter::AValoriaCharacter()
 {
@@ -48,4 +51,16 @@ AValoriaCharacter::AValoriaCharacter()
 void AValoriaCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+
+	
+}
+
+void AValoriaCharacter::MoveToLocation(const FVector loc)
+{
+	AAIController* DefaultAIController = Cast<AAIController>(GetController());
+
+	if (DefaultAIController)
+	{
+		DefaultAIController->MoveToLocation(loc);
+	}
 }

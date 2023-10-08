@@ -35,9 +35,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* SetDestinationClickAction;
 
-	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* SetDestinationTouchAction;
+	class UInputAction* Deselect;
+
 
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
@@ -52,11 +52,18 @@ protected:
 	void OnInputStarted();
 	void OnSetDestinationTriggered();
 	void OnSetDestinationReleased();
+	void OnDeselectStarted();
 
 private:
 	FVector CachedDestination;
-
+	FHitResult Hit;
 	float FollowTime; // For how long it has been pressed
+	bool bIsPlayerSelected{false};
+	TArray<AActor*> characters;
+
+
+public:
+	// All getter and setter here
 };
 
 
