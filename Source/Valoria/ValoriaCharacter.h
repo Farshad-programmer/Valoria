@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "NiagaraComponent.h"
 #include "GameFramework/Character.h"
 #include "ValoriaCharacter.generated.h"
 
+class UNiagaraComponent;
 UCLASS(Blueprintable)
 class AValoriaCharacter : public ACharacter
 {
@@ -33,7 +35,13 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Efect, meta = (AllowPrivateAccess = "true"))
+	class UNiagaraComponent* SelectionNiagara;
+
 	TArray<AActor*> characters;
 
+
+public:
+	FORCEINLINE void SetSelectionNiagaraVisibility(bool makeVisible){SelectionNiagara->SetVisibility(makeVisible);}
 };
 

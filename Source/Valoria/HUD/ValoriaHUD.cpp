@@ -67,7 +67,8 @@ void AValoriaHUD::HandleMarqueeSelection()
 					{
 						if (selectedValoria->ActorHasTag("Player"))
 						{
-							selectedValoria->GetMesh()->SetRenderCustomDepth(true);
+							selectedValoria->SetSelectionNiagaraVisibility(true);
+							//selectedValoria->GetMesh()->SetRenderCustomDepth(true);
 							valoriaCam->players.AddUnique(selectedValoria);
 						}
 					}

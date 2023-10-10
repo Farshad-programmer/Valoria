@@ -13,6 +13,9 @@
 #include "Materials/Material.h"
 #include "Engine/World.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "NiagaraComponent.h"
+
+
 
 AValoriaCharacter::AValoriaCharacter()
 {
@@ -42,6 +45,11 @@ AValoriaCharacter::AValoriaCharacter()
 	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
 	TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
+	SelectionNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SelectionNiagara"));
+	SelectionNiagara->SetupAttachment(RootComponent);
+	SelectionNiagara->SetVisibility(false);
+	
 
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;

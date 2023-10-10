@@ -92,7 +92,8 @@ void AValoriaCam::DeselectAllCharacters()
 {
 	for (auto player : players)
 	{
-		player->GetMesh()->SetRenderCustomDepth(false);
+		//player->GetMesh()->SetRenderCustomDepth(false);
+		player->SetSelectionNiagaraVisibility(false);
 		bMarqueeSelected = false;
 		//bCanMarqueeMove = false;
 	}
@@ -154,7 +155,8 @@ void AValoriaCam::OnSetDestinationStarted()
 					{
 						bCanMarqueeMove = false;
 						players.AddUnique(PlayerTemp);
-						players[0]->GetMesh()->SetRenderCustomDepth(true);
+						//players[0]->GetMesh()->SetRenderCustomDepth(true);
+						players[0]->SetSelectionNiagaraVisibility(true);
 					}
 
 
