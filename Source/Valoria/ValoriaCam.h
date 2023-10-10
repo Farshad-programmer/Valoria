@@ -9,6 +9,8 @@
 /** Forward declaration to improve compiling times */
 class UNiagaraSystem;
 class AValoriaCharacter;
+class AValoriaPlayerController;
+class AValoriaHUD;
 UCLASS()
 class VALORIA_API AValoriaCam : public APawn
 {
@@ -45,6 +47,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* Deselect;
 
+	UPROPERTY()
+	TArray<AValoriaCharacter*>players;
+
+
+	void DeselectAllCharacters();
+
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -56,7 +66,7 @@ protected:
 
 	/** Input handlers for SetDestination action. */
 	void OnInputStarted();
-	void OnSetDestinationTriggered();
+	void OnSetDestinationStarted();
 	void OnSetDestinationReleased();
 	void OnDeselectStarted();
 
@@ -66,12 +76,30 @@ private:
 	FHitResult Hit;
 	float FollowTime; // For how long it has been pressed
 	bool bIsPlayerSelected{false};
+
+	UPROPERTY()
 	TArray<AActor*> characters;
-	AValoriaCharacter* player;
+
+
+	
+	bool bIsLeftMousePressed{false};
+
+	UPROPERTY()
+	AValoriaPlayerController* valoriaPlayerController;
+
+	UPROPERTY()
+	APlayerController* playerController;
+
+	bool bMarqueeSelected{false};
+	bool bCanMarqueeMove{false};
 
 public:	
 		// All getter and setter here
+	FORCEINLINE bool GetIsPlayerSelected()const {return bIsPlayerSelected;}
 
 
+	FORCEINLINE void SetIsPlayerSelected(bool isSelected){bIsPlayerSelected = isSelected;}
+	FORCEINLINE void SetIsMarqueeSelected(bool isMarqueeSelected){bMarqueeSelected = isMarqueeSelected;}
+	FORCEINLINE void SetCanMarqueeMove(bool canMarqueeMove){bCanMarqueeMove = canMarqueeMove;}
 
 };

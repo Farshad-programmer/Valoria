@@ -29,7 +29,11 @@ void AValoriaPlayerController::BeginPlay()
 	//{
 	//	Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	//}
-	
+
+	bShowMouseCursor = true;
+	FInputModeGameOnly inputMode;
+	SetInputMode(inputMode);
+
 }
 
 void AValoriaPlayerController::SetupInputComponent()
