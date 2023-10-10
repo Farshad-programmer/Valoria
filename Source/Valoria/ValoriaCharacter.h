@@ -8,6 +8,7 @@
 #include "ValoriaCharacter.generated.h"
 
 class UNiagaraComponent;
+class ABuilding;
 UCLASS(Blueprintable)
 class AValoriaCharacter : public ACharacter
 {
@@ -24,7 +25,11 @@ public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
-	void MoveToLocation(const FVector loc);
+	UPROPERTY()
+	ABuilding* buildingRef;
+
+	void MoveToLocation(const FVector loc,bool canWork,ABuilding* building);
+	void CheckCharacterDistanceWithBuilding(ABuilding* building);
 
 private:
 	/** Top down camera */
@@ -40,8 +45,14 @@ private:
 
 	TArray<AActor*> characters;
 
+	bool bCanCheckForStartWork{false};
+
+	
+
+	void RotateToBuilding(float deltaTime);
 
 public:
 	FORCEINLINE void SetSelectionNiagaraVisibility(bool makeVisible){SelectionNiagara->SetVisibility(makeVisible);}
+	FORCEINLINE void SetCheckForStartWork(bool canCheck){bCanCheckForStartWork = canCheck;}
 };
 

@@ -21,7 +21,6 @@ void AValoriaHUD::Tick(float DeltaSeconds)
 	if (bRunTimer)
 	{
 		marqueeMoveAllowTimerCounter++;
-		GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Blue, FString::FromInt(marqueeMoveAllowTimerCounter));
 
 		if (marqueeMoveAllowTimerCounter > 10)
 		{

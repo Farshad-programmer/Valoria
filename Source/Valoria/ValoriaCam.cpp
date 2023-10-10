@@ -11,6 +11,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "ValoriaPlayerController.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Buildings/Building.h"
 #include "Kismet/GameplayStatics.h"
 #include "HUD/ValoriaHUD.h"
 // Sets default values
@@ -61,6 +62,33 @@ void AValoriaCam::Tick(float DeltaTime)
 		{
 
 		}
+
+		FHitResult checkCoursorHit;
+		bool bHitHapened = playerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, checkCoursorHit);
+
+		if (bHitHapened)
+		{
+			if (playerController)
+			{
+				if (checkCoursorHit.GetActor()->ActorHasTag("Building"))
+				{
+					if (bIsPlayerSelected)
+					{
+						playerController->CurrentMouseCursor = EMouseCursor::GrabHand;
+					}
+					else
+					{
+						playerController->CurrentMouseCursor = EMouseCursor::Default;
+					}
+				}
+				else
+				{
+					playerController->CurrentMouseCursor = EMouseCursor::Default;
+				}
+			}
+
+		}
+
 	}
 
 }
@@ -94,7 +122,9 @@ void AValoriaCam::DeselectAllCharacters()
 	{
 		//player->GetMesh()->SetRenderCustomDepth(false);
 		player->SetSelectionNiagaraVisibility(false);
+		player->SetCheckForStartWork(false);
 		bMarqueeSelected = false;
+		player->buildingRef = nullptr;
 		//bCanMarqueeMove = false;
 	}
 	players.Empty();
@@ -157,9 +187,33 @@ void AValoriaCam::OnSetDestinationStarted()
 						players.AddUnique(PlayerTemp);
 						//players[0]->GetMesh()->SetRenderCustomDepth(true);
 						players[0]->SetSelectionNiagaraVisibility(true);
+						players[0]->SetCheckForStartWork(false);
 					}
 
 
+				}
+			}
+		}
+		if (Hit.GetActor()->ActorHasTag("Building"))
+		{
+			ABuilding* building = Cast<ABuilding>(Hit.GetActor());
+
+			if (playerController)
+			{
+				for (auto player : players)
+				{
+					player->MoveToLocation(Hit.Location, true, building);
+				}
+			}
+		}
+		if (!Hit.GetActor()->ActorHasTag("Building"))
+		{
+			if (playerController)
+			{
+				for (auto player : players)
+				{
+					player->SetCheckForStartWork(false);
+					player->buildingRef = nullptr;
 				}
 			}
 		}
@@ -191,7 +245,7 @@ void AValoriaCam::OnSetDestinationReleased()
 			if (!bMarqueeSelected)
 			{
 				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Player Move "));
-				players[0]->MoveToLocation(Hit.Location);
+				players[0]->MoveToLocation(Hit.Location, false, nullptr);
 				UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, CachedDestination, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
 			}
 			else
@@ -203,7 +257,7 @@ void AValoriaCam::OnSetDestinationReleased()
 					UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, Hit.Location, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
 					for (auto player : players)
 					{
-						player->MoveToLocation(Hit.Location);
+						player->MoveToLocation(Hit.Location, false, nullptr);
 					}
 				}
 
@@ -211,6 +265,19 @@ void AValoriaCam::OnSetDestinationReleased()
 
 		}
 
+	}
+	else if (Hit.GetActor()->ActorHasTag("Building"))
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, Hit.Location, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
+		/*ABuilding* building = Cast<ABuilding>(Hit.GetActor());
+		if (playerController && building)
+		{
+			for (auto player : players)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Blue, TEXT("wwwwwwwwwwwwwwwwwwwwww"));
+				player->MoveToLocation(Hit.Location, true, building);
+			}
+		}*/
 	}
 }
 

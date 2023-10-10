@@ -14,7 +14,8 @@
 #include "Engine/World.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "NiagaraComponent.h"
-
+#include "Buildings/Building.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 AValoriaCharacter::AValoriaCharacter()
@@ -59,11 +60,15 @@ AValoriaCharacter::AValoriaCharacter()
 void AValoriaCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
-
+    if (bCanCheckForStartWork)
+    {
+	    CheckCharacterDistanceWithBuilding(buildingRef);
+		RotateToBuilding(DeltaSeconds);
+    }
 	
 }
 
-void AValoriaCharacter::MoveToLocation(const FVector loc)
+void AValoriaCharacter::MoveToLocation(const FVector loc,bool canWork,ABuilding* building)
 {
 	AAIController* DefaultAIController = Cast<AAIController>(GetController());
 
@@ -71,4 +76,37 @@ void AValoriaCharacter::MoveToLocation(const FVector loc)
 	{
 		DefaultAIController->MoveToLocation(loc);
 	}
+	if (canWork)
+	{
+		bCanCheckForStartWork = true;
+		buildingRef = building;
+	}
+}
+
+void AValoriaCharacter::CheckCharacterDistanceWithBuilding(ABuilding* building)
+{
+	if (building)
+	{
+		float distance = building->GetDistanceTo(this);
+		if (distance <= 300.f)
+		{
+			GetCharacterMovement()->StopMovementImmediately();
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("start to work"));
+			bCanCheckForStartWork = false;
+			//TODo
+		}
+	}
+	
+}
+
+void AValoriaCharacter::RotateToBuilding(float deltaTime)
+{
+	if (buildingRef == nullptr)return;
+	
+	FRotator actorRotation = GetActorRotation();
+	FVector actorLocation = GetActorLocation();
+	FRotator FindLookAtRotationOutput = UKismetMathLibrary::FindLookAtRotation(actorLocation,buildingRef->GetActorLocation());
+	FRotator RInterpToOutput = FMath::RInterpTo(actorRotation, FindLookAtRotationOutput, deltaTime, 15.f);
+	//SetActorRotation(FRotator(actorRotation.Roll,RInterpToOutput.Yaw,actorRotation.Pitch));
+	SetActorRotation(FRotator(0.f,FindLookAtRotationOutput.Yaw,0.f));
 }
