@@ -92,6 +92,7 @@ private:
 
 	bool bMarqueeSelected{false};
 	bool bCanMarqueeMove{false};
+	bool bCourserHitSuccessful;
 
 public:	
 		// All getter and setter here

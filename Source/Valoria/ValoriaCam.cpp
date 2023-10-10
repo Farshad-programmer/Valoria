@@ -114,15 +114,15 @@ void AValoriaCam::OnSetDestinationStarted()
 	// We flag that the input is being pressed
 	FollowTime += GetWorld()->GetDeltaSeconds();
 	// We look for the location in the world where the player has pressed the input
-	bool bHitSuccessful = false;
+	bCourserHitSuccessful = false;
 	bIsLeftMousePressed = true;
 
 	if (playerController)
 	{
-		bHitSuccessful = playerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit);
+		bCourserHitSuccessful = playerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit);
 	}
 	// If we hit a surface, cache the location
-	if (bHitSuccessful)
+	if (bCourserHitSuccessful)
 	{
 		if (bIsPlayerSelected)
 		{
@@ -170,7 +170,18 @@ void AValoriaCam::OnSetDestinationStarted()
 void AValoriaCam::OnSetDestinationReleased()
 {
 	bIsLeftMousePressed = false;
+	if (playerController)
+	{
+		AValoriaHUD* valoriaHUD = Cast<AValoriaHUD>(playerController->GetHUD());
+		if (valoriaHUD)
+		{
+			valoriaHUD->MarqueeReleased();
+		}
+	}
+
+
 	// We move there and spawn some particles
+	if (!bCourserHitSuccessful)return;
 	if (!Hit.GetActor()->ActorHasTag("Player"))
 	{
 		if (players.Num() > 0)
@@ -198,15 +209,6 @@ void AValoriaCam::OnSetDestinationReleased()
 
 		}
 
-	}
-
-	if (playerController)
-	{
-		AValoriaHUD* valoriaHUD = Cast<AValoriaHUD>(playerController->GetHUD());
-		if (valoriaHUD)
-		{
-			valoriaHUD->MarqueeReleased();
-		}
 	}
 }
 
