@@ -100,13 +100,14 @@ void AValoriaCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 	{
 		// Setup mouse input events
-		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Started, this, &AValoriaCam::OnInputStarted);
-		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Started, this, &AValoriaCam::OnSetDestinationStarted);
-		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Completed, this, &AValoriaCam::OnSetDestinationReleased);
-		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Canceled, this, &AValoriaCam::OnSetDestinationReleased);
+		EnhancedInputComponent->BindAction(SelectClickAction, ETriggerEvent::Started, this, &AValoriaCam::OnInputStarted);
+		EnhancedInputComponent->BindAction(SelectClickAction, ETriggerEvent::Started, this, &AValoriaCam::OnSelectStarted);
+		EnhancedInputComponent->BindAction(SelectClickAction, ETriggerEvent::Completed, this, &AValoriaCam::OnSelectReleased);
+		EnhancedInputComponent->BindAction(SelectClickAction, ETriggerEvent::Canceled, this, &AValoriaCam::OnSelectReleased);
 		EnhancedInputComponent->BindAction(Deselect, ETriggerEvent::Started, this, &AValoriaCam::OnDeselectStarted);
 
-
+		EnhancedInputComponent->BindAction(SetDestinationClickAction2, ETriggerEvent::Started, this, &AValoriaCam::OnSetDestinationStarted2);
+		EnhancedInputComponent->BindAction(SetDestinationClickAction2, ETriggerEvent::Completed, this, &AValoriaCam::OnSetDestinationReleased2);
 	}
 
 }
@@ -120,6 +121,8 @@ void AValoriaCam::DeselectAllCharacters()
 {
 	for (auto player : players)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("DeselectAllCharacters "));
+
 		//player->GetMesh()->SetRenderCustomDepth(false);
 		player->SetSelectionNiagaraVisibility(false);
 		player->SetCheckForStartWork(false);
@@ -130,18 +133,9 @@ void AValoriaCam::DeselectAllCharacters()
 	players.Empty();
 }
 
-void AValoriaCam::OnSetDestinationStarted()
+void AValoriaCam::OnSelectStarted()
 {
-	if (playerController)
-	{
-		AValoriaHUD* valoriaHUD = Cast<AValoriaHUD>(playerController->GetHUD());
-		if (valoriaHUD)
-		{
-			valoriaHUD->MarqueePressed();
-		}
-	}
-
-
+	DeselectAllCharacters();
 	// We flag that the input is being pressed
 	FollowTime += GetWorld()->GetDeltaSeconds();
 	// We look for the location in the world where the player has pressed the input
@@ -185,7 +179,129 @@ void AValoriaCam::OnSetDestinationStarted()
 					{
 						bCanMarqueeMove = false;
 						players.AddUnique(PlayerTemp);
-						//players[0]->GetMesh()->SetRenderCustomDepth(true);
+						players[0]->SetSelectionNiagaraVisibility(true);
+						players[0]->SetCheckForStartWork(false);
+					}
+				}
+				if (playerController)
+				{
+					AValoriaHUD* valoriaHUD = Cast<AValoriaHUD>(playerController->GetHUD());
+					if (valoriaHUD)
+					{
+						valoriaHUD->bCanDrawSelection = false;
+						valoriaHUD->ReceiveDrawHUD(0,0);
+					}
+				}
+			}
+		}
+		if (Hit.GetActor()->ActorHasTag("Building"))
+		{
+			ABuilding* building = Cast<ABuilding>(Hit.GetActor());
+
+			if (playerController)
+			{
+				for (auto player : players)
+				{
+					player->MoveToLocation(Hit.Location, true, building);
+				}
+			}
+		}
+		if (!Hit.GetActor()->ActorHasTag("Building"))
+		{
+			if (playerController)
+			{
+				for (auto player : players)
+				{
+					player->SetCheckForStartWork(false);
+					player->buildingRef = nullptr;
+				}
+			}
+		}
+
+		if (!Hit.GetActor()->ActorHasTag("Player"))
+		{
+			if (playerController)
+			{
+				AValoriaHUD* valoriaHUD = Cast<AValoriaHUD>(playerController->GetHUD());
+				if (valoriaHUD)
+				{
+					valoriaHUD->bCanDrawSelection = true;
+					valoriaHUD->MarqueePressed();
+				}
+			}
+		}
+	}
+}
+
+
+
+
+void AValoriaCam::OnSelectReleased()
+{
+	bIsLeftMousePressed = false;
+	if (playerController)
+	{
+		AValoriaHUD* valoriaHUD = Cast<AValoriaHUD>(playerController->GetHUD());
+		if (valoriaHUD)
+		{
+			valoriaHUD->MarqueeReleased();
+		}
+	}
+}
+
+void AValoriaCam::OnDeselectStarted()
+{
+	DeselectAllCharacters();
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Deselect all "));
+	bCanMarqueeMove = false;
+}
+
+void AValoriaCam::OnSetDestinationStarted2()
+{
+	
+	// We flag that the input is being pressed
+	FollowTime += GetWorld()->GetDeltaSeconds();
+	// We look for the location in the world where the player has pressed the input
+	bCourserHitSuccessful = false;
+	//bIsLeftMousePressed = true;
+
+	if (playerController)
+	{
+		bCourserHitSuccessful = playerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit);
+	}
+	// If we hit a surface, cache the location
+	if (bCourserHitSuccessful)
+	{
+		if (bIsPlayerSelected)
+		{
+			CachedDestination = Hit.Location;
+			// Move towards mouse pointer 
+			APawn* HitedPawn = Cast<APawn>(Hit.GetActor());
+			if (HitedPawn != nullptr && !Hit.GetActor()->ActorHasTag("Player"))
+			{
+				FVector WorldDirection = (CachedDestination - HitedPawn->GetActorLocation()).GetSafeNormal();
+				HitedPawn->AddMovementInput(WorldDirection, 1.0, false);
+			}
+		}
+		if (!bIsPlayerSelected)
+		{
+			if (Hit.GetActor()->ActorHasTag("Player"))
+			{
+				bIsPlayerSelected = true;
+			}
+		}
+		if (Hit.GetActor()->ActorHasTag("Player"))
+		{
+			DeselectAllCharacters();
+			if (!bMarqueeSelected)
+			{
+				AValoriaCharacter* PlayerTemp = Cast<AValoriaCharacter>(Hit.GetActor());
+				if (PlayerTemp)
+				{
+					if (!players.Contains(PlayerTemp))
+					{
+						bCanMarqueeMove = false;
+						players.AddUnique(PlayerTemp);
 						players[0]->SetSelectionNiagaraVisibility(true);
 						players[0]->SetCheckForStartWork(false);
 					}
@@ -220,11 +336,10 @@ void AValoriaCam::OnSetDestinationStarted()
 	}
 }
 
-
-
-
-void AValoriaCam::OnSetDestinationReleased()
+void AValoriaCam::OnSetDestinationReleased2()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("OnSetDestinationReleased "));
+
 	bIsLeftMousePressed = false;
 	if (playerController)
 	{
@@ -269,25 +384,8 @@ void AValoriaCam::OnSetDestinationReleased()
 	else if (Hit.GetActor()->ActorHasTag("Building"))
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, Hit.Location, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
-		/*ABuilding* building = Cast<ABuilding>(Hit.GetActor());
-		if (playerController && building)
-		{
-			for (auto player : players)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Blue, TEXT("wwwwwwwwwwwwwwwwwwwwww"));
-				player->MoveToLocation(Hit.Location, true, building);
-			}
-		}*/
 	}
 }
-
-void AValoriaCam::OnDeselectStarted()
-{
-	DeselectAllCharacters();
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Deselect all "));
-	bCanMarqueeMove = false;
-}
-
 
 
 //GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, FString::Printf(TEXT("Bool: %s"), bMarqueeSelected ? TEXT("true") : TEXT("false")));

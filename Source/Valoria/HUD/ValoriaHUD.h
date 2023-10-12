@@ -24,6 +24,8 @@ public:
 	void MarqueeReleased();
 	void MarqueeHeld();
 
+	bool bCanDrawSelection =false;
+
 private:
 	FVector2D startMousePos;
 	FVector2D currentMousePos;

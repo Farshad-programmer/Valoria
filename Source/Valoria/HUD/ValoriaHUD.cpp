@@ -57,7 +57,7 @@ void AValoriaHUD::HandleMarqueeSelection()
 		{
 			if (valoriaCam)
 			{
-				valoriaCam->DeselectAllCharacters();
+				//valoriaCam->DeselectAllCharacters();
 				valoriaCam->SetIsMarqueeSelected(true);
 				for (auto SelectedActor : SelectedActors)
 				{
@@ -112,13 +112,19 @@ void AValoriaHUD::MarqueeReleased()
 
 void AValoriaHUD::MarqueeHeld()
 {
-	APlayerController* playerController = GetOwningPlayerController();
-	if (playerController)
+	if (bCanDrawSelection)
 	{
-		float locationX;
-		float locationY;
-		playerController->GetMousePosition(locationX, locationY);
-		currentMousePos.X = locationX;
-		currentMousePos.Y = locationY;
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("MarqueeHeld "));
+
+		APlayerController* playerController = GetOwningPlayerController();
+		if (playerController)
+		{
+			float locationX;
+			float locationY;
+			playerController->GetMousePosition(locationX, locationY);
+			currentMousePos.X = locationX;
+			currentMousePos.Y = locationY;
+		}
 	}
+
 }

@@ -42,10 +42,13 @@ public:
 	
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* SetDestinationClickAction;
+	class UInputAction* SelectClickAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* Deselect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* SetDestinationClickAction2;
 
 	UPROPERTY()
 	TArray<AValoriaCharacter*>players;
@@ -66,10 +69,11 @@ protected:
 
 	/** Input handlers for SetDestination action. */
 	void OnInputStarted();
-	void OnSetDestinationStarted();
-	void OnSetDestinationReleased();
+	void OnSelectStarted();
+	void OnSelectReleased();
 	void OnDeselectStarted();
-
+	void OnSetDestinationStarted2();
+	void OnSetDestinationReleased2();
 
 private:
 	FVector CachedDestination;
