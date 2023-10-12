@@ -58,6 +58,10 @@ public:
 
 
 
+
+	// blueprint callable functions
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -79,6 +83,7 @@ private:
 	FVector CachedDestination;
 	FHitResult Hit;
 	float FollowTime; // For how long it has been pressed
+
 	bool bIsPlayerSelected{false};
 
 	UPROPERTY()

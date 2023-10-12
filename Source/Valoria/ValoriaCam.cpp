@@ -119,19 +119,24 @@ void AValoriaCam::OnInputStarted()
 
 void AValoriaCam::DeselectAllCharacters()
 {
-	for (auto player : players)
+	if (players.Num() > 0)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("DeselectAllCharacters "));
+		for (auto player : players)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("DeselectAllCharacters "));
 
-		//player->GetMesh()->SetRenderCustomDepth(false);
-		player->SetSelectionNiagaraVisibility(false);
-		player->SetCheckForStartWork(false);
-		bMarqueeSelected = false;
-		player->buildingRef = nullptr;
-		//bCanMarqueeMove = false;
+			//player->GetMesh()->SetRenderCustomDepth(false);
+			player->SetSelectionNiagaraVisibility(false);
+			player->SetCheckForStartWork(false);
+			bMarqueeSelected = false;
+			player->buildingRef = nullptr;
+			//bCanMarqueeMove = false;
+		}
+		players.Empty();
 	}
-	players.Empty();
 }
+
+
 
 void AValoriaCam::OnSelectStarted()
 {
@@ -189,7 +194,7 @@ void AValoriaCam::OnSelectStarted()
 					if (valoriaHUD)
 					{
 						valoriaHUD->bCanDrawSelection = false;
-						valoriaHUD->ReceiveDrawHUD(0,0);
+						valoriaHUD->ReceiveDrawHUD(0, 0);
 					}
 				}
 			}
@@ -258,7 +263,7 @@ void AValoriaCam::OnDeselectStarted()
 
 void AValoriaCam::OnSetDestinationStarted2()
 {
-	
+
 	// We flag that the input is being pressed
 	FollowTime += GetWorld()->GetDeltaSeconds();
 	// We look for the location in the world where the player has pressed the input

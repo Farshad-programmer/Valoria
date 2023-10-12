@@ -38,6 +38,7 @@ void AValoriaHUD::Tick(float DeltaSeconds)
 
 void AValoriaHUD::HandleMarqueeSelection()
 {
+	if(!bCanDrawSelection) return;
 	if (bIsDrawing)
 	{
 		float screenW = currentMousePos.X - startMousePos.X;
@@ -96,6 +97,7 @@ void AValoriaHUD::MarqueePressed()
 void AValoriaHUD::MarqueeReleased()
 {
 	bIsDrawing = false;
+	bCanDrawSelection = false;
 	APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	if (playerController)
 	{
