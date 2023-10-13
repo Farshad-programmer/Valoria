@@ -11,6 +11,7 @@ class UNiagaraSystem;
 class AValoriaCharacter;
 class AValoriaPlayerController;
 class AValoriaHUD;
+class ABuilding;
 UCLASS()
 class VALORIA_API AValoriaCam : public APawn
 {
@@ -50,17 +51,32 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* SetDestinationClickAction2;
 
+
+
+
+
 	UPROPERTY()
 	TArray<AValoriaCharacter*>players;
 
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Spawning)
+	TSubclassOf<ABuilding> houseToSpawn;
 
 	void DeselectAllCharacters();
+	bool IsAllNewWorkersStartedWork(TArray<AValoriaCharacter*> workers);
 
-
+	UPROPERTY()
+	ABuilding* buildingRef;
 
 
 	// blueprint callable functions
 
+	UFUNCTION(BlueprintCallable)
+	void SpawnConstruction(int32 constructionID);
+
+	// blueprint implement event functions
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_ConstructionHUD(bool active);
 
 protected:
 	// Called when the game starts or when spawned
@@ -102,14 +118,19 @@ private:
 	bool bMarqueeSelected{false};
 	bool bCanMarqueeMove{false};
 	bool bCourserHitSuccessful;
+	bool bCanPlaceBuilding{false};
+
 
 public:	
 		// All getter and setter here
 	FORCEINLINE bool GetIsPlayerSelected()const {return bIsPlayerSelected;}
+	FORCEINLINE bool GetCanPlaceBuilding()const {return bCanPlaceBuilding;}
 
 
 	FORCEINLINE void SetIsPlayerSelected(bool isSelected){bIsPlayerSelected = isSelected;}
 	FORCEINLINE void SetIsMarqueeSelected(bool isMarqueeSelected){bMarqueeSelected = isMarqueeSelected;}
 	FORCEINLINE void SetCanMarqueeMove(bool canMarqueeMove){bCanMarqueeMove = canMarqueeMove;}
+	FORCEINLINE void SetCanPlaceBuilding(bool canPlace){bCanPlaceBuilding = canPlace;}
+
 
 };

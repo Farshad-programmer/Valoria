@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "ValoriaCharacter.h"
+#include "ValoriaCam.h"
 
 #include "AIController.h"
 #include "UObject/ConstructorHelpers.h"
@@ -15,6 +16,7 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "NiagaraComponent.h"
 #include "Buildings/Building.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 
@@ -50,7 +52,7 @@ AValoriaCharacter::AValoriaCharacter()
 	SelectionNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SelectionNiagara"));
 	SelectionNiagara->SetupAttachment(RootComponent);
 	SelectionNiagara->SetVisibility(false);
-	
+
 
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
@@ -59,16 +61,16 @@ AValoriaCharacter::AValoriaCharacter()
 
 void AValoriaCharacter::Tick(float DeltaSeconds)
 {
-    Super::Tick(DeltaSeconds);
-    if (bCanCheckForStartWork)
-    {
-	    CheckCharacterDistanceWithBuilding(buildingRef);
+	Super::Tick(DeltaSeconds);
+	if (bCanCheckForStartWork)
+	{
+		CheckCharacterDistanceWithBuilding();
 		RotateToBuilding(DeltaSeconds);
-    }
-	
+	}
+
 }
 
-void AValoriaCharacter::MoveToLocation(const FVector loc,bool canWork,ABuilding* building)
+void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuilding* building)
 {
 	AAIController* DefaultAIController = Cast<AAIController>(GetController());
 
@@ -83,30 +85,58 @@ void AValoriaCharacter::MoveToLocation(const FVector loc,bool canWork,ABuilding*
 	}
 }
 
-void AValoriaCharacter::CheckCharacterDistanceWithBuilding(ABuilding* building)
+void AValoriaCharacter::CheckCharacterDistanceWithBuilding()
 {
-	if (building)
+	if (buildingRef)
 	{
-		float distance = building->GetDistanceTo(this);
-		if (distance <= 300.f)
+		float distance = buildingRef->GetDistanceTo(this);
+		if (distance <= 800.f)
 		{
 			GetCharacterMovement()->StopMovementImmediately();
 			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("start to work"));
 			bCanCheckForStartWork = false;
-			//TODo
+			bIsStartedWork = true;
+			UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+			if (animInstance && BuildingAnimation)
+			{
+				animInstance->Montage_Play(BuildingAnimation, 1.f);
+			}
+			AValoriaCam* valoriaCam = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this, 0));
+			if (valoriaCam)
+			{
+				valoriaCam->SetIsPlayerSelected(false);
+				if(valoriaCam->IsAllNewWorkersStartedWork(valoriaCam->players))
+				{
+					valoriaCam->DeselectAllCharacters();
+				}
+			}
+
 		}
+		
 	}
-	
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Red, TEXT("CheckCharacterDistanceWithBuilding : building is null"));
+	}
+
+}
+
+void AValoriaCharacter::StopWorkAnimation()
+{
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	if (animInstance && BuildingAnimation)
+	{
+		animInstance->Montage_Stop(0.0,BuildingAnimation);
+	}
 }
 
 void AValoriaCharacter::RotateToBuilding(float deltaTime)
 {
 	if (buildingRef == nullptr)return;
-	
+
 	FRotator actorRotation = GetActorRotation();
 	FVector actorLocation = GetActorLocation();
-	FRotator FindLookAtRotationOutput = UKismetMathLibrary::FindLookAtRotation(actorLocation,buildingRef->GetActorLocation());
+	FRotator FindLookAtRotationOutput = UKismetMathLibrary::FindLookAtRotation(actorLocation, buildingRef->GetActorLocation());
 	FRotator RInterpToOutput = FMath::RInterpTo(actorRotation, FindLookAtRotationOutput, deltaTime, 15.f);
-	//SetActorRotation(FRotator(actorRotation.Roll,RInterpToOutput.Yaw,actorRotation.Pitch));
-	SetActorRotation(FRotator(0.f,FindLookAtRotationOutput.Yaw,0.f));
+	SetActorRotation(FRotator(0.f, FindLookAtRotationOutput.Yaw, 0.f));
 }

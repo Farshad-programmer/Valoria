@@ -38,7 +38,7 @@ void AValoriaHUD::Tick(float DeltaSeconds)
 
 void AValoriaHUD::HandleMarqueeSelection()
 {
-	if(!bCanDrawSelection) return;
+	if (!bCanDrawSelection) return;
 	if (bIsDrawing)
 	{
 		float screenW = currentMousePos.X - startMousePos.X;
@@ -70,6 +70,11 @@ void AValoriaHUD::HandleMarqueeSelection()
 							selectedValoria->SetSelectionNiagaraVisibility(true);
 							//selectedValoria->GetMesh()->SetRenderCustomDepth(true);
 							valoriaCam->players.AddUnique(selectedValoria);
+							if (selectedValoria->GetIsStartedWork())
+							{
+								selectedValoria->StopWorkAnimation();
+								selectedValoria->SetCheckForStartWork(true);
+							}
 						}
 					}
 				}
@@ -107,8 +112,8 @@ void AValoriaHUD::MarqueeReleased()
 			bRunTimer = true;
 			//valoriaCam->SetCanMarqueeMove(true);
 		}
-		FInputModeGameOnly InputMode;
-		playerController->SetInputMode(InputMode);
+		/*FInputModeGameOnly InputMode;
+		playerController->SetInputMode(InputMode);*/
 	}
 }
 

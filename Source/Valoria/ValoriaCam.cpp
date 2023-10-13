@@ -72,7 +72,7 @@ void AValoriaCam::Tick(float DeltaTime)
 			{
 				if (checkCoursorHit.GetActor()->ActorHasTag("Building"))
 				{
-					if (bIsPlayerSelected)
+					if (bIsPlayerSelected || bMarqueeSelected)
 					{
 						playerController->CurrentMouseCursor = EMouseCursor::GrabHand;
 					}
@@ -129,17 +129,44 @@ void AValoriaCam::DeselectAllCharacters()
 			player->SetSelectionNiagaraVisibility(false);
 			player->SetCheckForStartWork(false);
 			bMarqueeSelected = false;
-			player->buildingRef = nullptr;
+			//player->buildingRef = nullptr;
 			//bCanMarqueeMove = false;
 		}
 		players.Empty();
 	}
 }
 
+bool AValoriaCam::IsAllNewWorkersStartedWork(TArray<AValoriaCharacter*> workers)
+{
+	if (workers.Num() > 0)
+	{
+		for (auto worker : workers)
+		{
+			if (worker->GetIsStartedWork() == false)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	return false;
+
+}
 
 
 void AValoriaCam::OnSelectStarted()
 {
+	if (buildingRef)
+	{
+		if (buildingRef->GetCanPlaceBuilding())
+		{
+			buildingRef->SetIsBuildingSpawned(false);
+		}
+
+	}
+
+
+
 	DeselectAllCharacters();
 	// We flag that the input is being pressed
 	FollowTime += GetWorld()->GetDeltaSeconds();
@@ -177,6 +204,7 @@ void AValoriaCam::OnSelectStarted()
 			DeselectAllCharacters();
 			if (!bMarqueeSelected)
 			{
+				BP_ConstructionHUD(true);
 				AValoriaCharacter* PlayerTemp = Cast<AValoriaCharacter>(Hit.GetActor());
 				if (PlayerTemp)
 				{
@@ -186,6 +214,12 @@ void AValoriaCam::OnSelectStarted()
 						players.AddUnique(PlayerTemp);
 						players[0]->SetSelectionNiagaraVisibility(true);
 						players[0]->SetCheckForStartWork(false);
+						if (players[0]->GetIsStartedWork())
+						{
+							players[0]->StopWorkAnimation();
+						}
+
+
 					}
 				}
 				if (playerController)
@@ -203,13 +237,15 @@ void AValoriaCam::OnSelectStarted()
 		{
 			ABuilding* building = Cast<ABuilding>(Hit.GetActor());
 
-			if (playerController)
+			if (playerController && !bCanPlaceBuilding)
 			{
 				for (auto player : players)
 				{
 					player->MoveToLocation(Hit.Location, true, building);
+					player->SetCheckForStartWork(true);
 				}
 			}
+			BP_ConstructionHUD(false);
 		}
 		if (!Hit.GetActor()->ActorHasTag("Building"))
 		{
@@ -218,7 +254,7 @@ void AValoriaCam::OnSelectStarted()
 				for (auto player : players)
 				{
 					player->SetCheckForStartWork(false);
-					player->buildingRef = nullptr;
+					//player->buildingRef = nullptr;
 				}
 			}
 		}
@@ -234,6 +270,10 @@ void AValoriaCam::OnSelectStarted()
 					valoriaHUD->MarqueePressed();
 				}
 			}
+		}
+		if (!Hit.GetActor()->ActorHasTag("Player") && !Hit.GetActor()->ActorHasTag("Building"))
+		{
+			BP_ConstructionHUD(false);
 		}
 	}
 }
@@ -319,7 +359,7 @@ void AValoriaCam::OnSetDestinationStarted2()
 		{
 			ABuilding* building = Cast<ABuilding>(Hit.GetActor());
 
-			if (playerController)
+			if (playerController && !bCanPlaceBuilding)
 			{
 				for (auto player : players)
 				{
@@ -334,7 +374,7 @@ void AValoriaCam::OnSetDestinationStarted2()
 				for (auto player : players)
 				{
 					player->SetCheckForStartWork(false);
-					player->buildingRef = nullptr;
+					//player->buildingRef = nullptr;
 				}
 			}
 		}
@@ -362,7 +402,7 @@ void AValoriaCam::OnSetDestinationReleased2()
 	{
 		if (players.Num() > 0)
 		{
-			if (!bMarqueeSelected)
+			if (!bMarqueeSelected && !bCanPlaceBuilding)
 			{
 				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Player Move "));
 				players[0]->MoveToLocation(Hit.Location, false, nullptr);
@@ -375,10 +415,14 @@ void AValoriaCam::OnSetDestinationReleased2()
 					// move Marquee
 					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Players all Move "));
 					UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, Hit.Location, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
-					for (auto player : players)
+					if (!bCanPlaceBuilding)
 					{
-						player->MoveToLocation(Hit.Location, false, nullptr);
+						for (auto player : players)
+						{
+							player->MoveToLocation(Hit.Location, false, nullptr);
+						}
 					}
+
 				}
 
 			}
@@ -389,6 +433,33 @@ void AValoriaCam::OnSetDestinationReleased2()
 	else if (Hit.GetActor()->ActorHasTag("Building"))
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, Hit.Location, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
+	}
+
+}
+
+
+
+void AValoriaCam::SpawnConstruction(int32 constructionID)
+{
+	FActorSpawnParameters spawnParameters;
+
+	switch (constructionID)
+	{
+	case 0:
+		if (houseToSpawn)
+		{
+			buildingRef = GetWorld()->SpawnActor<ABuilding>(houseToSpawn, GetActorLocation(), FRotator(0.f), spawnParameters);
+			if (buildingRef)
+			{
+				buildingRef->SetIsBuildingSpawned(true);
+			}
+		}
+		break;
+	case 1:
+		break;
+
+	default:
+		break;
 	}
 }
 

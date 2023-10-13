@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Building.generated.h"
 
-
+class AValoriaCam;
 UCLASS()
 class VALORIA_API ABuilding : public AActor
 {
@@ -20,11 +20,25 @@ private:
 
 public:	
 	ABuilding();
+	virtual void Tick(float DeltaTime) override;
 
 protected:
 	virtual void BeginPlay() override;
 	int32 buildingLevel {0};
-public:	
-	virtual void Tick(float DeltaTime) override;
+	FHitResult Hit;
+
+	UPROPERTY()
+	AValoriaCam* valoriaCam;
+
+	bool bIsBuildingSpawned{false};
+	bool bCanPlaceBuilding{false};
+public:
+
+	FORCEINLINE bool GetCanPlaceBuilding()const {return bCanPlaceBuilding;}
+
+
+
+	FORCEINLINE void SetIsBuildingSpawned(bool IsSpawned){bIsBuildingSpawned = IsSpawned;}
+	FORCEINLINE void SetCanPlaceBuilding(bool canPlace){bCanPlaceBuilding = canPlace;}
 
 };
