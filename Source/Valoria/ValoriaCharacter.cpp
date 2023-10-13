@@ -16,6 +16,7 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "NiagaraComponent.h"
 #include "Buildings/Building.h"
+#include "Engine/TargetPoint.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -72,47 +73,85 @@ void AValoriaCharacter::Tick(float DeltaSeconds)
 
 void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuilding* building)
 {
-	AAIController* DefaultAIController = Cast<AAIController>(GetController());
-
-	if (DefaultAIController)
+	if (building)
 	{
-		DefaultAIController->MoveToLocation(loc);
+		if (building->buildingWorkPointsIndex < building->buildingWorkPoints.Num())
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Blue, FString::FromInt(building->buildingWorkPointsIndex));
+			locationToWork = building->buildingWorkPoints[building->buildingWorkPointsIndex];
+			locationToWork.X += building->GetActorLocation().X;
+			locationToWork.Y += building->GetActorLocation().Y;
+			locationToWork.Z = 116.f;
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("The building currently has enough workers"));
+			return;
+		}
 	}
+
+	tempLocation = loc;
 	if (canWork)
 	{
 		bCanCheckForStartWork = true;
 		buildingRef = building;
 	}
+
+	AAIController* DefaultAIController = Cast<AAIController>(GetController());
+	if (DefaultAIController)
+	{
+		if (canWork)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("want work"));
+			DefaultAIController->MoveToLocation(locationToWork);
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("location : %s"), *locationToWork.ToString()));
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("just walking"));
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Orange, FString::Printf(TEXT("location : %s"), *loc.ToString()));
+
+			DefaultAIController->MoveToLocation(loc);
+		}
+
+	}
+
 }
+
 
 void AValoriaCharacter::CheckCharacterDistanceWithBuilding()
 {
 	if (buildingRef)
 	{
 		float distance = buildingRef->GetDistanceTo(this);
-		if (distance <= 800.f)
+		if (distance <= 350.f)
 		{
-			GetCharacterMovement()->StopMovementImmediately();
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("start to work"));
-			bCanCheckForStartWork = false;
-			bIsStartedWork = true;
-			UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
-			if (animInstance && BuildingAnimation)
+			StartWork();
+		}
+		else
+		{
+			workerIssueCounter++;
+			if (workerIssueCounter >= 450)
 			{
-				animInstance->Montage_Play(BuildingAnimation, 1.f);
-			}
-			AValoriaCam* valoriaCam = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this, 0));
-			if (valoriaCam)
-			{
-				valoriaCam->SetIsPlayerSelected(false);
-				if(valoriaCam->IsAllNewWorkersStartedWork(valoriaCam->players))
+				workerIssueCounter = 0;
+				bHasProblemToFindDistanceWithBuilding = true;
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Need to find another point"));
+				bIsStartedWork = false;
+
+				AAIController* DefaultAIController = Cast<AAIController>(GetController());
 				{
-					valoriaCam->DeselectAllCharacters();
+					DefaultAIController->MoveToLocation(tempLocation);
+				}
+
+				if (bHasProblemToFindDistanceWithBuilding)
+				{
+					StartWork();
+					bHasProblemToFindDistanceWithBuilding = false;
 				}
 			}
 
 		}
-		
+
 	}
 	else
 	{
@@ -121,13 +160,53 @@ void AValoriaCharacter::CheckCharacterDistanceWithBuilding()
 
 }
 
+void AValoriaCharacter::StartWork()
+{
+	GetCharacterMovement()->StopMovementImmediately();
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("start to work"));
+	float distance = buildingRef->GetDistanceTo(this);
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	if (animInstance && BuildingAnimation && buildingRef && buildingRef->buildingWorkPointsIndex < buildingRef->buildingWorkPoints.Num() && distance <= 350.f)
+	{
+		animInstance->Montage_Play(BuildingAnimation, 1.f);
+		buildingRef->buildingWorkPointsIndex++;
+		buildingRef->workerNumber++;
+		buildingRef->buidlingWorkers.Add(this);
+		bCanCheckForStartWork = false;
+		bIsStartedWork = true;
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("worker sticked!!!"));
+		bIsStartedWork = false;
+	}
+	AValoriaCam* valoriaCam = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this, 0));
+	if (valoriaCam)
+	{
+		valoriaCam->SetIsPlayerSelected(false);
+		if (valoriaCam->IsAllNewWorkersStartedWork(valoriaCam->players))
+		{
+			valoriaCam->DeselectAllCharacters();
+		}
+	}
+}
+
 void AValoriaCharacter::StopWorkAnimation()
 {
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
 	if (animInstance && BuildingAnimation)
 	{
-		animInstance->Montage_Stop(0.0,BuildingAnimation);
+		animInstance->Montage_Stop(0.0, BuildingAnimation);
 	}
+	if (buildingRef && buildingRef->buidlingWorkers.Num() <= 0)
+	{
+		for (auto Worker : buildingRef->buidlingWorkers)
+		{
+			UAnimInstance* animIns = Worker->GetMesh()->GetAnimInstance();
+			animIns->Montage_Stop(0.0, BuildingAnimation);
+		}
+	}
+
 }
 
 void AValoriaCharacter::RotateToBuilding(float deltaTime)

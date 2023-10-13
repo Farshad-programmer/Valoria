@@ -29,6 +29,7 @@ public:
 	ABuilding* buildingRef;
 
 	void MoveToLocation(const FVector loc,bool canWork,ABuilding* building);
+	void StartWork();
 	void CheckCharacterDistanceWithBuilding();
 	void StopWorkAnimation();
 
@@ -53,8 +54,14 @@ private:
 
 	bool bCanCheckForStartWork{false};
 	bool bIsStartedWork{false};
-	
 
+	bool bHasProblemToFindDistanceWithBuilding{false};
+	int32 workerIssueCounter {0};
+
+	FVector locationToWork;
+	FVector tempLocation;
+	
+	float distanceValue = 400.f;
 	void RotateToBuilding(float deltaTime);
 
 public:

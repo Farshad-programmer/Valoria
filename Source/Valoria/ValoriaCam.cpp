@@ -217,6 +217,19 @@ void AValoriaCam::OnSelectStarted()
 						if (players[0]->GetIsStartedWork())
 						{
 							players[0]->StopWorkAnimation();
+							if (players[0]->buildingRef && players[0]->GetIsStartedWork() && buildingRef->buildingWorkPointsIndex > 0)
+							{
+								players[0]->buildingRef->buildingWorkPointsIndex --;
+								players[0]->buildingRef->workerNumber--;
+								players[0]->buildingRef->buidlingWorkers.Remove(players[0]);
+								if(players[0]->buildingRef->buildingWorkPointsIndex < 0)
+								{
+									players[0]->buildingRef->buildingWorkPointsIndex = 0;
+									players[0]->buildingRef->workerNumber = 0;
+									players[0]->buildingRef->buidlingWorkers.Empty();
+								}
+								players[0]->buildingRef = nullptr;
+							}
 						}
 
 
@@ -241,7 +254,7 @@ void AValoriaCam::OnSelectStarted()
 			{
 				for (auto player : players)
 				{
-					player->MoveToLocation(Hit.Location, true, building);
+					//player->MoveToLocation(Hit.Location, true, building);
 					player->SetCheckForStartWork(true);
 				}
 			}
@@ -335,26 +348,6 @@ void AValoriaCam::OnSetDestinationStarted2()
 				bIsPlayerSelected = true;
 			}
 		}
-		if (Hit.GetActor()->ActorHasTag("Player"))
-		{
-			DeselectAllCharacters();
-			if (!bMarqueeSelected)
-			{
-				AValoriaCharacter* PlayerTemp = Cast<AValoriaCharacter>(Hit.GetActor());
-				if (PlayerTemp)
-				{
-					if (!players.Contains(PlayerTemp))
-					{
-						bCanMarqueeMove = false;
-						players.AddUnique(PlayerTemp);
-						players[0]->SetSelectionNiagaraVisibility(true);
-						players[0]->SetCheckForStartWork(false);
-					}
-
-
-				}
-			}
-		}
 		if (Hit.GetActor()->ActorHasTag("Building"))
 		{
 			ABuilding* building = Cast<ABuilding>(Hit.GetActor());
@@ -374,7 +367,7 @@ void AValoriaCam::OnSetDestinationStarted2()
 				for (auto player : players)
 				{
 					player->SetCheckForStartWork(false);
-					//player->buildingRef = nullptr;
+					player->buildingRef = nullptr;
 				}
 			}
 		}
@@ -404,24 +397,32 @@ void AValoriaCam::OnSetDestinationReleased2()
 		{
 			if (!bMarqueeSelected && !bCanPlaceBuilding)
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Player Move "));
-				players[0]->MoveToLocation(Hit.Location, false, nullptr);
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, CachedDestination, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
+				if (!Hit.GetActor()->ActorHasTag("Building"))
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Player Move "));
+					players[0]->MoveToLocation(Hit.Location, false, nullptr);
+					UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, CachedDestination, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
+				}
+
 			}
 			else
 			{
 				if (bCanMarqueeMove)
 				{
-					// move Marquee
-					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Players all Move "));
-					UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, Hit.Location, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
-					if (!bCanPlaceBuilding)
+					if (!Hit.GetActor()->ActorHasTag("Building"))
 					{
-						for (auto player : players)
+						// move Marquee
+						GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Players all Move "));
+						UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, Hit.Location, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
+						if (!bCanPlaceBuilding)
 						{
-							player->MoveToLocation(Hit.Location, false, nullptr);
+							for (auto player : players)
+							{
+								player->MoveToLocation(Hit.Location, false, nullptr);
+							}
 						}
 					}
+
 
 				}
 

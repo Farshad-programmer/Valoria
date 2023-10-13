@@ -7,6 +7,7 @@
 #include "Valoria/ValoriaCam.h"
 #include "Kismet/GameplayStatics.h"
 #include "Valoria/ValoriaCharacter.h"
+#include "Valoria/Buildings/Building.h"
 
 
 void AValoriaHUD::DrawHUD()
@@ -74,6 +75,19 @@ void AValoriaHUD::HandleMarqueeSelection()
 							{
 								selectedValoria->StopWorkAnimation();
 								selectedValoria->SetCheckForStartWork(true);
+								if (selectedValoria->buildingRef && selectedValoria->GetIsStartedWork())
+								{
+									selectedValoria->buildingRef->buildingWorkPointsIndex--;
+									selectedValoria->buildingRef->workerNumber--;
+									selectedValoria->buildingRef->buidlingWorkers.Remove(selectedValoria);
+									if (selectedValoria->buildingRef->buildingWorkPointsIndex < 0)
+									{
+										selectedValoria->buildingRef->buildingWorkPointsIndex = 0;
+										selectedValoria->buildingRef->workerNumber = 0;
+										selectedValoria->buildingRef->buidlingWorkers.Empty();
+									}
+									selectedValoria->buildingRef = nullptr;
+								}
 							}
 						}
 					}

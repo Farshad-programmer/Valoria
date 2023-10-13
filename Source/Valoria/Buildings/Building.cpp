@@ -2,6 +2,8 @@
 
 
 #include "Building.h"
+
+#include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Valoria/ValoriaCam.h"
 
@@ -11,6 +13,22 @@ ABuilding::ABuilding()
 	PrimaryActorTick.bCanEverTick = true;
 	BuildingMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BuildingMesh"));
 	BuildingMesh->SetupAttachment(RootComponent);
+	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
+	Widget->SetupAttachment(BuildingMesh);
+	WorkerPoint1 = CreateDefaultSubobject<USceneComponent>(TEXT("WorkerPoint1"));
+	WorkerPoint1->SetupAttachment(BuildingMesh);
+	WorkerPoint2 = CreateDefaultSubobject<USceneComponent>(TEXT("WorkerPoint2"));
+	WorkerPoint2->SetupAttachment(BuildingMesh);
+	WorkerPoint3 = CreateDefaultSubobject<USceneComponent>(TEXT("WorkerPoint3"));
+	WorkerPoint3->SetupAttachment(BuildingMesh);
+
+	if (WorkerPoint1 && WorkerPoint2 && WorkerPoint3)
+	{
+		WorkerPoint1->SetRelativeLocation(FVector(-310.f, 0.f, 0.f));
+		WorkerPoint2->SetRelativeLocation(FVector(310.f, 0.f, 0.f));
+		WorkerPoint3->SetRelativeLocation(FVector(0.f, -310.f, 0.f));
+	}
+
 	BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn,ECollisionResponse::ECR_Ignore);
 }
 
@@ -18,6 +36,9 @@ void ABuilding::BeginPlay()
 {
 	Super::BeginPlay();
 	valoriaCam = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this,0));
+	buildingWorkPoints.Emplace(WorkerPoint1->GetRelativeLocation());
+	buildingWorkPoints.Emplace(WorkerPoint2->GetRelativeLocation());
+	buildingWorkPoints.Emplace(WorkerPoint3->GetRelativeLocation());
 }
 
 void ABuilding::Tick(float DeltaTime)
