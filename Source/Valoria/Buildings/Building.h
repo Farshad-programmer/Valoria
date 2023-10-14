@@ -10,6 +10,7 @@ class AValoriaCam;
 class USceneComponent;
 class UWidgetComponent;
 class AValoriaCharacter;
+class UStaticMesh;
 UCLASS()
 class VALORIA_API ABuilding : public AActor
 {
@@ -28,6 +29,18 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* Widget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+	UStaticMesh* level2Mesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+	UStaticMesh* level3Mesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	float constrcutionFinishValue = 10000.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	float constructionCounter{0};
+
 public:	
 	ABuilding();
 	virtual void Tick(float DeltaTime) override;
@@ -41,6 +54,8 @@ public:
 	UPROPERTY()
 	TArray<AValoriaCharacter*>buidlingWorkers;
 
+	bool bConstructionProgressStarted{false};
+	bool bConstructionIsBuilt{false};
 protected:
 	virtual void BeginPlay() override;
 	int32 buildingLevel {0};
@@ -49,8 +64,7 @@ protected:
 	UPROPERTY()
 	AValoriaCam* valoriaCam;
 
-	
-
+	float constructionProgressSpeed{200.f};
 
 	bool bIsBuildingSpawned{false};
 	bool bCanPlaceBuilding{false};

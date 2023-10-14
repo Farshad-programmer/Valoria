@@ -63,6 +63,10 @@ private:
 	
 	float distanceValue = 400.f;
 	void RotateToBuilding(float deltaTime);
+	bool bCanRotateToBuilding{true};
+
+
+	void ResetWorker();
 
 public:
 	FORCEINLINE bool GetIsStartedWork()const {return bIsStartedWork;}
@@ -73,6 +77,6 @@ public:
 	FORCEINLINE void SetSelectionNiagaraVisibility(bool makeVisible){SelectionNiagara->SetVisibility(makeVisible);}
 	FORCEINLINE void SetCheckForStartWork(bool canCheck){bCanCheckForStartWork = canCheck;}
 	FORCEINLINE void SetIsStartedWork(bool isStarted){bIsStartedWork = isStarted;}
-
 };
+
 

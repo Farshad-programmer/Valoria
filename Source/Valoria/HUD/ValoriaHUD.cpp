@@ -74,8 +74,8 @@ void AValoriaHUD::HandleMarqueeSelection()
 							if (selectedValoria->GetIsStartedWork())
 							{
 								selectedValoria->StopWorkAnimation();
-								selectedValoria->SetCheckForStartWork(true);
-								if (selectedValoria->buildingRef && selectedValoria->GetIsStartedWork())
+								//selectedValoria->SetCheckForStartWork(true);
+								if (selectedValoria->buildingRef && selectedValoria->GetIsStartedWork() && selectedValoria->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
 								{
 									selectedValoria->buildingRef->buildingWorkPointsIndex--;
 									selectedValoria->buildingRef->workerNumber--;
@@ -88,6 +88,12 @@ void AValoriaHUD::HandleMarqueeSelection()
 									}
 									selectedValoria->buildingRef = nullptr;
 								}
+							}
+							else
+							{
+								selectedValoria->SetCheckForStartWork(false);
+								selectedValoria->SetIsStartedWork(false);
+								selectedValoria->buildingRef = nullptr;
 							}
 						}
 					}

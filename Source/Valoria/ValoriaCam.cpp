@@ -217,7 +217,7 @@ void AValoriaCam::OnSelectStarted()
 						if (players[0]->GetIsStartedWork())
 						{
 							players[0]->StopWorkAnimation();
-							if (players[0]->buildingRef && players[0]->GetIsStartedWork() && buildingRef->buildingWorkPointsIndex > 0)
+							if (players[0]->buildingRef && players[0]->GetIsStartedWork() && buildingRef->buildingWorkPointsIndex > 0 && players[0]->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
 							{
 								players[0]->buildingRef->buildingWorkPointsIndex --;
 								players[0]->buildingRef->workerNumber--;
@@ -267,7 +267,7 @@ void AValoriaCam::OnSelectStarted()
 				for (auto player : players)
 				{
 					player->SetCheckForStartWork(false);
-					//player->buildingRef = nullptr;
+					player->buildingRef = nullptr;
 				}
 			}
 		}
@@ -350,6 +350,7 @@ void AValoriaCam::OnSetDestinationStarted2()
 		}
 		if (Hit.GetActor()->ActorHasTag("Building"))
 		{
+			if(bMarqueeSelected)return;
 			ABuilding* building = Cast<ABuilding>(Hit.GetActor());
 
 			if (playerController && !bCanPlaceBuilding)

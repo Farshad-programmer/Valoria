@@ -6,6 +6,7 @@
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Valoria/ValoriaCam.h"
+#include "Valoria/ValoriaCharacter.h"
 
 // Sets default values
 ABuilding::ABuilding()
@@ -29,13 +30,13 @@ ABuilding::ABuilding()
 		WorkerPoint3->SetRelativeLocation(FVector(0.f, -310.f, 0.f));
 	}
 
-	BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn,ECollisionResponse::ECR_Ignore);
+	BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 }
 
 void ABuilding::BeginPlay()
 {
 	Super::BeginPlay();
-	valoriaCam = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this,0));
+	valoriaCam = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this, 0));
 	buildingWorkPoints.Emplace(WorkerPoint1->GetRelativeLocation());
 	buildingWorkPoints.Emplace(WorkerPoint2->GetRelativeLocation());
 	buildingWorkPoints.Emplace(WorkerPoint3->GetRelativeLocation());
@@ -44,40 +45,72 @@ void ABuilding::BeginPlay()
 void ABuilding::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (bIsBuildingSpawned)
+
+	if (bConstructionProgressStarted)
 	{
-		bCanPlaceBuilding = true;
-		APlayerController* playerController = UGameplayStatics::GetPlayerController(this,0);
-		if(playerController)
+		constructionCounter += constructionProgressSpeed * workerNumber * DeltaTime;
+		if (constructionCounter >= 2000.f && constructionCounter <= 2100.f)
 		{
-			bool bCourserHitSuccessful = playerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Camera, true, Hit);
-			if (bCourserHitSuccessful)
-			{
-				FVector loc = Hit.Location;
-				loc.Z += 100.f;
-				SetActorLocation(loc);
-			}
+			BuildingMesh->SetStaticMesh(level2Mesh);
 		}
-		if (valoriaCam)
+		if (constructionCounter >= constrcutionFinishValue)
 		{
-			if (valoriaCam->buildingRef == nullptr)
+			BuildingMesh->SetStaticMesh(level3Mesh);
+			bConstructionProgressStarted = false;
+			if (buidlingWorkers.Num())
 			{
-				valoriaCam->buildingRef = this;
+				for (auto worker : buidlingWorkers)
+				{
+					worker->StopWorkAnimation();
+					workerNumber = 0;
+					buildingWorkPoints.Empty();
+					bConstructionIsBuilt = true;
+				}
 			}
-		
+
 		}
 	}
 	else
 	{
-		bCanPlaceBuilding = false;
-		if (valoriaCam)
+
+		if (bIsBuildingSpawned)
 		{
-			if (valoriaCam->buildingRef)
+			bCanPlaceBuilding = true;
+			APlayerController* playerController = UGameplayStatics::GetPlayerController(this, 0);
+			if (playerController)
 			{
-				//valoriaCam->buildingRef = nullptr;
-				BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn,ECollisionResponse::ECR_Block);
+				bool bCourserHitSuccessful = playerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Camera, true, Hit);
+				if (bCourserHitSuccessful)
+				{
+					FVector loc = Hit.Location;
+					loc.Z += 100.f;
+					SetActorLocation(loc);
+				}
+			}
+			if (valoriaCam)
+			{
+				if (valoriaCam->buildingRef == nullptr)
+				{
+					valoriaCam->buildingRef = this;
+				}
+
+			}
+		}
+		else
+		{
+			bCanPlaceBuilding = false;
+			if (valoriaCam)
+			{
+				if (valoriaCam->buildingRef)
+				{
+					//valoriaCam->buildingRef = nullptr;
+					BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+				}
 			}
 		}
 	}
+
+
+
 }
 
