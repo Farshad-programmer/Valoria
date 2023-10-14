@@ -61,6 +61,8 @@ public:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Spawning)
 	TSubclassOf<ABuilding> houseToSpawn;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Spawning)
+	TSubclassOf<ABuilding> BarracksToSpawn;
 
 	void DeselectAllCharacters();
 	bool IsAllNewWorkersStartedWork(TArray<AValoriaCharacter*> workers);

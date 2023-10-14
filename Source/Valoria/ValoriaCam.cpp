@@ -219,10 +219,10 @@ void AValoriaCam::OnSelectStarted()
 							players[0]->StopWorkAnimation();
 							if (players[0]->buildingRef && players[0]->GetIsStartedWork() && buildingRef->buildingWorkPointsIndex > 0 && players[0]->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
 							{
-								players[0]->buildingRef->buildingWorkPointsIndex --;
+								players[0]->buildingRef->buildingWorkPointsIndex--;
 								players[0]->buildingRef->workerNumber--;
 								players[0]->buildingRef->buidlingWorkers.Remove(players[0]);
-								if(players[0]->buildingRef->buildingWorkPointsIndex < 0)
+								if (players[0]->buildingRef->buildingWorkPointsIndex < 0)
 								{
 									players[0]->buildingRef->buildingWorkPointsIndex = 0;
 									players[0]->buildingRef->workerNumber = 0;
@@ -350,14 +350,17 @@ void AValoriaCam::OnSetDestinationStarted2()
 		}
 		if (Hit.GetActor()->ActorHasTag("Building"))
 		{
-			if(bMarqueeSelected)return;
 			ABuilding* building = Cast<ABuilding>(Hit.GetActor());
 
 			if (playerController && !bCanPlaceBuilding)
 			{
-				for (auto player : players)
+				if (players.Num() == 1)
 				{
-					player->MoveToLocation(Hit.Location, true, building);
+					players[0]->MoveToLocation(Hit.Location, true, building);
+				}
+				else
+				{
+					return;
 				}
 			}
 		}
@@ -458,6 +461,14 @@ void AValoriaCam::SpawnConstruction(int32 constructionID)
 		}
 		break;
 	case 1:
+		if (BarracksToSpawn)
+		{
+			buildingRef = GetWorld()->SpawnActor<ABuilding>(BarracksToSpawn, GetActorLocation(), FRotator(0.f), spawnParameters);
+			if (buildingRef)
+			{
+				buildingRef->SetIsBuildingSpawned(true);
+			}
+		}
 		break;
 
 	default:
