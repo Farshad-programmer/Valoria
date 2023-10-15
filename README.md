@@ -7,3 +7,4 @@ If you're an aspiring developer, eager to explore the world of game development,
 
 Please take a moment and visit the Discussion section to introduce yourself and let us know which aspects of game development or Valoria interest you the most. We're excited about the opportunity to cultivate a vibrant community and work together to create an exceptional game!
 https://github.com/Farshad-programmer/Valoria/discussions/1
+
