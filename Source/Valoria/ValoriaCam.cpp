@@ -352,7 +352,7 @@ void AValoriaCam::OnSetDestinationStarted2()
 		{
 			ABuilding* building = Cast<ABuilding>(Hit.GetActor());
 
-			if (playerController && !bCanPlaceBuilding)
+			if (playerController && !bCanPlaceBuilding && !bIsPlacingBuidling)
 			{
 				if (players.Num() == 1)
 				{
@@ -447,7 +447,7 @@ void AValoriaCam::OnSetDestinationReleased2()
 void AValoriaCam::SpawnConstruction(int32 constructionID)
 {
 	FActorSpawnParameters spawnParameters;
-
+	bIsPlacingBuidling = true;
 	switch (constructionID)
 	{
 	case 0:
@@ -457,6 +457,7 @@ void AValoriaCam::SpawnConstruction(int32 constructionID)
 			if (buildingRef)
 			{
 				buildingRef->SetIsBuildingSpawned(true);
+
 			}
 		}
 		break;

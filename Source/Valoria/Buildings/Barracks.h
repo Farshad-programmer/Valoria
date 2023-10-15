@@ -13,5 +13,6 @@ UCLASS()
 class VALORIA_API ABarracks : public ABuilding
 {
 	GENERATED_BODY()
-	
+public:
+	ABarracks();
 };

@@ -80,6 +80,7 @@ void ABuilding::Tick(float DeltaTime)
 		if (bIsBuildingSpawned)
 		{
 			bCanPlaceBuilding = true;
+			valoriaCam->SetIsPlacingBuidling(true);
 			APlayerController* playerController = UGameplayStatics::GetPlayerController(this, 0);
 			if (playerController)
 			{
@@ -107,6 +108,7 @@ void ABuilding::Tick(float DeltaTime)
 			{
 				if (valoriaCam->buildingRef)
 				{
+					valoriaCam->SetIsPlacingBuidling(false);
 					//valoriaCam->buildingRef = nullptr;
 					BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
 					if (buildingMat)

@@ -127,9 +127,13 @@ void AValoriaCharacter::CheckCharacterDistanceWithBuilding()
 	if (buildingRef)
 	{
 		float distance = buildingRef->GetDistanceTo(this);
-		if (distance <= 400.f)
+		if (distance <= buildingRef->GetWorkersStartWorkDistance())
 		{
 			StartWork();
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Red, TEXT("distance  > 400"));
 		}
 	}
 	else
@@ -145,7 +149,7 @@ void AValoriaCharacter::StartWork()
 	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("start to work"));
 	float distance = buildingRef->GetDistanceTo(this);
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
-	if (buildingRef && buildingRef->buildingWorkPointsIndex < buildingRef->buildingWorkPoints.Num() && distance <= 450.f)
+	if (buildingRef && buildingRef->buildingWorkPointsIndex < buildingRef->buildingWorkPoints.Num() && distance <= buildingRef->GetWorkersStartWorkDistance())
 	{
 		if (animInstance && BuildingAnimation)
 		{
