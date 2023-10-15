@@ -68,7 +68,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Options)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
 	float workersStartWorkDistance = {400.f};
 	int32 buildingLevel {0};
 	FHitResult Hit;
@@ -81,10 +81,23 @@ protected:
 	bool bIsBuildingSpawned{false};
 	bool bCanPlaceBuilding{false};
 
+	// needs
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
+	int32 wood;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
+	int32 stone;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
+	int32 gold;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
+	int32 science;
 public:
 
 	FORCEINLINE bool GetCanPlaceBuilding()const {return bCanPlaceBuilding;}
 	FORCEINLINE float GetWorkersStartWorkDistance()const {return workersStartWorkDistance;}
+	FORCEINLINE int32 GetStone()const {return stone;}
+	FORCEINLINE int32 GetWood()const {return wood;}
+	FORCEINLINE int32 GetGold()const {return gold;}
+	FORCEINLINE int32 GetScience()const {return science;}
 
 	FORCEINLINE void SetIsBuildingSpawned(bool IsSpawned){bIsBuildingSpawned = IsSpawned;}
 	FORCEINLINE void SetCanPlaceBuilding(bool canPlace){bCanPlaceBuilding = canPlace;}
