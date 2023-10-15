@@ -40,6 +40,10 @@ void ABuilding::BeginPlay()
 	buildingWorkPoints.Emplace(WorkerPoint1->GetRelativeLocation());
 	buildingWorkPoints.Emplace(WorkerPoint2->GetRelativeLocation());
 	buildingWorkPoints.Emplace(WorkerPoint3->GetRelativeLocation());
+	if (buildingGreenMat && BuildingMesh)
+	{
+		BuildingMesh->SetMaterial(0,buildingGreenMat);
+	}
 }
 
 void ABuilding::Tick(float DeltaTime)
@@ -105,6 +109,14 @@ void ABuilding::Tick(float DeltaTime)
 				{
 					//valoriaCam->buildingRef = nullptr;
 					BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+					if (buildingMat)
+					{
+						BuildingMesh->SetMaterial(0,buildingMat);
+					}
+					if (level1Mesh && !bConstructionIsBuilt && constructionCounter <= 0.f)
+					{
+						BuildingMesh->SetStaticMesh(level1Mesh);
+					}
 				}
 			}
 		}
