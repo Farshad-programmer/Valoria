@@ -13,5 +13,6 @@ UCLASS()
 class VALORIA_API AHouse : public ABuilding
 {
 	GENERATED_BODY()
-	
+public:
+	AHouse();
 };

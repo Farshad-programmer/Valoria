@@ -3,3 +3,7 @@
 
 #include "House.h"
 
+AHouse::AHouse()
+{
+	workersStartWorkDistance = 400.f;
+}

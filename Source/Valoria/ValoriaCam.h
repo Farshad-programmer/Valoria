@@ -121,7 +121,7 @@ private:
 	bool bCanMarqueeMove{false};
 	bool bCourserHitSuccessful;
 	bool bCanPlaceBuilding{false};
-
+	bool bIsPlacingBuidling {false};
 
 public:	
 		// All getter and setter here
@@ -133,6 +133,6 @@ public:
 	FORCEINLINE void SetIsMarqueeSelected(bool isMarqueeSelected){bMarqueeSelected = isMarqueeSelected;}
 	FORCEINLINE void SetCanMarqueeMove(bool canMarqueeMove){bCanMarqueeMove = canMarqueeMove;}
 	FORCEINLINE void SetCanPlaceBuilding(bool canPlace){bCanPlaceBuilding = canPlace;}
-
+	FORCEINLINE void SetIsPlacingBuidling(bool isPlacing){bIsPlacingBuidling = isPlacing;}
 
 };
