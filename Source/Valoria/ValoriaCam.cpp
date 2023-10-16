@@ -47,6 +47,22 @@ void AValoriaCam::BeginPlay()
 void AValoriaCam::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	/*
+	if (buildingRef)
+	{
+		if (buildingRef->GetBuildingIsAllowedToBeBuilt())
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("%s"),*buildingRef->GetName()));
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Red, FString::Printf(TEXT("%s"),*buildingRef->GetName()));
+		}
+	}
+	 */
+
+
+
 
 	if (playerController)
 	{
@@ -158,7 +174,7 @@ void AValoriaCam::OnSelectStarted()
 {
 	if (buildingRef)
 	{
-		if (buildingRef->GetCanPlaceBuilding())
+		if (buildingRef->GetBuildingIsAllowedToBeBuilt())
 		{
 			buildingRef->SetIsBuildingSpawned(false);
 		}

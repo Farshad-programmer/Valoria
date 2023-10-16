@@ -44,6 +44,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	UMaterial* buildingGreenMat;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	UMaterial* buildingRedMat;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float constrcutionFinishValue = 10000.f;
 
@@ -75,13 +78,16 @@ protected:
 	int32 buildingLevel {0};
 	FHitResult Hit;
 
+	void CheckCanBuild();
+
 	UPROPERTY()
 	AValoriaCam* valoriaCam;
 
 	float constructionProgressSpeed{200.f};
 
 	bool bIsBuildingSpawned{false};
-	bool bCanPlaceBuilding{false};
+	bool bBuildingPlaced{false};
+	bool bBuildingIsAllowedToBeBuilt{false};
 
 	// needs
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
@@ -94,7 +100,7 @@ protected:
 	int32 science;
 public:
 
-	FORCEINLINE bool GetCanPlaceBuilding()const {return bCanPlaceBuilding;}
+	FORCEINLINE bool GetBuildingIsAllowedToBeBuilt()const {return bBuildingIsAllowedToBeBuilt;}
 	FORCEINLINE float GetWorkersStartWorkDistance()const {return workersStartWorkDistance;}
 	FORCEINLINE int32 GetStone()const {return stone;}
 	FORCEINLINE int32 GetWood()const {return wood;}
@@ -102,6 +108,6 @@ public:
 	FORCEINLINE int32 GetScience()const {return science;}
 
 	FORCEINLINE void SetIsBuildingSpawned(bool IsSpawned){bIsBuildingSpawned = IsSpawned;}
-	FORCEINLINE void SetCanPlaceBuilding(bool canPlace){bCanPlaceBuilding = canPlace;}
+	FORCEINLINE void SetBuildingIsAllowedToBeBuilt(bool canPlace){bBuildingIsAllowedToBeBuilt = canPlace;}
 
 };

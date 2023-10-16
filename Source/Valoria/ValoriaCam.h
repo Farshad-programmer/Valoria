@@ -113,9 +113,8 @@ private:
 	UPROPERTY()
 	TArray<AActor*> characters;
 
-
-	
 	bool bIsLeftMousePressed{false};
+
 
 	UPROPERTY()
 	AValoriaPlayerController* valoriaPlayerController;
@@ -149,6 +148,7 @@ public:
 	FORCEINLINE int32 GetStone()const {return stone;}
 	FORCEINLINE int32 GetGold()const {return gold;}
 	FORCEINLINE int32 GetScience()const {return science;}
+	FORCEINLINE bool GetIsPlacingBuilding()const {return bIsPlacingBuidling;}
 
 	FORCEINLINE void SetIsPlayerSelected(bool isSelected){bIsPlayerSelected = isSelected;}
 	FORCEINLINE void SetIsMarqueeSelected(bool isMarqueeSelected){bMarqueeSelected = isMarqueeSelected;}
