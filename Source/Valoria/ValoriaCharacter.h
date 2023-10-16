@@ -45,6 +45,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Efect, meta = (AllowPrivateAccess = "true"))
 	class UNiagaraComponent* SelectionNiagara;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* Weapon;
+
 	// animations
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Animations, meta=(AllowPrivateAccess = "true"))
 	class UAnimMontage* BuildingAnimation;

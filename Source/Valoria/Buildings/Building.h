@@ -50,6 +50,8 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float constructionCounter{0};
 
+	bool bUpdatingNeeds{true};
+
 public:	
 	ABuilding();
 	virtual void Tick(float DeltaTime) override;

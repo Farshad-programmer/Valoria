@@ -312,6 +312,12 @@ void AValoriaCam::OnDeselectStarted()
 	DeselectAllCharacters();
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Deselect all "));
 	bCanMarqueeMove = false;
+	if (buildingRef)
+	{
+		buildingRef->Destroy();
+		bIsPlacingBuidling = false;
+		bCanPlaceBuilding = false;
+	}
 }
 
 void AValoriaCam::OnSetDestinationStarted2()
@@ -474,6 +480,54 @@ void AValoriaCam::SpawnConstruction(int32 constructionID)
 
 	default:
 		break;
+	}
+}
+
+void AValoriaCam::UpdateWood(bool plus, int32 amount)
+{
+	if (plus)
+	{
+		wood += amount;
+	}
+	else
+	{
+		wood -= amount;
+	}
+}
+
+void AValoriaCam::UpdateGold(bool plus, int32 amount)
+{
+	if (plus)
+	{
+		gold += amount;
+	}
+	else
+	{
+		gold -= amount;
+	}
+}
+
+void AValoriaCam::UpdateStone(bool plus, int32 amount)
+{
+	if (plus)
+	{
+		stone += amount;
+	}
+	else
+	{
+		stone -= amount;
+	}
+}
+
+void AValoriaCam::UpdateScience(bool plus, int32 amount)
+{
+	if (plus)
+	{
+		science += amount;
+	}
+	else
+	{
+		science -= amount;
 	}
 }
 

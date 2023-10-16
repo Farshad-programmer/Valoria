@@ -5,6 +5,25 @@ Our goal with Valoria is to craft a high-quality, immersive gaming experience an
 
 If you're an aspiring developer, eager to explore the world of game development, contribute to a real project, and learn along the way, we wholeheartedly invite you to join us. Together, we can create an outstanding game, acquire valuable insights, and most importantly, enjoy the journey.
 
+Valoria Project Participation Rules:
+
+-Variable Naming:
+Use the CamelCase standard for defining variables.
+Example: myVariableName
+
+-Variable Management:
+Ensure careful handling of private variables and use getters and setters to access them.
+
+-Project Version:
+Currently, the Valoria project is limited to UE5.2. Until further notice regarding version changes, all contributors should use this version.
+
+-Contribution to Development:
+Any individual interested in contributing to the project must declare their Git user along with their area of interest in the project's "Discussion" section. After expressing your interest, you will be added to the project.
+
+
 Please take a moment and visit the Discussion section to introduce yourself and let us know which aspects of game development or Valoria interest you the most. We're excited about the opportunity to cultivate a vibrant community and work together to create an exceptional game!
 https://github.com/Farshad-programmer/Valoria/discussions/1
+
+thank you for your contributions!
+
 

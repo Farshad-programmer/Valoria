@@ -80,6 +80,12 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_ConstructionHUD(bool active);
 
+
+	void UpdateWood(bool plus,int32 amount);
+	void UpdateGold(bool plus,int32 amount);
+	void UpdateStone(bool plus,int32 amount);
+	void UpdateScience(bool plus,int32 amount);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -139,7 +145,10 @@ public:
 		// All getter and setter here
 	FORCEINLINE bool GetIsPlayerSelected()const {return bIsPlayerSelected;}
 	FORCEINLINE bool GetCanPlaceBuilding()const {return bCanPlaceBuilding;}
-
+	FORCEINLINE int32 GetWood()const {return wood;}
+	FORCEINLINE int32 GetStone()const {return stone;}
+	FORCEINLINE int32 GetGold()const {return gold;}
+	FORCEINLINE int32 GetScience()const {return science;}
 
 	FORCEINLINE void SetIsPlayerSelected(bool isSelected){bIsPlayerSelected = isSelected;}
 	FORCEINLINE void SetIsMarqueeSelected(bool isMarqueeSelected){bMarqueeSelected = isMarqueeSelected;}

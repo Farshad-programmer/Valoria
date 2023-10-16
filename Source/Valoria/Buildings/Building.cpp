@@ -42,7 +42,7 @@ void ABuilding::BeginPlay()
 	buildingWorkPoints.Emplace(WorkerPoint3->GetRelativeLocation());
 	if (buildingGreenMat && BuildingMesh)
 	{
-		BuildingMesh->SetMaterial(0,buildingGreenMat);
+		BuildingMesh->SetMaterial(0, buildingGreenMat);
 	}
 }
 
@@ -103,23 +103,36 @@ void ABuilding::Tick(float DeltaTime)
 		}
 		else
 		{
-			bCanPlaceBuilding = false;
 			if (valoriaCam)
 			{
-				if (valoriaCam->buildingRef)
+				if (valoriaCam->GetWood() >= wood && valoriaCam->GetStone() >= stone && valoriaCam->GetGold() >= gold && valoriaCam->GetScience() >= science)
 				{
-					valoriaCam->SetIsPlacingBuidling(false);
-					//valoriaCam->buildingRef = nullptr;
-					BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
-					if (buildingMat)
+					bCanPlaceBuilding = false;
+					if (valoriaCam->buildingRef)
 					{
-						BuildingMesh->SetMaterial(0,buildingMat);
-					}
-					if (level1Mesh && !bConstructionIsBuilt && constructionCounter <= 0.f)
-					{
-						BuildingMesh->SetStaticMesh(level1Mesh);
+						valoriaCam->SetIsPlacingBuidling(false);
+						//valoriaCam->buildingRef = nullptr;
+						BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+						if (buildingMat)
+						{
+							BuildingMesh->SetMaterial(0, buildingMat);
+						}
+						if (level1Mesh && !bConstructionIsBuilt && constructionCounter <= 0.f)
+						{
+							BuildingMesh->SetStaticMesh(level1Mesh);
+							if (bUpdatingNeeds)
+							{
+								bUpdatingNeeds = false;
+								valoriaCam->UpdateGold(false, gold);
+								valoriaCam->UpdateScience(false, science);
+								valoriaCam->UpdateStone(false, stone);
+								valoriaCam->UpdateWood(false, wood);
+							}
+
+						}
 					}
 				}
+
 			}
 		}
 	}
