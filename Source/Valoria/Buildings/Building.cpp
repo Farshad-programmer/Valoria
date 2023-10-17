@@ -79,7 +79,10 @@ void ABuilding::Tick(float DeltaTime)
 
 		if (bIsBuildingSpawned)
 		{
-			bCanPlaceBuilding = true;
+			
+			
+			
+			
 			valoriaCam->SetIsPlacingBuidling(true);
 			APlayerController* playerController = UGameplayStatics::GetPlayerController(this, 0);
 			if (playerController)
@@ -99,6 +102,24 @@ void ABuilding::Tick(float DeltaTime)
 					valoriaCam->buildingRef = this;
 				}
 
+			}
+
+			TArray<AActor*> OverlappingActors;
+			GetOverlappingActors(OverlappingActors);
+			if (OverlappingActors.Num() > 0)
+			{
+				bCanPlaceBuilding = false;
+				if (buildingRedMat)
+				{
+					BuildingMesh->SetMaterial(0, buildingRedMat);
+				}
+
+			}
+			else
+			{
+				
+				bCanPlaceBuilding = true;
+				BuildingMesh->SetMaterial(0, buildingGreenMat);
 			}
 		}
 		else
