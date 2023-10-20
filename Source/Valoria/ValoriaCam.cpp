@@ -14,6 +14,7 @@
 #include "Buildings/Building.h"
 #include "Kismet/GameplayStatics.h"
 #include "HUD/ValoriaHUD.h"
+#include "Resources/ResourceMaster.h"
 // Sets default values
 AValoriaCam::AValoriaCam()
 {
@@ -86,7 +87,7 @@ void AValoriaCam::Tick(float DeltaTime)
 		{
 			if (playerController)
 			{
-				if (checkCoursorHit.GetActor()->ActorHasTag("Building"))
+				if (checkCoursorHit.GetActor()->ActorHasTag("Building") || checkCoursorHit.GetActor()->ActorHasTag("Resource"))
 				{
 					if (bIsPlayerSelected || bMarqueeSelected)
 					{
@@ -141,7 +142,6 @@ void AValoriaCam::DeselectAllCharacters()
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("DeselectAllCharacters "));
 
-			//player->GetMesh()->SetRenderCustomDepth(false);
 			player->SetSelectionNiagaraVisibility(false);
 			player->SetCheckForStartWork(false);
 			bMarqueeSelected = false;
@@ -245,6 +245,20 @@ void AValoriaCam::OnSelectStarted()
 									players[0]->buildingRef->buidlingWorkers.Empty();
 								}
 								players[0]->buildingRef = nullptr;
+							}
+
+							if (players[0]->resourceRef && players[0]->GetIsStartedWork() && players[0]->resourceRef->buildingWorkPointsIndex > 0 && players[0]->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
+							{
+								players[0]->resourceRef->buildingWorkPointsIndex--;
+								players[0]->resourceRef->workerNumber--;
+								players[0]->resourceRef->buidlingWorkers.Remove(players[0]);
+								if (players[0]->resourceRef->buildingWorkPointsIndex < 0)
+								{
+									players[0]->resourceRef->buildingWorkPointsIndex = 0;
+									players[0]->resourceRef->workerNumber = 0;
+									players[0]->resourceRef->buidlingWorkers.Empty();
+								}
+								players[0]->resourceRef = nullptr;
 							}
 						}
 
@@ -378,7 +392,7 @@ void AValoriaCam::OnSetDestinationStarted2()
 			{
 				if (players.Num() == 1)
 				{
-					players[0]->MoveToLocation(Hit.Location, true, building);
+					players[0]->MoveToLocation(Hit.Location, true, building, nullptr);
 				}
 				else
 				{
@@ -386,7 +400,24 @@ void AValoriaCam::OnSetDestinationStarted2()
 				}
 			}
 		}
-		if (!Hit.GetActor()->ActorHasTag("Building"))
+
+		if (Hit.GetActor()->ActorHasTag("Resource"))
+		{
+			AResourceMaster* resource = Cast<AResourceMaster>(Hit.GetActor());
+
+			if (playerController && !bCanPlaceBuilding && !bIsPlacingBuidling)
+			{
+				if (players.Num() == 1)
+				{
+					players[0]->MoveToLocation(Hit.Location, true, nullptr, resource);
+				}
+				else
+				{
+					return;
+				}
+			}
+		}
+		if (!Hit.GetActor()->ActorHasTag("Building") && !Hit.GetActor()->ActorHasTag("Resource"))
 		{
 			if (playerController)
 			{
@@ -394,6 +425,7 @@ void AValoriaCam::OnSetDestinationStarted2()
 				{
 					player->SetCheckForStartWork(false);
 					player->buildingRef = nullptr;
+					player->resourceRef = nullptr;
 				}
 			}
 		}
@@ -423,10 +455,10 @@ void AValoriaCam::OnSetDestinationReleased2()
 		{
 			if (!bMarqueeSelected && !bCanPlaceBuilding)
 			{
-				if (!Hit.GetActor()->ActorHasTag("Building"))
+				if (!Hit.GetActor()->ActorHasTag("Building") && !Hit.GetActor()->ActorHasTag("Resource"))
 				{
 					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Player Move "));
-					players[0]->MoveToLocation(Hit.Location, false, nullptr);
+					players[0]->MoveToLocation(Hit.Location, false, nullptr, nullptr);
 					UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, CachedDestination, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
 				}
 
@@ -435,7 +467,7 @@ void AValoriaCam::OnSetDestinationReleased2()
 			{
 				if (bCanMarqueeMove)
 				{
-					if (!Hit.GetActor()->ActorHasTag("Building"))
+					if (!Hit.GetActor()->ActorHasTag("Building") && !Hit.GetActor()->ActorHasTag("Resource"))
 					{
 						// move Marquee
 						GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Players all Move "));
@@ -444,7 +476,7 @@ void AValoriaCam::OnSetDestinationReleased2()
 						{
 							for (auto player : players)
 							{
-								player->MoveToLocation(Hit.Location, false, nullptr);
+								player->MoveToLocation(Hit.Location, false, nullptr, nullptr);
 							}
 						}
 					}

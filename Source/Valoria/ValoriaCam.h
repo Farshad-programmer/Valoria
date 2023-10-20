@@ -70,6 +70,9 @@ public:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	ABuilding* buildingRef;
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	ABuilding* resourceRef;
+
 
 	// blueprint callable functions
 

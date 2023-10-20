@@ -9,6 +9,7 @@
 
 class UNiagaraComponent;
 class ABuilding;
+class AResourceMaster;
 UCLASS(Blueprintable)
 class AValoriaCharacter : public ACharacter
 {
@@ -28,7 +29,11 @@ public:
 	UPROPERTY()
 	ABuilding* buildingRef;
 
-	void MoveToLocation(const FVector loc,bool canWork,ABuilding* building);
+	UPROPERTY()
+	AResourceMaster* resourceRef;
+
+	void MoveToLocation(const FVector loc,bool canWork,ABuilding* building = nullptr,AResourceMaster* resource = nullptr);
+	void StartBuilding();
 	void StartWork();
 	void CheckCharacterDistanceWithBuilding();
 	void StopWorkAnimation();
@@ -66,6 +71,7 @@ private:
 	
 	float distanceValue = 400.f;
 	void RotateToBuilding(float deltaTime);
+	void RotateToResource(float deltaTime);
 	bool bCanRotateToBuilding{true};
 
 

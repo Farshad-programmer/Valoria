@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Valoria/ValoriaCharacter.h"
 #include "Valoria/Buildings/Building.h"
+#include "Valoria/Resources/ResourceMaster.h"
 
 
 void AValoriaHUD::DrawHUD()
@@ -87,6 +88,20 @@ void AValoriaHUD::HandleMarqueeSelection()
 										selectedValoria->buildingRef->buidlingWorkers.Empty();
 									}
 									selectedValoria->buildingRef = nullptr;
+								}
+
+								if (selectedValoria->resourceRef && selectedValoria->GetIsStartedWork() && selectedValoria->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
+								{
+									selectedValoria->resourceRef->buildingWorkPointsIndex--;
+									selectedValoria->resourceRef->workerNumber--;
+									selectedValoria->resourceRef->buidlingWorkers.Remove(selectedValoria);
+									if (selectedValoria->resourceRef->buildingWorkPointsIndex < 0)
+									{
+										selectedValoria->resourceRef->buildingWorkPointsIndex = 0;
+										selectedValoria->resourceRef->workerNumber = 0;
+										selectedValoria->resourceRef->buidlingWorkers.Empty();
+									}
+									selectedValoria->resourceRef = nullptr;
 								}
 							}
 							else
