@@ -143,7 +143,7 @@ void AValoriaCam::DeselectAllCharacters()
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("DeselectAllCharacters "));
 
 			player->SetSelectionNiagaraVisibility(false);
-			player->SetCheckForStartWork(false);
+			//player->SetCheckForStartWork(false);
 			bMarqueeSelected = false;
 			//player->buildingRef = nullptr;
 			//bCanMarqueeMove = false;
@@ -243,6 +243,7 @@ void AValoriaCam::OnSelectStarted()
 									players[0]->buildingRef->buildingWorkPointsIndex = 0;
 									players[0]->buildingRef->workerNumber = 0;
 									players[0]->buildingRef->buidlingWorkers.Empty();
+									bIsPlayerSelected = true;
 								}
 								players[0]->buildingRef = nullptr;
 							}

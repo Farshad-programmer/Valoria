@@ -218,7 +218,7 @@ void AValoriaCharacter::StartBuilding()
 	AValoriaCam* valoriaCam = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this, 0));
 	if (valoriaCam)
 	{
-		valoriaCam->SetIsPlayerSelected(false);
+		//valoriaCam->SetIsPlayerSelected(false);
 		if (valoriaCam->IsAllNewWorkersStartedWork(valoriaCam->players))
 		{
 			valoriaCam->DeselectAllCharacters();
@@ -255,7 +255,7 @@ void AValoriaCharacter::StartWork()
 	AValoriaCam* valoriaCam = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this, 0));
 	if (valoriaCam)
 	{
-		valoriaCam->SetIsPlayerSelected(false);
+		//valoriaCam->SetIsPlayerSelected(false);
 		if (valoriaCam->IsAllNewWorkersStartedWork(valoriaCam->players))
 		{
 			valoriaCam->DeselectAllCharacters();
