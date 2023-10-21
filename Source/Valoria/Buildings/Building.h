@@ -72,6 +72,7 @@ public:
 	bool bConstructionIsBuilt{false};
 protected:
 	virtual void BeginPlay() override;
+	void ValidateBuildLocation(FVector loc);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
 	float workersStartWorkDistance = {400.f};

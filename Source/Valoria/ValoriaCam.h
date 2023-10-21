@@ -49,7 +49,7 @@ public:
 	class UInputAction* Deselect;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* SetDestinationClickAction2;
+	class UInputAction* SetDestinationClickAction;
 
 
 
@@ -103,8 +103,8 @@ protected:
 	void OnSelectStarted();
 	void OnSelectReleased();
 	void OnDeselectStarted();
-	void OnSetDestinationStarted2();
-	void OnSetDestinationReleased2();
+	void OnSetDestinationStarted();
+	void OnSetDestinationReleased();
 
 private:
 	FVector CachedDestination;

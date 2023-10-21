@@ -124,8 +124,8 @@ void AValoriaCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 		EnhancedInputComponent->BindAction(SelectClickAction, ETriggerEvent::Canceled, this, &AValoriaCam::OnSelectReleased);
 		EnhancedInputComponent->BindAction(Deselect, ETriggerEvent::Started, this, &AValoriaCam::OnDeselectStarted);
 
-		EnhancedInputComponent->BindAction(SetDestinationClickAction2, ETriggerEvent::Started, this, &AValoriaCam::OnSetDestinationStarted2);
-		EnhancedInputComponent->BindAction(SetDestinationClickAction2, ETriggerEvent::Completed, this, &AValoriaCam::OnSetDestinationReleased2);
+		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Started, this, &AValoriaCam::OnSetDestinationStarted);
+		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Completed, this, &AValoriaCam::OnSetDestinationReleased);
 	}
 
 }
@@ -352,7 +352,7 @@ void AValoriaCam::OnDeselectStarted()
 	}
 }
 
-void AValoriaCam::OnSetDestinationStarted2()
+void AValoriaCam::OnSetDestinationStarted()
 {
 
 	// We flag that the input is being pressed
@@ -434,7 +434,7 @@ void AValoriaCam::OnSetDestinationStarted2()
 	}
 }
 
-void AValoriaCam::OnSetDestinationReleased2()
+void AValoriaCam::OnSetDestinationReleased()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("OnSetDestinationReleased "));
 

@@ -47,6 +47,7 @@ void ABuilding::BeginPlay()
 }
 
 
+
 void ABuilding::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -89,10 +90,18 @@ void ABuilding::Tick(float DeltaTime)
 				if (bCourserHitSuccessful)
 				{
 					FVector loc = Hit.Location;
+					FVector GridCellSize = FVector(100.0f, 100.0f, 100.0f);
+					loc.X = FMath::FloorToInt(loc.X / GridCellSize.X) * GridCellSize.X;
+					loc.Y = FMath::FloorToInt(loc.Y / GridCellSize.Y) * GridCellSize.Y;
 					loc.Z += 100.f;
+					ValidateBuildLocation(loc);
 					SetActorLocation(loc);
+
 				}
 			}
+
+
+
 			if (valoriaCam)
 			{
 				if (valoriaCam->buildingRef == nullptr)
@@ -147,6 +156,29 @@ void ABuilding::Tick(float DeltaTime)
 	}
 }
 
+
+void ABuilding::ValidateBuildLocation(FVector loc)
+{
+	TArray<AActor*> OverlappingActors;
+	GetOverlappingActors(OverlappingActors);
+	if (OverlappingActors.Num() > 0 || loc.Z > 120.f)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::FromInt(OverlappingActors.Num()));
+		if (buildingRedMat)
+		{
+			BuildingMesh->SetMaterial(0, buildingRedMat);
+			bBuildingIsAllowedToBeBuilt = false;
+		}
+	}
+	else
+	{
+		if (buildingGreenMat)
+		{
+			BuildingMesh->SetMaterial(0, buildingGreenMat);
+			bBuildingIsAllowedToBeBuilt = true;
+		}
+	}
+}
 
 void ABuilding::CheckCanBuild()
 {
