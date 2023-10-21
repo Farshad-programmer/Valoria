@@ -62,7 +62,6 @@ void AValoriaHUD::HandleMarqueeSelection()
 		{
 			if (valoriaCam)
 			{
-				//valoriaCam->DeselectAllCharacters();
 				valoriaCam->SetIsMarqueeSelected(true);
 				for (auto SelectedActor : SelectedActors)
 				{
@@ -73,12 +72,10 @@ void AValoriaHUD::HandleMarqueeSelection()
 						{
 							selectedValoria->SetSelectionNiagaraVisibility(true);
 							selectedValoria->SetOverlayWidgetVisibility(true);
-							//selectedValoria->GetMesh()->SetRenderCustomDepth(true);
 							valoriaCam->players.AddUnique(selectedValoria);
 							if (selectedValoria->GetIsStartedWork())
 							{
 								selectedValoria->StopWorkAnimation();
-								//selectedValoria->SetCheckForStartWork(true);
 								if (selectedValoria->buildingRef && selectedValoria->GetIsStartedWork() && selectedValoria->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
 								{
 									selectedValoria->buildingRef->buildingWorkPointsIndex--;
@@ -149,10 +146,7 @@ void AValoriaHUD::MarqueeReleased()
 		if (valoriaCam)
 		{
 			bRunTimer = true;
-			//valoriaCam->SetCanMarqueeMove(true);
 		}
-		/*FInputModeGameOnly InputMode;
-		playerController->SetInputMode(InputMode);*/
 	}
 }
 
@@ -160,8 +154,6 @@ void AValoriaHUD::MarqueeHeld()
 {
 	if (bCanDrawSelection)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("MarqueeHeld "));
-
 		APlayerController* playerController = GetOwningPlayerController();
 		if (playerController)
 		{

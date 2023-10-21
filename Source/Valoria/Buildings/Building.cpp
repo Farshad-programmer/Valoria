@@ -50,27 +50,6 @@ void ABuilding::BeginPlay()
 void ABuilding::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-
-	if (valoriaCam)
-	{
-		/*GEngine->AddOnScreenDebugMessage(-1, 0.005f, FColor::Yellow, FString::FromInt(valoriaCam->GetWood()));
-		GEngine->AddOnScreenDebugMessage(-1, 0.005f, FColor::Orange, FString::FromInt(wood));*/
-	}
-
-	if (bBuildingIsAllowedToBeBuilt)
-	{
-		// baresi beshe eshkal az bBuildingIsAllowedToBeBuilt hast
-		//GEngine->AddOnScreenDebugMessage(-1, 0.005f, FColor::Green, TEXT("can build"));
-	}
-	else
-	{
-		//GEngine->AddOnScreenDebugMessage(-1, 0.005f, FColor::Yellow, TEXT("can not build"));
-	}
-
-
-
-
 	if (bConstructionProgressStarted)
 	{
 		constructionCounter += constructionProgressSpeed * workerNumber * DeltaTime;
@@ -102,7 +81,6 @@ void ABuilding::Tick(float DeltaTime)
 		{
 			CheckCanBuild();
 
-			//bBuildingIsAllowedToBeBuilt = true;
 			valoriaCam->SetIsPlacingBuidling(true);
 			APlayerController* playerController = UGameplayStatics::GetPlayerController(this, 0);
 			if (playerController)
@@ -144,7 +122,6 @@ void ABuilding::Tick(float DeltaTime)
 								valoriaCam->UpdateScience(false, science);
 								valoriaCam->UpdateStone(false, stone);
 								valoriaCam->UpdateWood(false, wood);
-								//valoriaCam->buildingRef = nullptr;
 							}
 							if (buildingMat)
 							{
@@ -164,14 +141,6 @@ void ABuilding::Tick(float DeltaTime)
 							valoriaCam->SetIsPlacingBuidling(false);
 						}
 					}
-					else
-					{
-						if (valoriaCam->buildingRef)
-						{
-							//valoriaCam->buildingRef->BuildingMesh->SetMaterial(0, buildingRedMat);
-						}
-					}
-
 				}
 			}
 		}

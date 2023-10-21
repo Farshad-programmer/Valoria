@@ -145,10 +145,7 @@ void AValoriaCam::DeselectAllCharacters()
 
 			player->SetSelectionNiagaraVisibility(false);
 			player->SetOverlayWidgetVisibility(false);
-			//player->SetCheckForStartWork(false);
 			bMarqueeSelected = false;
-			//player->buildingRef = nullptr;
-			//bCanMarqueeMove = false;
 		}
 		players.Empty();
 	}
@@ -289,7 +286,6 @@ void AValoriaCam::OnSelectStarted()
 			{
 				for (auto player : players)
 				{
-					//player->MoveToLocation(Hit.Location, true, building);
 					player->SetCheckForStartWork(true);
 				}
 			}
