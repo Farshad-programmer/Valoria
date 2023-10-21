@@ -2,6 +2,8 @@
 
 
 #include "ValoriaHUD.h"
+
+#include "Components/WidgetComponent.h"
 #include "Valoria/ValoriaPlayerController.h"
 #include "Engine/Canvas.h"
 #include "Valoria/ValoriaCam.h"
@@ -70,6 +72,7 @@ void AValoriaHUD::HandleMarqueeSelection()
 						if (selectedValoria->ActorHasTag("Player"))
 						{
 							selectedValoria->SetSelectionNiagaraVisibility(true);
+							selectedValoria->SetOverlayWidgetVisibility(true);
 							//selectedValoria->GetMesh()->SetRenderCustomDepth(true);
 							valoriaCam->players.AddUnique(selectedValoria);
 							if (selectedValoria->GetIsStartedWork())
@@ -88,6 +91,7 @@ void AValoriaHUD::HandleMarqueeSelection()
 										selectedValoria->buildingRef->buidlingWorkers.Empty();
 									}
 									selectedValoria->buildingRef = nullptr;
+									selectedValoria->SetOverlayWidgetVisibility(true);
 								}
 
 								if (selectedValoria->resourceRef && selectedValoria->GetIsStartedWork() && selectedValoria->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())

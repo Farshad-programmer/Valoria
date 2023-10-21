@@ -12,6 +12,7 @@
 #include "ValoriaPlayerController.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Buildings/Building.h"
+#include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "HUD/ValoriaHUD.h"
 #include "Resources/ResourceMaster.h"
@@ -143,6 +144,7 @@ void AValoriaCam::DeselectAllCharacters()
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("DeselectAllCharacters "));
 
 			player->SetSelectionNiagaraVisibility(false);
+			player->SetOverlayWidgetVisibility(false);
 			//player->SetCheckForStartWork(false);
 			bMarqueeSelected = false;
 			//player->buildingRef = nullptr;
@@ -230,6 +232,7 @@ void AValoriaCam::OnSelectStarted()
 						players.AddUnique(PlayerTemp);
 						players[0]->SetSelectionNiagaraVisibility(true);
 						players[0]->SetCheckForStartWork(false);
+						players[0]->SetOverlayWidgetVisibility(true);
 						if (players[0]->GetIsStartedWork())
 						{
 							players[0]->StopWorkAnimation();
@@ -250,6 +253,7 @@ void AValoriaCam::OnSelectStarted()
 
 							if (players[0]->resourceRef && players[0]->GetIsStartedWork() && players[0]->resourceRef->buildingWorkPointsIndex > 0 && players[0]->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
 							{
+								players[0]->SetOverlayWidgetVisibility(true);
 								players[0]->resourceRef->buildingWorkPointsIndex--;
 								players[0]->resourceRef->workerNumber--;
 								players[0]->resourceRef->buidlingWorkers.Remove(players[0]);
@@ -312,6 +316,7 @@ void AValoriaCam::OnSelectStarted()
 				{
 					valoriaHUD->bCanDrawSelection = true;
 					valoriaHUD->MarqueePressed();
+					bIsPlayerSelected = false;
 				}
 			}
 		}

@@ -21,7 +21,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "NavigationSystem.h"
 #include "Valoria/Resources/ResourceMaster.h"
-
+#include "Components/WidgetComponent.h"
 
 AValoriaCharacter::AValoriaCharacter()
 {
@@ -60,10 +60,20 @@ AValoriaCharacter::AValoriaCharacter()
 	SelectionNiagara->SetupAttachment(RootComponent);
 	SelectionNiagara->SetVisibility(false);
 
+	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Overlay Widget"));
+	Widget->SetupAttachment(GetMesh());
+	Widget->SetVisibility(false);
 
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+}
+
+void AValoriaCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	health = maxHealth;
+
 }
 
 void AValoriaCharacter::Tick(float DeltaSeconds)
@@ -75,8 +85,7 @@ void AValoriaCharacter::Tick(float DeltaSeconds)
 		RotateToBuilding(DeltaSeconds);
 		RotateToResource(DeltaSeconds);
 	}
-
-
+	
 }
 
 void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuilding* building, AResourceMaster* resource)
@@ -312,4 +321,6 @@ void AValoriaCharacter::RotateToResource(float deltaTime)
 	FRotator RInterpToOutput = FMath::RInterpTo(actorRotation, FindLookAtRotationOutput, deltaTime, 15.f);
 	SetActorRotation(FRotator(0.f, FindLookAtRotationOutput.Yaw, 0.f));
 }
+
+
 
