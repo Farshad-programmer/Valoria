@@ -16,6 +16,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "HUD/ValoriaHUD.h"
 #include "Resources/ResourceMaster.h"
+#include "Valoria/Buildings/BuildingBanner.h"
 // Sets default values
 AValoriaCam::AValoriaCam()
 {
@@ -76,10 +77,6 @@ void AValoriaCam::Tick(float DeltaTime)
 				valoriaHUD->MarqueeHeld();
 			}
 		}
-		else
-		{
-
-		}
 
 		FHitResult checkCoursorHit;
 		bool bHitHapened = playerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, checkCoursorHit);
@@ -107,7 +104,29 @@ void AValoriaCam::Tick(float DeltaTime)
 
 		}
 
+		if (bCanAdjustBuildingBannerPosition && buildingBannerRef)
+		{
+			FVector bannerLoc = checkCoursorHit.Location;
+			if (!buildingBannerRef->bBannerAdjusted)
+			{
+				bannerLoc.Z += 100.f;
+				buildingBannerRef->SetActorLocation(bannerLoc);
+			}
+			else
+			{
+				if (buildingBannerRef->buildingRelated)
+				{
+					//buildingBannerRef->buildingRelated->SetActorLocation(bannerLoc);
+				}
+			}
+
+		}
+
+
+
 	}
+
+
 
 }
 
@@ -149,7 +168,14 @@ void AValoriaCam::DeselectAllCharacters()
 		}
 		players.Empty();
 	}
+	if (!bMovingBanner && bBuildingSelected)
+	{
+
+	}
+	
+
 }
+
 
 bool AValoriaCam::IsAllNewWorkersStartedWork(TArray<AValoriaCharacter*> workers)
 {
@@ -169,6 +195,26 @@ bool AValoriaCam::IsAllNewWorkersStartedWork(TArray<AValoriaCharacter*> workers)
 }
 
 
+void AValoriaCam::DestroyAllBanners()
+{
+	if (AllBanners.Num() > 0)
+	{
+		for (ABuildingBanner* banner : AllBanners)
+		{
+			if (banner != nullptr)
+			{
+
+				if (!bAdjustingBanner)
+				{
+					banner->Destroy();
+					adjustingBannerCounter = 0;
+				}
+			}
+
+		}
+	}
+}
+
 void AValoriaCam::OnSelectStarted()
 {
 	if (buildingRef)
@@ -180,7 +226,12 @@ void AValoriaCam::OnSelectStarted()
 
 	}
 
-
+	if (bCanAdjustBuildingBannerPosition)
+	{
+		bCanAdjustBuildingBannerPosition = false;
+		buildingBannerRef->bBannerAdjusted = true;
+		buildingBannerRef->buildingRelated->bannerLocation = buildingBannerRef->GetActorLocation();
+	}
 
 	DeselectAllCharacters();
 	// We flag that the input is being pressed
@@ -216,10 +267,11 @@ void AValoriaCam::OnSelectStarted()
 		}
 		if (Hit.GetActor()->ActorHasTag("Player"))
 		{
+			DestroyAllBanners();
 			DeselectAllCharacters();
 			if (!bMarqueeSelected)
 			{
-				BP_ConstructionHUD(true);
+				BP_ConstructionHUD(true, 0);
 				AValoriaCharacter* PlayerTemp = Cast<AValoriaCharacter>(Hit.GetActor());
 				if (PlayerTemp)
 				{
@@ -232,6 +284,7 @@ void AValoriaCam::OnSelectStarted()
 						players[0]->SetOverlayWidgetVisibility(true);
 						if (players[0]->GetIsStartedWork())
 						{
+							if (buildingRef == nullptr)return;
 							players[0]->StopWorkAnimation();
 							if (players[0]->buildingRef && players[0]->GetIsStartedWork() && buildingRef->buildingWorkPointsIndex > 0 && players[0]->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
 							{
@@ -281,7 +334,7 @@ void AValoriaCam::OnSelectStarted()
 		if (Hit.GetActor()->ActorHasTag("Building"))
 		{
 			ABuilding* building = Cast<ABuilding>(Hit.GetActor());
-
+			bBuildingSelected = true;
 			if (playerController && !bCanPlaceBuilding)
 			{
 				for (auto player : players)
@@ -289,10 +342,77 @@ void AValoriaCam::OnSelectStarted()
 					player->SetCheckForStartWork(true);
 				}
 			}
-			BP_ConstructionHUD(false);
+			if (building->GetConstructionIsBuilt())
+			{
+				if (building->GetBuildingType() == EBuildingType::Barracks)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Yellow, TEXT("Building selected"));
+					BP_ConstructionHUD(true, 1);
+					building->GetBuildingMesh()->SetRenderCustomDepth(true);
+
+					// spawning Banner
+					if (!building->bBuildingHasBanner)
+					{
+						if (GetWorld() && buildingBannerToSpawn)
+						{
+							buildingBannerRef = GetWorld()->SpawnActor<ABuildingBanner>(buildingBannerToSpawn, building->GetActorLocation(), building->GetActorRotation());
+							if (buildingBannerRef)
+							{
+								bAdjustingBanner = true;
+								bMovingBanner = true;
+								building->bBuildingHasBanner = true;
+								AllBanners.Add(buildingBannerRef);
+								bCanAdjustBuildingBannerPosition = true;
+								building->buildingBannerRelated = buildingBannerRef;
+								buildingBannerRef->buildingRelated = building;
+							}
+						}
+					}
+					else
+					{
+						if (GetWorld() && buildingBannerToSpawn)
+						{
+							if (building && building->buildingBannerRelated)
+							{
+								building->buildingBannerRelated->bBannerAdjusted = true;
+								bCanAdjustBuildingBannerPosition = false;
+								buildingBannerRef = GetWorld()->SpawnActor<ABuildingBanner>(buildingBannerToSpawn, building->GetActorLocation(), building->GetActorRotation());
+								if (buildingBannerRef)
+								{
+									buildingBannerRef->SetActorLocation(building->bannerLocation);
+									AllBanners.Add(buildingBannerRef);
+									building->buildingBannerRelated = buildingBannerRef;
+									buildingBannerRef->buildingRelated = building;
+								}
+							}
+						}
+
+					}
+
+				}
+				else
+				{
+					DestroyAllBanners();
+				}
+			}
+			else
+			{
+				BP_ConstructionHUD(false, 0);
+			}
+
 		}
 		if (!Hit.GetActor()->ActorHasTag("Building"))
 		{
+			if (bAdjustingBanner)
+			{
+				adjustingBannerCounter++;
+				if (adjustingBannerCounter > 1)
+				{
+					bAdjustingBanner = false;
+				}
+			}
+
+			bBuildingSelected = false;
 			if (playerController)
 			{
 				for (auto player : players)
@@ -301,6 +421,26 @@ void AValoriaCam::OnSelectStarted()
 					player->buildingRef = nullptr;
 				}
 			}
+			DestroyAllBanners();
+
+			TArray<AActor*>buildingActors;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABuilding::StaticClass(), buildingActors);
+			if (buildingActors.Num() > 0)
+			{
+				for (auto buildingActor : buildingActors)
+				{
+					ABuilding* buildingActorCasted = Cast<ABuilding>(buildingActor);
+					if (buildingActorCasted)
+					{
+						if (buildingActorCasted->GetBuildingType() == EBuildingType::Barracks && buildingActorCasted->GetBuildingMesh()->bRenderCustomDepth == true)
+						{
+							buildingActorCasted->GetBuildingMesh()->SetRenderCustomDepth(false);
+						}
+					}
+				}
+			}
+
+
 		}
 
 		if (!Hit.GetActor()->ActorHasTag("Player"))
@@ -318,7 +458,7 @@ void AValoriaCam::OnSelectStarted()
 		}
 		if (!Hit.GetActor()->ActorHasTag("Player") && !Hit.GetActor()->ActorHasTag("Building"))
 		{
-			BP_ConstructionHUD(false);
+			BP_ConstructionHUD(false, 0);
 		}
 	}
 }
@@ -337,6 +477,7 @@ void AValoriaCam::OnSelectReleased()
 			valoriaHUD->MarqueeReleased();
 		}
 	}
+
 }
 
 void AValoriaCam::OnDeselectStarted()

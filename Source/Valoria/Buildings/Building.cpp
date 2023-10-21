@@ -23,6 +23,7 @@ ABuilding::ABuilding()
 	WorkerPoint3 = CreateDefaultSubobject<USceneComponent>(TEXT("WorkerPoint3"));
 	WorkerPoint3->SetupAttachment(BuildingMesh);
 
+
 	if (WorkerPoint1 && WorkerPoint2 && WorkerPoint3)
 	{
 		WorkerPoint1->SetRelativeLocation(FVector(-310.f, 0.f, 0.f));
@@ -167,7 +168,7 @@ void ABuilding::ValidateBuildLocation(FVector loc)
 		if (buildingRedMat)
 		{
 			BuildingMesh->SetMaterial(0, buildingRedMat);
-			bBuildingIsAllowedToBeBuilt = false;
+			bCanCheck = false;
 		}
 	}
 	else
@@ -175,7 +176,7 @@ void ABuilding::ValidateBuildLocation(FVector loc)
 		if (buildingGreenMat)
 		{
 			BuildingMesh->SetMaterial(0, buildingGreenMat);
-			bBuildingIsAllowedToBeBuilt = true;
+			bCanCheck = true;
 		}
 	}
 }
@@ -184,20 +185,29 @@ void ABuilding::CheckCanBuild()
 {
 	if (valoriaCam)
 	{
-		if (valoriaCam->GetWood() >= wood && valoriaCam->GetStone() >= stone && valoriaCam->GetGold() >= gold && valoriaCam->GetScience() >= science)
+		if (bCanCheck)
 		{
-			bBuildingIsAllowedToBeBuilt = true;
-			GEngine->AddOnScreenDebugMessage(-1, 0.005f, FColor::Green, TEXT("can build"));
+			if (valoriaCam->GetWood() >= wood && valoriaCam->GetStone() >= stone && valoriaCam->GetGold() >= gold && valoriaCam->GetScience() >= science)
+			{
+				bBuildingIsAllowedToBeBuilt = true;
+				GEngine->AddOnScreenDebugMessage(-1, 0.005f, FColor::Green, TEXT("can build"));
+			}
+			else
+			{
+				bBuildingIsAllowedToBeBuilt = false;
+				GEngine->AddOnScreenDebugMessage(-1, 0.005f, FColor::Green, TEXT("can not build"));
+				if (valoriaCam->buildingRef && !bBuildingPlaced)
+				{
+					valoriaCam->buildingRef->BuildingMesh->SetMaterial(0, buildingRedMat);
+				}
+			}
 		}
 		else
 		{
 			bBuildingIsAllowedToBeBuilt = false;
-			GEngine->AddOnScreenDebugMessage(-1, 0.005f, FColor::Green, TEXT("can not build"));
-			if (valoriaCam->buildingRef && !bBuildingPlaced)
-			{
-				valoriaCam->buildingRef->BuildingMesh->SetMaterial(0, buildingRedMat);
-			}
 		}
+
 	}
+
 }
 

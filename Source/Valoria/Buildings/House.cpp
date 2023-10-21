@@ -10,4 +10,6 @@ AHouse::AHouse()
 	stone = 10;
 	gold = 2;
 	science = 0;
+
+	buildingType = EBuildingType::house;
 }

@@ -12,6 +12,7 @@ class AValoriaCharacter;
 class AValoriaPlayerController;
 class AValoriaHUD;
 class ABuilding;
+class ABuildingBanner;
 UCLASS()
 class VALORIA_API AValoriaCam : public APawn
 {
@@ -63,9 +64,12 @@ public:
 	TSubclassOf<ABuilding> houseToSpawn;
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Spawning)
 	TSubclassOf<ABuilding> BarracksToSpawn;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Spawning)
+	TSubclassOf<ABuildingBanner> buildingBannerToSpawn;
 
 	void DeselectAllCharacters();
 	bool IsAllNewWorkersStartedWork(TArray<AValoriaCharacter*> workers);
+	void DestroyAllBanners();
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	ABuilding* buildingRef;
@@ -81,8 +85,8 @@ public:
 
 	// blueprint implement event functions
 	UFUNCTION(BlueprintImplementableEvent)
-	void BP_ConstructionHUD(bool active);
-
+	void BP_ConstructionHUD(bool active,int constructNum);
+	//constructNum => 0:building 1:Barracks
 
 	void UpdateWood(bool plus,int32 amount);
 	void UpdateGold(bool plus,int32 amount);
@@ -112,11 +116,20 @@ private:
 	float FollowTime; // For how long it has been pressed
 
 	bool bIsPlayerSelected{false};
+	bool bCanAdjustBuildingBannerPosition{false};
+
+	UPROPERTY()
+	ABuildingBanner* buildingBannerRef;
+	TArray<ABuildingBanner*>AllBanners;
 
 	UPROPERTY()
 	TArray<AActor*> characters;
 
 	bool bIsLeftMousePressed{false};
+	bool bMovingBanner{false};
+	bool bAdjustingBanner{false};
+	int adjustingBannerCounter = 0;
+	bool bBuildingSelected{false};
 
 
 	UPROPERTY()

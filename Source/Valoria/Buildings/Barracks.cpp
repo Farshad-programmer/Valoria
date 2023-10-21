@@ -10,4 +10,6 @@ ABarracks::ABarracks()
 	stone = 50;
 	gold = 20;
 	science = 5;
+
+	buildingType = EBuildingType::Barracks;
 }

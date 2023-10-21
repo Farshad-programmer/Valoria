@@ -6,11 +6,19 @@
 #include "GameFramework/Actor.h"
 #include "Building.generated.h"
 
+UENUM(BlueprintType)
+enum class EBuildingType:uint8
+{
+	house,
+	Barracks,
+};
+
 class AValoriaCam;
 class USceneComponent;
 class UWidgetComponent;
 class AValoriaCharacter;
 class UStaticMesh;
+class ABuildingBanner;
 UCLASS()
 class VALORIA_API ABuilding : public AActor
 {
@@ -70,6 +78,12 @@ public:
 
 	bool bConstructionProgressStarted{false};
 	bool bConstructionIsBuilt{false};
+	bool bBuildingHasBanner{false};
+
+	UPROPERTY()
+	ABuildingBanner* buildingBannerRelated;
+
+	FVector bannerLocation;
 protected:
 	virtual void BeginPlay() override;
 	void ValidateBuildLocation(FVector loc);
@@ -80,6 +94,7 @@ protected:
 	FHitResult Hit;
 
 	void CheckCanBuild();
+	bool bCanCheck{true};
 
 	UPROPERTY()
 	AValoriaCam* valoriaCam;
@@ -99,14 +114,20 @@ protected:
 	int32 gold;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
 	int32 science;
+
+	EBuildingType buildingType;
 public:
 
 	FORCEINLINE bool GetBuildingIsAllowedToBeBuilt()const {return bBuildingIsAllowedToBeBuilt;}
+	FORCEINLINE bool GetConstructionIsBuilt()const {return bConstructionIsBuilt;}
 	FORCEINLINE float GetWorkersStartWorkDistance()const {return workersStartWorkDistance;}
 	FORCEINLINE int32 GetStone()const {return stone;}
 	FORCEINLINE int32 GetWood()const {return wood;}
 	FORCEINLINE int32 GetGold()const {return gold;}
 	FORCEINLINE int32 GetScience()const {return science;}
+	FORCEINLINE EBuildingType GetBuildingType()const {return buildingType;}
+	FORCEINLINE UStaticMeshComponent* GetBuildingMesh()const {return BuildingMesh;}
+	
 
 	FORCEINLINE void SetIsBuildingSpawned(bool IsSpawned){bIsBuildingSpawned = IsSpawned;}
 	FORCEINLINE void SetBuildingIsAllowedToBeBuilt(bool canPlace){bBuildingIsAllowedToBeBuilt = canPlace;}
