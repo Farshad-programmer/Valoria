@@ -97,10 +97,11 @@ void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuildin
 		if (!building->bConstructionIsBuilt && building->buildingWorkPointsIndex < building->buildingWorkPoints.Num())
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Orange, FString::FromInt(building->buildingWorkPointsIndex));
-			locationToWork = building->buildingWorkPoints[building->buildingWorkPointsIndex];
+			/*locationToWork = building->buildingWorkPoints[building->buildingWorkPointsIndex];
 			locationToWork.X += building->GetActorLocation().X;
 			locationToWork.Y += building->GetActorLocation().Y;
-			locationToWork.Z = 116.f;
+			locationToWork.Z = 116.f;*/
+			locationToWork = building->GetActorLocation();
 		}
 		else
 		{
@@ -116,10 +117,11 @@ void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuildin
 		if (resource->buildingWorkPointsIndex < resource->buildingWorkPoints.Num())
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Green, FString::FromInt(resource->buildingWorkPointsIndex));
-			locationToWork = resource->buildingWorkPoints[resource->buildingWorkPointsIndex];
+			/*locationToWork = resource->buildingWorkPoints[resource->buildingWorkPointsIndex];
 			locationToWork.X += resource->GetActorLocation().X;
 			locationToWork.Y += resource->GetActorLocation().Y;
-			locationToWork.Z = 116.f;
+			locationToWork.Z = 116.f;*/
+			locationToWork = resource->GetActorLocation();
 		}
 		else
 		{
@@ -176,6 +178,7 @@ void AValoriaCharacter::CheckCharacterDistanceWithBuilding()
 	if (buildingRef)
 	{
 		float distance = buildingRef->GetDistanceTo(this);
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::FromInt(distance));
 		if (distance <= buildingRef->GetWorkersStartWorkDistance())
 		{
 			StartBuilding();
@@ -188,6 +191,7 @@ void AValoriaCharacter::CheckCharacterDistanceWithBuilding()
 	if (resourceRef)
 	{
 		float distance = resourceRef->GetDistanceTo(this);
+		//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::FromInt(distance));
 		if (distance <= resourceRef->GetWorkersStartWorkDistance())
 		{
 			StartWork();

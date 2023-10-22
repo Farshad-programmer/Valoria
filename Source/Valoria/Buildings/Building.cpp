@@ -82,7 +82,6 @@ void ABuilding::Tick(float DeltaTime)
 		if (bIsBuildingSpawned)
 		{
 			CheckCanBuild();
-
 			valoriaCam->SetIsPlacingBuidling(true);
 			APlayerController* playerController = UGameplayStatics::GetPlayerController(this, 0);
 			if (playerController)
@@ -95,8 +94,8 @@ void ABuilding::Tick(float DeltaTime)
 					loc.X = FMath::FloorToInt(loc.X / GridCellSize.X) * GridCellSize.X;
 					loc.Y = FMath::FloorToInt(loc.Y / GridCellSize.Y) * GridCellSize.Y;
 					loc.Z += 100.f;
-					ValidateBuildLocation(loc);
 					SetActorLocation(loc);
+					ValidateBuildLocation(loc);
 
 				}
 			}
@@ -175,7 +174,10 @@ void ABuilding::ValidateBuildLocation(FVector loc)
 	{
 		if (buildingGreenMat)
 		{
-			BuildingMesh->SetMaterial(0, buildingGreenMat);
+			if(bBuildingIsAllowedToBeBuilt)
+			{
+				BuildingMesh->SetMaterial(0, buildingGreenMat);
+			}
 			bCanCheck = true;
 		}
 	}

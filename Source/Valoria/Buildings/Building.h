@@ -104,6 +104,7 @@ protected:
 	bool bIsBuildingSpawned{false};
 	bool bBuildingPlaced{false};
 	bool bBuildingIsAllowedToBeBuilt{false};
+	bool bIsBuildingSelected{false};
 
 	// needs
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
@@ -127,9 +128,10 @@ public:
 	FORCEINLINE int32 GetScience()const {return science;}
 	FORCEINLINE EBuildingType GetBuildingType()const {return buildingType;}
 	FORCEINLINE UStaticMeshComponent* GetBuildingMesh()const {return BuildingMesh;}
-	
+	FORCEINLINE bool GetIsBuildingSpawned()const {return bIsBuildingSpawned;}
+	FORCEINLINE bool GetIsBuildingSelected()const {return bIsBuildingSelected;}
 
 	FORCEINLINE void SetIsBuildingSpawned(bool IsSpawned){bIsBuildingSpawned = IsSpawned;}
 	FORCEINLINE void SetBuildingIsAllowedToBeBuilt(bool canPlace){bBuildingIsAllowedToBeBuilt = canPlace;}
-
+	FORCEINLINE void SetIsBuildingSelected(bool isSelected){bIsBuildingSelected = isSelected;}
 };

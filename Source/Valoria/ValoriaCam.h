@@ -127,11 +127,11 @@ private:
 
 	bool bIsLeftMousePressed{false};
 	bool bMovingBanner{false};
-	bool bAdjustingBanner{false};
+	bool bAdjustingBanner{true};
 	int adjustingBannerCounter = 0;
 	bool bBuildingSelected{false};
-
-
+	bool bRunCustomDepthSpecialMode{false};
+	void RenderCustomDepthHandle();
 	UPROPERTY()
 	AValoriaPlayerController* valoriaPlayerController;
 
