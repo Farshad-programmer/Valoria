@@ -99,6 +99,14 @@ void AValoriaCam::Tick(float DeltaTime)
 				else
 				{
 					playerController->CurrentMouseCursor = EMouseCursor::Default;
+					if (checkCoursorHit.GetActor()->ActorHasTag("Banner"))
+					{
+						bMouseIsOnBanner = true;
+					}
+					else
+					{
+						bMouseIsOnBanner = false;
+					}
 				}
 			}
 
@@ -197,7 +205,7 @@ bool AValoriaCam::IsAllNewWorkersStartedWork(TArray<AValoriaCharacter*> workers)
 
 void AValoriaCam::DestroyAllBanners()
 {
-	if (AllBanners.Num() > 0)
+	if (!bMouseIsOnBanner && !bMovingBanner)
 	{
 		for (ABuildingBanner* banner : AllBanners)
 		{
@@ -206,17 +214,27 @@ void AValoriaCam::DestroyAllBanners()
 				if (!bAdjustingBanner)
 				{
 					banner->Destroy();
-					adjustingBannerCounter = 0;
 				}
 			}
 		}
+		AllBanners.Empty();
 	}
 }
 
 void AValoriaCam::OnSelectStarted()
 {
+	/*if (Hit.GetActor())
+	{
+		if (!Hit.GetActor()->ActorHasTag("Banner") && !Hit.GetActor()->ActorHasTag("Building") && !Hit.GetActor()->ActorHasTag("Player"))
+		{
+			DestroyAllBanners();
+		}
+	}*/
+
 	DestroyAllBanners();
-	if (bAdjustingBanner)
+
+
+	if (bAdjustingBanner && !bMouseIsOnBanner)
 	{
 		adjustingBannerCounter++;
 		if (adjustingBannerCounter > 0)
@@ -239,11 +257,12 @@ void AValoriaCam::OnSelectStarted()
 
 	}
 
-	if (bCanAdjustBuildingBannerPosition)
+	if (bCanAdjustBuildingBannerPosition && !bMouseIsOnBanner)
 	{
 		bCanAdjustBuildingBannerPosition = false;
 		buildingBannerRef->bBannerAdjusted = true;
 		buildingBannerRef->buildingRelated->bannerLocation = buildingBannerRef->GetActorLocation();
+		bMovingBanner = true;
 	}
 
 	DeselectAllCharacters();
@@ -276,10 +295,28 @@ void AValoriaCam::OnSelectStarted()
 			if (Hit.GetActor()->ActorHasTag("Player"))
 			{
 				bIsPlayerSelected = true;
+				bMovingBanner = false;
 			}
 		}
+
+		if (Hit.GetActor()->ActorHasTag("Banner"))
+		{
+			buildingBannerRef = Cast<ABuildingBanner>(Hit.GetActor());
+			if (buildingBannerRef)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Yellow, TEXT("Banner"));
+				buildingBannerRef->bBannerAdjusted = false;
+				bCanAdjustBuildingBannerPosition = true;
+				adjustingBannerCounter = 0;
+				bMovingBanner = true;
+			}
+		}
+
+
 		if (Hit.GetActor()->ActorHasTag("Player"))
 		{
+			bMovingBanner = false;
+			DestroyAllBanners();
 			TArray<AActor*>buildingActors;
 			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABuilding::StaticClass(), buildingActors);
 			if (buildingActors.Num() > 0)
@@ -361,7 +398,7 @@ void AValoriaCam::OnSelectStarted()
 		}
 		if (Hit.GetActor()->ActorHasTag("Building"))
 		{
-
+			bMovingBanner = false;
 			TArray<AActor*>buildingActors;
 			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABuilding::StaticClass(), buildingActors);
 			if (buildingActors.Num() > 0)
@@ -475,29 +512,33 @@ void AValoriaCam::OnSelectStarted()
 		}
 		if (!Hit.GetActor()->ActorHasTag("Player") && !Hit.GetActor()->ActorHasTag("Building"))
 		{
+			if (!Hit.GetActor()->ActorHasTag("Banner"))
+			{
+				bMovingBanner = false;
+			}
 			TArray<AActor*>buildingActors;
 			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABuilding::StaticClass(), buildingActors);
-			if (buildingActors.Num() > 0)
+
+			for (auto buildingActor : buildingActors)
 			{
-				for (auto buildingActor : buildingActors)
+				ABuilding* buildingActorCasted = Cast<ABuilding>(buildingActor);
+
+				if (buildingActorCasted && buildingActorCasted->GetBuildingMesh())
 				{
-					ABuilding* buildingActorCasted = Cast<ABuilding>(buildingActor);
-					if (buildingActorCasted)
+					if (buildingActorCasted->GetBuildingType() == EBuildingType::Barracks && buildingActorCasted->GetBuildingMesh()->bRenderCustomDepth)
 					{
-						if (buildingActorCasted->GetBuildingType() == EBuildingType::Barracks && buildingActorCasted->GetBuildingMesh()->bRenderCustomDepth == true)
+						if (!buildingBannerRef->bBannerAdjusted)
 						{
-							if (!buildingBannerRef->bBannerAdjusted)
-							{
-								buildingActorCasted->GetBuildingMesh()->SetRenderCustomDepth(false);
-							}
-							else
-							{
-								bRunCustomDepthSpecialMode = true;
-							}
+							buildingActorCasted->GetBuildingMesh()->SetRenderCustomDepth(false);
+						}
+						else
+						{
+							bRunCustomDepthSpecialMode = true;
 						}
 					}
 				}
 			}
+
 			BP_ConstructionHUD(false, 0);
 		}
 	}

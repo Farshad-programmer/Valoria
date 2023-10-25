@@ -3,6 +3,7 @@
 
 #include "Building.h"
 
+#include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Valoria/ValoriaCam.h"
@@ -16,6 +17,8 @@ ABuilding::ABuilding()
 	BuildingMesh->SetupAttachment(RootComponent);
 	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
 	Widget->SetupAttachment(BuildingMesh);
+	box = CreateDefaultSubobject<UBoxComponent>(TEXT("box"));
+	box->SetupAttachment(BuildingMesh);
 	WorkerPoint1 = CreateDefaultSubobject<USceneComponent>(TEXT("WorkerPoint1"));
 	WorkerPoint1->SetupAttachment(BuildingMesh);
 	WorkerPoint2 = CreateDefaultSubobject<USceneComponent>(TEXT("WorkerPoint2"));

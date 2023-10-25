@@ -126,11 +126,16 @@ private:
 	TArray<AActor*> characters;
 
 	bool bIsLeftMousePressed{false};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	bool bMovingBanner{false};
+
 	bool bAdjustingBanner{true};
+
 	int adjustingBannerCounter = 0;
 	bool bBuildingSelected{false};
 	bool bRunCustomDepthSpecialMode{false};
+	bool bMouseIsOnBanner{false};
 	void RenderCustomDepthHandle();
 	UPROPERTY()
 	AValoriaPlayerController* valoriaPlayerController;

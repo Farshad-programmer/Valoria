@@ -19,6 +19,7 @@ class UWidgetComponent;
 class AValoriaCharacter;
 class UStaticMesh;
 class ABuildingBanner;
+class UBoxComponent;
 UCLASS()
 class VALORIA_API ABuilding : public AActor
 {
@@ -36,7 +37,8 @@ private:
 	USceneComponent* WorkerPoint3;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* Widget;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* box;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	UStaticMesh* level1Mesh;
 
