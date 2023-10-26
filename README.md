@@ -17,7 +17,7 @@ Example: myVariableName
 Ensure careful handling of private variables and use getters and setters to access them.
 
 -Project Version:
-Currently, the Valoria project is limited to UE5.2. Until further notice regarding version changes, all contributors should use this version.
+Currently, the Valoria project is limited to UE5.3. Until further notice regarding version changes, all contributors should use this version.
 
 -Contribution to Development:
 Any individual interested in contributing to the project must declare their Git user along with their area of interest in the project's "Discussion" section. After expressing your interest, you will be added to the project.
