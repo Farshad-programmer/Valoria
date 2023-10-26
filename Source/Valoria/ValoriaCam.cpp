@@ -527,7 +527,7 @@ void AValoriaCam::OnSelectStarted()
 				{
 					if (buildingActorCasted->GetBuildingType() == EBuildingType::Barracks && buildingActorCasted->GetBuildingMesh()->bRenderCustomDepth)
 					{
-						if (!buildingBannerRef->bBannerAdjusted)
+						if (buildingBannerRef && !buildingBannerRef->bBannerAdjusted)
 						{
 							buildingActorCasted->GetBuildingMesh()->SetRenderCustomDepth(false);
 						}
