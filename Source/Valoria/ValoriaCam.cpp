@@ -351,7 +351,7 @@ void AValoriaCam::OnSelectStarted()
 						{
 							//if (buildingRef == nullptr)return;
 							players[0]->StopWorkAnimation();
-							if (players[0]->buildingRef && players[0]->GetIsStartedWork() && buildingRef->buildingWorkPointsIndex > 0 && players[0]->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
+							if (players[0]->buildingRef && players[0]->GetIsStartedWork() && buildingRef && buildingRef->buildingWorkPointsIndex > 0 && players[0]->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
 							{
 								players[0]->buildingRef->buildingWorkPointsIndex--;
 								players[0]->buildingRef->workerNumber--;
@@ -749,9 +749,9 @@ void AValoriaCam::SpawnConstruction(int32 constructionID)
 	switch (constructionID)
 	{
 	case 0:
-		if (houseToSpawn)
+		if (CityCenterToSpawn)
 		{
-			buildingRef = GetWorld()->SpawnActor<ABuilding>(houseToSpawn, GetActorLocation(), FRotator(0.f), spawnParameters);
+			buildingRef = GetWorld()->SpawnActor<ABuilding>(CityCenterToSpawn, GetActorLocation(), FRotator(0.f), spawnParameters);
 			if (buildingRef)
 			{
 				buildingRef->SetIsBuildingSpawned(true);
@@ -760,6 +760,16 @@ void AValoriaCam::SpawnConstruction(int32 constructionID)
 		}
 		break;
 	case 1:
+		if (houseToSpawn)
+		{
+			buildingRef = GetWorld()->SpawnActor<ABuilding>(houseToSpawn, GetActorLocation(), FRotator(0.f), spawnParameters);
+			if (buildingRef)
+			{
+				buildingRef->SetIsBuildingSpawned(true);
+			}
+		}
+		break;
+		case 2:
 		if (BarracksToSpawn)
 		{
 			buildingRef = GetWorld()->SpawnActor<ABuilding>(BarracksToSpawn, GetActorLocation(), FRotator(0.f), spawnParameters);

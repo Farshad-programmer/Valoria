@@ -59,7 +59,8 @@ public:
 	UPROPERTY()
 	TArray<AValoriaCharacter*>players;
 
-	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Spawning)
+	TSubclassOf<ABuilding> CityCenterToSpawn;
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Spawning)
 	TSubclassOf<ABuilding> houseToSpawn;
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Spawning)

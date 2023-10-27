@@ -11,6 +11,7 @@ enum class EBuildingType:uint8
 {
 	house,
 	Barracks,
+	CityCenter
 };
 
 class AValoriaCam;
@@ -20,6 +21,7 @@ class AValoriaCharacter;
 class UStaticMesh;
 class ABuildingBanner;
 class UBoxComponent;
+class AMapBorder;
 UCLASS()
 class VALORIA_API ABuilding : public AActor
 {
@@ -63,6 +65,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float constructionCounter{0};
 
+	
+
+
 	bool bUpdatingNeeds{true};
 
 public:	
@@ -90,12 +95,18 @@ protected:
 	virtual void BeginPlay() override;
 	void ValidateBuildLocation(FVector loc);
 
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Details, meta = (AllowPrivateAccess = "true"))
+	AMapBorder* BorderRef;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
 	float workersStartWorkDistance = {400.f};
 	int32 buildingLevel {0};
 	FHitResult Hit;
 
 	void CheckCanBuild();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Details)
 	bool bCanCheck{true};
 
 	UPROPERTY()
@@ -105,8 +116,10 @@ protected:
 
 	bool bIsBuildingSpawned{false};
 	bool bBuildingPlaced{false};
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Details)
 	bool bBuildingIsAllowedToBeBuilt{false};
 	bool bIsBuildingSelected{false};
+
 
 	// needs
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)

@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Valoria/ValoriaCam.h"
 #include "Valoria/ValoriaCharacter.h"
+#include "Valoria/MapBorder/MapBorder.h"
 
 // Sets default values
 ABuilding::ABuilding()
@@ -65,6 +66,12 @@ void ABuilding::Tick(float DeltaTime)
 		if (constructionCounter >= constrcutionFinishValue)
 		{
 			BuildingMesh->SetStaticMesh(level3Mesh);
+			if (BorderRef)
+			{
+				BorderRef->UpdateBorderOwner(EBorderStatus::self);
+				BorderRef = nullptr;
+			}
+			
 			bConstructionProgressStarted = false;
 			if (buidlingWorkers.Num())
 			{
@@ -139,6 +146,12 @@ void ABuilding::Tick(float DeltaTime)
 							{
 								BuildingMesh->SetMaterial(0, buildingMat);
 							}
+							if (BorderRef)
+							{
+								BorderRef->borderStatus = EBorderStatus::self;
+								BorderRef->bBorderHasCityCenter = true;
+							}
+
 						}
 					}
 				}
@@ -152,6 +165,7 @@ void ABuilding::Tick(float DeltaTime)
 						{
 							valoriaCam->SetIsPlacingBuidling(false);
 						}
+
 					}
 				}
 			}
@@ -166,18 +180,34 @@ void ABuilding::ValidateBuildLocation(FVector loc)
 	GetOverlappingActors(OverlappingActors);
 	if (OverlappingActors.Num() > 0 || loc.Z > 120.f)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::FromInt(OverlappingActors.Num()));
-		if (buildingRedMat)
+		GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Orange, FString::FromInt(OverlappingActors.Num()));
+		if (buildingRedMat && BorderRef)
 		{
-			BuildingMesh->SetMaterial(0, buildingRedMat);
-			bCanCheck = false;
+			if (BorderRef->bBorderHasCityCenter || BorderRef->borderStatus == EBorderStatus::enemy)
+			{
+				BuildingMesh->SetMaterial(0, buildingRedMat);
+				bCanCheck = false;
+				OverlappingActors.Empty();
+			}
+			else
+			{
+				if (buildingGreenMat)
+				{
+					if (bBuildingIsAllowedToBeBuilt)
+					{
+						BuildingMesh->SetMaterial(0, buildingGreenMat);
+					}
+					bCanCheck = true;
+				}
+			}
+
 		}
 	}
 	else
 	{
 		if (buildingGreenMat)
 		{
-			if(bBuildingIsAllowedToBeBuilt)
+			if (bBuildingIsAllowedToBeBuilt)
 			{
 				BuildingMesh->SetMaterial(0, buildingGreenMat);
 			}
