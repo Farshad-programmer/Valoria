@@ -9,6 +9,7 @@
 #include "Valoria/ValoriaCam.h"
 #include "Valoria/ValoriaCharacter.h"
 #include "Valoria/MapBorder/MapBorder.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 ABuilding::ABuilding()
@@ -20,19 +21,15 @@ ABuilding::ABuilding()
 	Widget->SetupAttachment(BuildingMesh);
 	box = CreateDefaultSubobject<UBoxComponent>(TEXT("box"));
 	box->SetupAttachment(BuildingMesh);
-	WorkerPoint1 = CreateDefaultSubobject<USceneComponent>(TEXT("WorkerPoint1"));
-	WorkerPoint1->SetupAttachment(BuildingMesh);
-	WorkerPoint2 = CreateDefaultSubobject<USceneComponent>(TEXT("WorkerPoint2"));
-	WorkerPoint2->SetupAttachment(BuildingMesh);
-	WorkerPoint3 = CreateDefaultSubobject<USceneComponent>(TEXT("WorkerPoint3"));
-	WorkerPoint3->SetupAttachment(BuildingMesh);
+	flagStarterPoint = CreateDefaultSubobject<USceneComponent>(TEXT("WorkerPoint1"));
+	flagStarterPoint->SetupAttachment(BuildingMesh);
 
 
-	if (WorkerPoint1 && WorkerPoint2 && WorkerPoint3)
+
+	if (flagStarterPoint)
 	{
-		WorkerPoint1->SetRelativeLocation(FVector(-310.f, 0.f, 0.f));
-		WorkerPoint2->SetRelativeLocation(FVector(310.f, 0.f, 0.f));
-		WorkerPoint3->SetRelativeLocation(FVector(0.f, -310.f, 0.f));
+		flagStarterPoint->SetRelativeLocation(FVector(-310.f, 0.f, 0.f));
+
 	}
 
 	BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
@@ -42,9 +39,6 @@ void ABuilding::BeginPlay()
 {
 	Super::BeginPlay();
 	valoriaCam = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this, 0));
-	buildingWorkPoints.Emplace(WorkerPoint1->GetRelativeLocation());
-	buildingWorkPoints.Emplace(WorkerPoint2->GetRelativeLocation());
-	buildingWorkPoints.Emplace(WorkerPoint3->GetRelativeLocation());
 	if (buildingGreenMat && BuildingMesh)
 	{
 		BuildingMesh->SetMaterial(0, buildingGreenMat);
@@ -56,6 +50,15 @@ void ABuilding::BeginPlay()
 void ABuilding::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if(buildingWorkPointsIndex > 0)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("%s"),*GetName()));
+	}
+	
+
+
+
 	if (bConstructionProgressStarted)
 	{
 		constructionCounter += constructionProgressSpeed * workerNumber * DeltaTime;
@@ -71,7 +74,7 @@ void ABuilding::Tick(float DeltaTime)
 				BorderRef->UpdateBorderOwner(EBorderStatus::self);
 				BorderRef = nullptr;
 			}
-			
+
 			bConstructionProgressStarted = false;
 			if (buidlingWorkers.Num())
 			{
@@ -79,7 +82,7 @@ void ABuilding::Tick(float DeltaTime)
 				{
 					worker->StopWorkAnimation();
 					workerNumber = 0;
-					buildingWorkPoints.Empty();
+					buildingMaxWorker = 0;
 					bConstructionIsBuilt = true;
 				}
 			}
@@ -105,6 +108,8 @@ void ABuilding::Tick(float DeltaTime)
 					loc.Y = FMath::FloorToInt(loc.Y / GridCellSize.Y) * GridCellSize.Y;
 					loc.Z += 100.f;
 					SetActorLocation(loc);
+					//FRotator rot = UKismetMathLibrary::MakeRotFromZX(Hit.ImpactPoint,GetActorForwardVector());
+					//SetActorRotation(rot);
 					ValidateBuildLocation(loc);
 
 				}
@@ -151,7 +156,12 @@ void ABuilding::Tick(float DeltaTime)
 								BorderRef->borderStatus = EBorderStatus::self;
 								BorderRef->bBorderHasCityCenter = true;
 							}
-
+							if(valoriaCam->PlayerTemp)
+							{
+								valoriaCam->PlayerTemp->MoveToLocation(this->GetActorLocation(),true,this,nullptr);
+								valoriaCam->PlayerTemp = nullptr;
+							}
+							
 						}
 					}
 				}

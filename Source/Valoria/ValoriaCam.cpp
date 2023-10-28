@@ -124,7 +124,7 @@ void AValoriaCam::Tick(float DeltaTime)
 			{
 				if (buildingBannerRef->buildingRelated)
 				{
-					//buildingBannerRef->buildingRelated->SetActorLocation(bannerLoc);
+
 				}
 			}
 
@@ -337,9 +337,37 @@ void AValoriaCam::OnSelectStarted()
 			if (!bMarqueeSelected)
 			{
 				BP_ConstructionHUD(true, 0);
-				AValoriaCharacter* PlayerTemp = Cast<AValoriaCharacter>(Hit.GetActor());
+				PlayerTemp = Cast<AValoriaCharacter>(Hit.GetActor());
 				if (PlayerTemp)
 				{
+			/*		if (PlayerTemp->GetIsStartedWork())
+					{
+						bCanMarqueeMove = false;
+						PlayerTemp->SetSelectionNiagaraVisibility(true);
+						PlayerTemp->SetCheckForStartWork(false);
+						PlayerTemp->SetOverlayWidgetVisibility(true);
+						if (PlayerTemp->GetIsStartedWork())
+						{
+							GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, FString::FromInt(buildingRef->buildingWorkPointsIndex));
+							PlayerTemp->StopWorkAnimation();
+
+							if (PlayerTemp->buildingRef && buildingRef && buildingRef->buildingWorkPointsIndex > 0 && PlayerTemp->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
+							{
+								PlayerTemp->buildingRef->buildingWorkPointsIndex--;
+								PlayerTemp->buildingRef->workerNumber--;
+								PlayerTemp->buildingRef->buidlingWorkers.Remove(PlayerTemp);
+								if (PlayerTemp->buildingRef->buildingWorkPointsIndex < 0)
+								{
+									PlayerTemp->buildingRef->buildingWorkPointsIndex = 0;
+									PlayerTemp->buildingRef->workerNumber = 0;
+									PlayerTemp->buildingRef->buidlingWorkers.Empty();
+									bIsPlayerSelected = true;
+								}
+								PlayerTemp->buildingRef = nullptr;
+							}
+						}
+					}*/
+
 					if (!players.Contains(PlayerTemp))
 					{
 						bCanMarqueeMove = false;
@@ -347,14 +375,16 @@ void AValoriaCam::OnSelectStarted()
 						players[0]->SetSelectionNiagaraVisibility(true);
 						players[0]->SetCheckForStartWork(false);
 						players[0]->SetOverlayWidgetVisibility(true);
+
 						if (players[0]->GetIsStartedWork())
 						{
 							//if (buildingRef == nullptr)return;
 							players[0]->StopWorkAnimation();
-							if (players[0]->buildingRef && players[0]->GetIsStartedWork() && buildingRef && buildingRef->buildingWorkPointsIndex > 0 && players[0]->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
+							if (players[0]->buildingRef && players[0]->GetIsStartedWork() && buildingRef && players[0]->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
 							{
 								players[0]->buildingRef->buildingWorkPointsIndex--;
 								players[0]->buildingRef->workerNumber--;
+								GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Orange, FString::FromInt(players[0]->buildingRef->workerNumber));
 								players[0]->buildingRef->buidlingWorkers.Remove(players[0]);
 								if (players[0]->buildingRef->buildingWorkPointsIndex < 0)
 								{
@@ -441,13 +471,14 @@ void AValoriaCam::OnSelectStarted()
 							buildingBannerRef = GetWorld()->SpawnActor<ABuildingBanner>(buildingBannerToSpawn, building->GetActorLocation(), building->GetActorRotation());
 							if (buildingBannerRef)
 							{
-								bAdjustingBanner = true;
-								bMovingBanner = true;
+								FVector bannerLoc = building->flagStarterPoint->GetComponentLocation();
+								bannerLoc.Z += 100.f;
 								building->bBuildingHasBanner = true;
 								AllBanners.Add(buildingBannerRef);
-								bCanAdjustBuildingBannerPosition = true;
 								building->buildingBannerRelated = buildingBannerRef;
 								buildingBannerRef->buildingRelated = building;
+								buildingBannerRef->SetActorLocation(bannerLoc);
+								building->bannerLocation = bannerLoc;
 							}
 						}
 					}
@@ -755,7 +786,6 @@ void AValoriaCam::SpawnConstruction(int32 constructionID)
 			if (buildingRef)
 			{
 				buildingRef->SetIsBuildingSpawned(true);
-
 			}
 		}
 		break;
@@ -769,7 +799,7 @@ void AValoriaCam::SpawnConstruction(int32 constructionID)
 			}
 		}
 		break;
-		case 2:
+	case 2:
 		if (BarracksToSpawn)
 		{
 			buildingRef = GetWorld()->SpawnActor<ABuilding>(BarracksToSpawn, GetActorLocation(), FRotator(0.f), spawnParameters);

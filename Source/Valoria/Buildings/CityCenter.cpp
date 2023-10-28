@@ -19,10 +19,14 @@ ACityCenter::ACityCenter()
 
 void ACityCenter::BeginPlay()
 {
-	if (!bIsStarterCityCenter)
+	Super::BeginPlay();
+	if (bIsStarterCityCenter)
 	{
-		Super::BeginPlay();
+		constructionCounter = constrcutionFinishValue;
+		BuildingMesh->SetMaterial(0,buildingMat);
 	}
+	
+	
 
 }
 

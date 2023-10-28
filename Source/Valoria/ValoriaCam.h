@@ -78,6 +78,9 @@ public:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	ABuilding* resourceRef;
 
+	UPROPERTY()
+	AValoriaCharacter* PlayerTemp ;
+
 
 	// blueprint callable functions
 

@@ -85,7 +85,6 @@ void AValoriaCharacter::Tick(float DeltaSeconds)
 		RotateToBuilding(DeltaSeconds);
 		RotateToResource(DeltaSeconds);
 	}
-	
 }
 
 void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuilding* building, AResourceMaster* resource)
@@ -94,13 +93,8 @@ void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuildin
 	if (building)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Try to work on Buidling"));
-		if (!building->bConstructionIsBuilt && building->buildingWorkPointsIndex < building->buildingWorkPoints.Num())
+		if (!building->bConstructionIsBuilt && building->buildingWorkPointsIndex < building->buildingMaxWorker)
 		{
-			//GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Orange, FString::FromInt(building->buildingWorkPointsIndex));
-			/*locationToWork = building->buildingWorkPoints[building->buildingWorkPointsIndex];
-			locationToWork.X += building->GetActorLocation().X;
-			locationToWork.Y += building->GetActorLocation().Y;
-			locationToWork.Z = 116.f;*/
 			locationToWork = building->GetActorLocation();
 		}
 		else
@@ -116,11 +110,6 @@ void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuildin
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Try to work on Resource "));
 		if (resource->buildingWorkPointsIndex < resource->buildingWorkPoints.Num())
 		{
-			//GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Green, FString::FromInt(resource->buildingWorkPointsIndex));
-			/*locationToWork = resource->buildingWorkPoints[resource->buildingWorkPointsIndex];
-			locationToWork.X += resource->GetActorLocation().X;
-			locationToWork.Y += resource->GetActorLocation().Y;
-			locationToWork.Z = 116.f;*/
 			locationToWork = resource->GetActorLocation();
 		}
 		else
@@ -210,7 +199,7 @@ void AValoriaCharacter::StartBuilding()
 	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("start Building!!!"));
 	float distance = buildingRef->GetDistanceTo(this);
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
-	if (buildingRef && buildingRef->buildingWorkPointsIndex < buildingRef->buildingWorkPoints.Num() && distance <= buildingRef->GetWorkersStartWorkDistance())
+	if (buildingRef && buildingRef->buildingWorkPointsIndex < buildingRef->buildingMaxWorker && distance <= buildingRef->GetWorkersStartWorkDistance())
 	{
 		if (animInstance && BuildingAnimation)
 		{
@@ -218,6 +207,7 @@ void AValoriaCharacter::StartBuilding()
 			buildingRef->bConstructionProgressStarted = true;
 			bIsStartedWork = true;
 			buildingRef->buildingWorkPointsIndex++;
+			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, FString::FromInt(buildingRef->buildingWorkPointsIndex));
 			buildingRef->workerNumber++;
 			buildingRef->buidlingWorkers.Add(this);
 			bCanCheckForStartWork = false;

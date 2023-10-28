@@ -28,15 +28,8 @@ class VALORIA_API ABuilding : public AActor
 	GENERATED_BODY()
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
-	class UStaticMeshComponent* BuildingMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
-	USceneComponent* WorkerPoint1;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
-	USceneComponent* WorkerPoint2;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
-	USceneComponent* WorkerPoint3;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* Widget;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
@@ -51,19 +44,12 @@ private:
 	UStaticMesh* level3Mesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
-	UMaterial* buildingMat;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	UMaterial* buildingGreenMat;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	UMaterial* buildingRedMat;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float constrcutionFinishValue = 10000.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float constructionCounter{0};
 
 	
 
@@ -75,7 +61,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
-	TArray<FVector>buildingWorkPoints;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* flagStarterPoint;
+
+	int32 buildingMaxWorker{3};
 	int32 buildingWorkPointsIndex;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details)
 	int32 workerNumber{0};
@@ -94,6 +83,18 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	void ValidateBuildLocation(FVector loc);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent* BuildingMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	UMaterial* buildingMat;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	float constrcutionFinishValue = 10000.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	float constructionCounter{0};
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Details, meta = (AllowPrivateAccess = "true"))
