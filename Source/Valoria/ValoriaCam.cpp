@@ -12,6 +12,7 @@
 #include "ValoriaPlayerController.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Buildings/Building.h"
+#include "Characters/ValoriaInfantry.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "HUD/ValoriaHUD.h"
@@ -336,7 +337,7 @@ void AValoriaCam::OnSelectStarted()
 			DeselectAllCharacters();
 			if (!bMarqueeSelected)
 			{
-				BP_ConstructionHUD(true, 0);
+				BP_ConstructionHUD(true, 0, nullptr);
 				PlayerTemp = Cast<AValoriaCharacter>(Hit.GetActor());
 				if (PlayerTemp)
 				{
@@ -431,7 +432,7 @@ void AValoriaCam::OnSelectStarted()
 				if (building->GetBuildingType() == EBuildingType::Barracks)
 				{
 					GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Yellow, TEXT("Building selected"));
-					BP_ConstructionHUD(true, 1);
+					BP_ConstructionHUD(true, 1, buildingRef);
 					building->GetBuildingMesh()->SetRenderCustomDepth(true);
 					building->SetIsBuildingSelected(true);
 					// spawning Banner
@@ -482,7 +483,7 @@ void AValoriaCam::OnSelectStarted()
 			}
 			else
 			{
-				BP_ConstructionHUD(false, 0);
+				BP_ConstructionHUD(false, 0, nullptr);
 			}
 
 		}
@@ -541,7 +542,7 @@ void AValoriaCam::OnSelectStarted()
 				}
 			}
 
-			BP_ConstructionHUD(false, 0);
+			BP_ConstructionHUD(false, 0, nullptr);
 		}
 	}
 }
@@ -786,6 +787,8 @@ void AValoriaCam::SpawnConstruction(int32 constructionID)
 	}
 }
 
+
+
 void AValoriaCam::UpdateWood(bool plus, int32 amount)
 {
 	if (plus)
@@ -831,6 +834,29 @@ void AValoriaCam::UpdateScience(bool plus, int32 amount)
 	else
 	{
 		science -= amount;
+	}
+}
+
+void AValoriaCam::SpawnSoldier(int32 soldierCode, ABuilding* building)
+{
+	if (building == nullptr)return;
+	switch (soldierCode)
+	{
+	case 1:
+
+		break;
+	case 2:
+		if (valoriaSwordSoldierToSpawn && GetWorld())
+		{
+			AValoriaInfantry* valoriaInfantry = GetWorld()->SpawnActor<AValoriaInfantry>(valoriaSwordSoldierToSpawn, building->characterStarterPoint->GetComponentLocation(), building->GetActorRotation());
+			if (valoriaInfantry)
+			{
+				valoriaInfantry->MoveToLocation(building->bannerLocation, false, nullptr, nullptr);
+			}
+		}
+		break;
+	default:
+		break;
 	}
 }
 

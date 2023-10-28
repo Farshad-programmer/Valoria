@@ -83,7 +83,6 @@ private:
 	bool bCanRotateToBuilding{true};
 
 
-	void ResetWorker();
 
 
 protected:

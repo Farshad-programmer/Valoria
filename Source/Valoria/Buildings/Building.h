@@ -62,8 +62,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details)
 	USceneComponent* flagStarterPoint;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details)
+	USceneComponent* characterStarterPoint;
 
 	int32 buildingMaxWorker{3};
 	int32 buildingWorkPointsIndex;

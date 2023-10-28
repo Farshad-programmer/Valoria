@@ -64,6 +64,8 @@ AValoriaCharacter::AValoriaCharacter()
 	PrimaryActorTick.bStartWithTickEnabled = true;
 }
 
+
+
 void AValoriaCharacter::BeginPlay()
 {
 	Super::BeginPlay();

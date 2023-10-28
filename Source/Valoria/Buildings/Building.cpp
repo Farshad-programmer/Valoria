@@ -22,9 +22,10 @@ ABuilding::ABuilding()
 	Widget->SetupAttachment(BuildingMesh);
 	box = CreateDefaultSubobject<UBoxComponent>(TEXT("box"));
 	box->SetupAttachment(BuildingMesh);
-	flagStarterPoint = CreateDefaultSubobject<USceneComponent>(TEXT("WorkerPoint1"));
+	flagStarterPoint = CreateDefaultSubobject<USceneComponent>(TEXT("flag Starter Point"));
 	flagStarterPoint->SetupAttachment(BuildingMesh);
-
+	characterStarterPoint = CreateDefaultSubobject<USceneComponent>(TEXT("character Starter Point"));
+	characterStarterPoint->SetupAttachment(BuildingMesh);
 
 
 	if (flagStarterPoint)

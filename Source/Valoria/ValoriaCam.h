@@ -13,6 +13,7 @@ class AValoriaPlayerController;
 class AValoriaHUD;
 class ABuilding;
 class ABuildingBanner;
+class AValoriaInfantry;
 UCLASS()
 class VALORIA_API AValoriaCam : public APawn
 {
@@ -67,6 +68,8 @@ public:
 	TSubclassOf<ABuilding> BarracksToSpawn;
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Spawning)
 	TSubclassOf<ABuildingBanner> buildingBannerToSpawn;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Spawning)
+	TSubclassOf<AValoriaInfantry> valoriaSwordSoldierToSpawn;
 
 	void DeselectAllCharacters();
 	bool IsAllNewWorkersStartedWork(TArray<AValoriaCharacter*> workers);
@@ -87,9 +90,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SpawnConstruction(int32 constructionID);
 
+	UFUNCTION(BlueprintCallable)
+	void SpawnSoldier(int32 soldierCode,ABuilding* building);
+
 	// blueprint implement event functions
 	UFUNCTION(BlueprintImplementableEvent)
-	void BP_ConstructionHUD(bool active,int constructNum);
+	void BP_ConstructionHUD(bool active,int constructNum,ABuilding* building);
 	//constructNum => 0:building 1:Barracks
 
 	void UpdateWood(bool plus,int32 amount);
