@@ -13,7 +13,7 @@ ACityCenter::ACityCenter()
 	gold = 20;
 	science = 0;
 
-	buildingType = EBuildingType::house;
+	buildingType = EBuildingType::CityCenter;
 }
 
 

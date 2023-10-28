@@ -340,34 +340,6 @@ void AValoriaCam::OnSelectStarted()
 				PlayerTemp = Cast<AValoriaCharacter>(Hit.GetActor());
 				if (PlayerTemp)
 				{
-			/*		if (PlayerTemp->GetIsStartedWork())
-					{
-						bCanMarqueeMove = false;
-						PlayerTemp->SetSelectionNiagaraVisibility(true);
-						PlayerTemp->SetCheckForStartWork(false);
-						PlayerTemp->SetOverlayWidgetVisibility(true);
-						if (PlayerTemp->GetIsStartedWork())
-						{
-							GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, FString::FromInt(buildingRef->buildingWorkPointsIndex));
-							PlayerTemp->StopWorkAnimation();
-
-							if (PlayerTemp->buildingRef && buildingRef && buildingRef->buildingWorkPointsIndex > 0 && PlayerTemp->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
-							{
-								PlayerTemp->buildingRef->buildingWorkPointsIndex--;
-								PlayerTemp->buildingRef->workerNumber--;
-								PlayerTemp->buildingRef->buidlingWorkers.Remove(PlayerTemp);
-								if (PlayerTemp->buildingRef->buildingWorkPointsIndex < 0)
-								{
-									PlayerTemp->buildingRef->buildingWorkPointsIndex = 0;
-									PlayerTemp->buildingRef->workerNumber = 0;
-									PlayerTemp->buildingRef->buidlingWorkers.Empty();
-									bIsPlayerSelected = true;
-								}
-								PlayerTemp->buildingRef = nullptr;
-							}
-						}
-					}*/
-
 					if (!players.Contains(PlayerTemp))
 					{
 						bCanMarqueeMove = false;
@@ -378,7 +350,6 @@ void AValoriaCam::OnSelectStarted()
 
 						if (players[0]->GetIsStartedWork())
 						{
-							//if (buildingRef == nullptr)return;
 							players[0]->StopWorkAnimation();
 							if (players[0]->buildingRef && players[0]->GetIsStartedWork() && buildingRef && players[0]->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
 							{

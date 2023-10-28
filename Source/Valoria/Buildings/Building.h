@@ -22,6 +22,7 @@ class UStaticMesh;
 class ABuildingBanner;
 class UBoxComponent;
 class AMapBorder;
+class AValoriaWorker;
 UCLASS()
 class VALORIA_API ABuilding : public AActor
 {

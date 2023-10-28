@@ -4,19 +4,14 @@
 #include "ValoriaCam.h"
 
 #include "AIController.h"
-#include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Materials/Material.h"
-#include "Engine/World.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "NiagaraComponent.h"
 #include "Buildings/Building.h"
-#include "Engine/TargetPoint.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "NavigationSystem.h"
@@ -81,7 +76,6 @@ void AValoriaCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	if (bCanCheckForStartWork)
 	{
-		CheckCharacterDistanceWithBuilding();
 		RotateToBuilding(DeltaSeconds);
 		RotateToResource(DeltaSeconds);
 	}
@@ -161,107 +155,26 @@ void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuildin
 
 }
 
-
-void AValoriaCharacter::CheckCharacterDistanceWithBuilding()
+void AValoriaCharacter::RotateToBuilding(float deltaTime)
 {
-	if (buildingRef)
-	{
-		float distance = buildingRef->GetDistanceTo(this);
-		//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::FromInt(distance));
-		if (distance <= buildingRef->GetWorkersStartWorkDistance())
-		{
-			StartBuilding();
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Red, TEXT("distance  > GetWorkersStartWorkDistance"));
-		}
-	}
-	if (resourceRef)
-	{
-		float distance = resourceRef->GetDistanceTo(this);
-		//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::FromInt(distance));
-		if (distance <= resourceRef->GetWorkersStartWorkDistance())
-		{
-			StartWork();
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Orange, TEXT("distance  > GetWorkersStartWorkDistance"));
-		}
-	}
+	if (buildingRef == nullptr || !bCanRotateToBuilding)return;
 
+	FRotator actorRotation = GetActorRotation();
+	FVector actorLocation = GetActorLocation();
+	FRotator FindLookAtRotationOutput = UKismetMathLibrary::FindLookAtRotation(actorLocation, buildingRef->GetActorLocation());
+	FRotator RInterpToOutput = FMath::RInterpTo(actorRotation, FindLookAtRotationOutput, deltaTime, 15.f);
+	SetActorRotation(FRotator(0.f, FindLookAtRotationOutput.Yaw, 0.f));
 }
 
-void AValoriaCharacter::StartBuilding()
+void AValoriaCharacter::RotateToResource(float deltaTime)
 {
-	GetCharacterMovement()->StopMovementImmediately();
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("start Building!!!"));
-	float distance = buildingRef->GetDistanceTo(this);
-	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
-	if (buildingRef && buildingRef->buildingWorkPointsIndex < buildingRef->buildingMaxWorker && distance <= buildingRef->GetWorkersStartWorkDistance())
-	{
-		if (animInstance && BuildingAnimation)
-		{
-			animInstance->Montage_Play(BuildingAnimation, 1.f);
-			buildingRef->bConstructionProgressStarted = true;
-			bIsStartedWork = true;
-			buildingRef->buildingWorkPointsIndex++;
-			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, FString::FromInt(buildingRef->buildingWorkPointsIndex));
-			buildingRef->workerNumber++;
-			buildingRef->buidlingWorkers.Add(this);
-			bCanCheckForStartWork = false;
-			if (GetMesh())
-			{
-				GetMesh()->SetRenderCustomDepth(true);
-			}
-		}
+	if (resourceRef == nullptr || !bCanRotateToBuilding)return;
 
-	}
-	AValoriaCam* valoriaCam = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this, 0));
-	if (valoriaCam)
-	{
-		if (valoriaCam->IsAllNewWorkersStartedWork(valoriaCam->players))
-		{
-			valoriaCam->DeselectAllCharacters();
-		}
-	}
-}
-
-void AValoriaCharacter::StartWork()
-{
-	GetCharacterMovement()->StopMovementImmediately();
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("start to work"));
-
-	float distance = resourceRef->GetDistanceTo(this);
-	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
-	//GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Yellow, FString::FromInt(resourceRef->buildingWorkPoints.Num()));
-	if (resourceRef && resourceRef->buildingWorkPointsIndex < resourceRef->buildingWorkPoints.Num() && distance <= resourceRef->GetWorkersStartWorkDistance())
-	{
-		if (animInstance && BuildingAnimation)
-		{
-			animInstance->Montage_Play(BuildingAnimation, 1.f);
-			resourceRef->bWorkProgressStarted = true;
-			bIsStartedWork = true;
-			resourceRef->buildingWorkPointsIndex++;
-			resourceRef->workerNumber++;
-			resourceRef->buidlingWorkers.Add(this);
-			bCanCheckForStartWork = false;
-			if (GetMesh())
-			{
-				GetMesh()->SetRenderCustomDepth(true);
-			}
-		}
-
-	}
-	AValoriaCam* valoriaCam = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this, 0));
-	if (valoriaCam)
-	{
-		if (valoriaCam->IsAllNewWorkersStartedWork(valoriaCam->players))
-		{
-			valoriaCam->DeselectAllCharacters();
-		}
-	}
+	FRotator actorRotation = GetActorRotation();
+	FVector actorLocation = GetActorLocation();
+	FRotator FindLookAtRotationOutput = UKismetMathLibrary::FindLookAtRotation(actorLocation, resourceRef->GetActorLocation());
+	FRotator RInterpToOutput = FMath::RInterpTo(actorRotation, FindLookAtRotationOutput, deltaTime, 15.f);
+	SetActorRotation(FRotator(0.f, FindLookAtRotationOutput.Yaw, 0.f));
 }
 
 
@@ -291,28 +204,3 @@ void AValoriaCharacter::StopWorkAnimation()
 	}
 
 }
-
-void AValoriaCharacter::RotateToBuilding(float deltaTime)
-{
-	if (buildingRef == nullptr || !bCanRotateToBuilding)return;
-
-	FRotator actorRotation = GetActorRotation();
-	FVector actorLocation = GetActorLocation();
-	FRotator FindLookAtRotationOutput = UKismetMathLibrary::FindLookAtRotation(actorLocation, buildingRef->GetActorLocation());
-	FRotator RInterpToOutput = FMath::RInterpTo(actorRotation, FindLookAtRotationOutput, deltaTime, 15.f);
-	SetActorRotation(FRotator(0.f, FindLookAtRotationOutput.Yaw, 0.f));
-}
-
-void AValoriaCharacter::RotateToResource(float deltaTime)
-{
-	if (resourceRef == nullptr || !bCanRotateToBuilding)return;
-
-	FRotator actorRotation = GetActorRotation();
-	FVector actorLocation = GetActorLocation();
-	FRotator FindLookAtRotationOutput = UKismetMathLibrary::FindLookAtRotation(actorLocation, resourceRef->GetActorLocation());
-	FRotator RInterpToOutput = FMath::RInterpTo(actorRotation, FindLookAtRotationOutput, deltaTime, 15.f);
-	SetActorRotation(FRotator(0.f, FindLookAtRotationOutput.Yaw, 0.f));
-}
-
-
-

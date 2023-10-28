@@ -35,9 +35,7 @@ public:
 	AResourceMaster* resourceRef;
 
 	void MoveToLocation(const FVector loc,bool canWork,ABuilding* building = nullptr,AResourceMaster* resource = nullptr);
-	void StartBuilding();
-	void StartWork();
-	void CheckCharacterDistanceWithBuilding();
+
 	void StopWorkAnimation();
 
 
@@ -61,9 +59,6 @@ private:
 	UWidgetComponent* Widget;
 
 
-	// animations
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Animations, meta=(AllowPrivateAccess = "true"))
-	class UAnimMontage* BuildingAnimation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= stat, meta=(AllowPrivateAccess = "true"))
 	float health ;
@@ -74,8 +69,7 @@ private:
 
 	TArray<AActor*> characters;
 
-	bool bCanCheckForStartWork{false};
-	bool bIsStartedWork{false};
+	
 
 	bool bHasProblemToFindDistanceWithBuilding{false};
 	int32 workerIssueCounter {0};
@@ -94,6 +88,16 @@ private:
 
 protected:
 	virtual void BeginPlay() override;
+	bool bIsStartedWork{false};
+	bool bCanCheckForStartWork{false};
+
+	// animations
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Animations, meta=(AllowPrivateAccess = "true"))
+	class UAnimMontage* BuildingAnimation;
+
+	
+
+
 public:
 	FORCEINLINE bool GetIsStartedWork()const {return bIsStartedWork;}
 	FORCEINLINE UWidgetComponent* GetOverlayWidget()const {return Widget;}

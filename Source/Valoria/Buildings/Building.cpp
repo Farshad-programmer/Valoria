@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Valoria/ValoriaCam.h"
 #include "Valoria/ValoriaCharacter.h"
+#include "Valoria/Characters/ValoriaWorker.h"
 #include "Valoria/MapBorder/MapBorder.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -56,7 +57,6 @@ void ABuilding::Tick(float DeltaTime)
 		//GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("%s"),*GetName()));
 	}
 	
-
 
 
 	if (bConstructionProgressStarted)
@@ -212,6 +212,12 @@ void ABuilding::ValidateBuildLocation(FVector loc)
 			}
 
 		}
+		if (buildingType != EBuildingType::CityCenter)
+		{
+			BuildingMesh->SetMaterial(0, buildingRedMat);
+			bCanCheck = false;
+			OverlappingActors.Empty();
+		}
 	}
 	else
 	{
@@ -222,6 +228,7 @@ void ABuilding::ValidateBuildLocation(FVector loc)
 				BuildingMesh->SetMaterial(0, buildingGreenMat);
 			}
 			bCanCheck = true;
+			GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Blue, TEXT("888888888888888888888888"));
 		}
 	}
 }
