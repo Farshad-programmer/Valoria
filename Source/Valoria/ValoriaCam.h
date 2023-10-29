@@ -120,6 +120,12 @@ protected:
 	void OnSetDestinationStarted();
 	void OnSetDestinationReleased();
 
+
+	
+
+
+
+
 private:
 	FVector CachedDestination;
 	FHitResult Hit;

@@ -68,6 +68,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details)
 	USceneComponent* characterStarterPoint;
 
+
+
 	int32 buildingMaxWorker{3};
 	int32 buildingWorkPointsIndex;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details)
@@ -150,7 +152,7 @@ public:
 	FORCEINLINE UStaticMeshComponent* GetBuildingMesh()const {return BuildingMesh;}
 	FORCEINLINE bool GetIsBuildingSpawned()const {return bIsBuildingSpawned;}
 	FORCEINLINE bool GetIsBuildingSelected()const {return bIsBuildingSelected;}
-
+	FORCEINLINE UBoxComponent* GetBox()const {return box;}
 	FORCEINLINE void SetIsBuildingSpawned(bool IsSpawned){bIsBuildingSpawned = IsSpawned;}
 	FORCEINLINE void SetBuildingIsAllowedToBeBuilt(bool canPlace){bBuildingIsAllowedToBeBuilt = canPlace;}
 	FORCEINLINE void SetIsBuildingSelected(bool isSelected){bIsBuildingSelected = isSelected;}

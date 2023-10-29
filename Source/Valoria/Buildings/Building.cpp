@@ -28,6 +28,7 @@ ABuilding::ABuilding()
 	characterStarterPoint->SetupAttachment(BuildingMesh);
 
 
+
 	if (flagStarterPoint)
 	{
 		flagStarterPoint->SetRelativeLocation(FVector(-310.f, 0.f, 0.f));
@@ -136,7 +137,8 @@ void ABuilding::Tick(float DeltaTime)
 					if (valoriaCam->buildingRef)
 					{
 						valoriaCam->SetIsPlacingBuidling(false);
-						BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+						//box->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+						BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 						if (level1Mesh && !bConstructionIsBuilt && constructionCounter <= 0.f)
 						{
 							BuildingMesh->SetStaticMesh(level1Mesh);

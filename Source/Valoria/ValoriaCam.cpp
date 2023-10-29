@@ -13,6 +13,7 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Buildings/Building.h"
 #include "Characters/ValoriaInfantry.h"
+#include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "HUD/ValoriaHUD.h"
@@ -848,6 +849,8 @@ void AValoriaCam::SpawnSoldier(int32 soldierCode, ABuilding* building)
 	case 2:
 		if (valoriaSwordSoldierToSpawn && GetWorld())
 		{
+			FActorSpawnParameters spawnParameters;
+			//spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 			AValoriaInfantry* valoriaInfantry = GetWorld()->SpawnActor<AValoriaInfantry>(valoriaSwordSoldierToSpawn, building->characterStarterPoint->GetComponentLocation(), building->GetActorRotation());
 			if (valoriaInfantry)
 			{
@@ -859,6 +862,8 @@ void AValoriaCam::SpawnSoldier(int32 soldierCode, ABuilding* building)
 		break;
 	}
 }
+
+
 
 
 //GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, FString::Printf(TEXT("Bool: %s"), bMarqueeSelected ? TEXT("true") : TEXT("false")));
