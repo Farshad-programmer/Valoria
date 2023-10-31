@@ -858,6 +858,33 @@ void AValoriaCam::SpawnSoldier(int32 soldierCode, ABuilding* building)
 			}
 		}
 		break;
+	case 3:
+		if (valoriaSpearmanToSpawn && GetWorld())
+		{
+			FActorSpawnParameters spawnParameters;
+			//spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+			AValoriaInfantry* valoriaInfantry = GetWorld()->SpawnActor<AValoriaInfantry>(valoriaSpearmanToSpawn, building->characterStarterPoint->GetComponentLocation(), building->GetActorRotation());
+			if (valoriaInfantry)
+			{
+				valoriaInfantry->MoveToLocation(building->bannerLocation, false, nullptr, nullptr);
+			}
+		}
+		break;
+	case 4:
+
+		break;
+	case 5:
+		if (valoriaCommanderToSpawn && GetWorld())
+		{
+			FActorSpawnParameters spawnParameters;
+			//spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+			AValoriaInfantry* valoriaInfantry = GetWorld()->SpawnActor<AValoriaInfantry>(valoriaCommanderToSpawn, building->characterStarterPoint->GetComponentLocation(), building->GetActorRotation());
+			if (valoriaInfantry)
+			{
+				valoriaInfantry->MoveToLocation(building->bannerLocation, false, nullptr, nullptr);
+			}
+		}
+		break;
 	default:
 		break;
 	}

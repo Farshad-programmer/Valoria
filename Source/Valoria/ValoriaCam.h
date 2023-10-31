@@ -70,6 +70,10 @@ public:
 	TSubclassOf<ABuildingBanner> buildingBannerToSpawn;
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Spawning)
 	TSubclassOf<AValoriaInfantry> valoriaSwordSoldierToSpawn;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Spawning)
+	TSubclassOf<AValoriaInfantry> valoriaSpearmanToSpawn;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Spawning)
+	TSubclassOf<AValoriaInfantry> valoriaCommanderToSpawn;
 
 	void DeselectAllCharacters();
 	bool IsAllNewWorkersStartedWork(TArray<AValoriaCharacter*> workers);
@@ -83,6 +87,7 @@ public:
 
 	UPROPERTY()
 	AValoriaCharacter* PlayerTemp ;
+
 
 
 	// blueprint callable functions
