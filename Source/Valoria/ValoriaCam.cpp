@@ -366,7 +366,10 @@ void AValoriaCam::OnSelectStarted()
 			DeselectAllCharacters();
 			if (!bMarqueeSelected)
 			{
-				BP_ConstructionHUD(true, 0, nullptr);
+				if(Hit.GetActor()->ActorHasTag("Worker"))
+				{
+					BP_ConstructionHUD(true, 0, nullptr);
+				}
 				PlayerTemp = Cast<AValoriaCharacter>(Hit.GetActor());
 				if (PlayerTemp)
 				{
@@ -462,8 +465,6 @@ void AValoriaCam::OnSelectStarted()
 				if (building->GetBuildingType() == EBuildingType::Barracks)
 				{
 					GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Yellow, TEXT("Building selected"));
-					//DeselectAllBuildings();
-					//BP_ConstructionHUD(true, 1, buildingRef);
 					building->BP_ConstructionHUD(true,1,buildingRef);
 					building->GetBuildingMesh()->SetRenderCustomDepth(true);
 					building->SetIsBuildingSelected(true);
@@ -475,6 +476,7 @@ void AValoriaCam::OnSelectStarted()
 							buildingBannerRef = GetWorld()->SpawnActor<ABuildingBanner>(buildingBannerToSpawn, building->GetActorLocation(), building->GetActorRotation());
 							if (buildingBannerRef)
 							{
+								GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Orange, TEXT("New Banner spawned!"));
 								FVector bannerLoc = building->flagStarterPoint->GetComponentLocation();
 								bannerLoc.Z += 100.f;
 								building->bBuildingHasBanner = true;
@@ -488,21 +490,47 @@ void AValoriaCam::OnSelectStarted()
 					}
 					else
 					{
+						GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("building currently has an Banner"));
 						if (GetWorld() && buildingBannerToSpawn)
 						{
+							if(!building)
+							{
+								GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, TEXT("Error ! building NULL"));
+								return;
+							}
+							if(!building->buildingBannerRelated)
+							{
+								building->buildingBannerRelated = buildingBannerRef;
+							}
+
 							if (building && building->buildingBannerRelated)
 							{
 								building->buildingBannerRelated->bBannerAdjusted = true;
 								bCanAdjustBuildingBannerPosition = false;
-								buildingBannerRef = GetWorld()->SpawnActor<ABuildingBanner>(buildingBannerToSpawn, building->GetActorLocation(), building->GetActorRotation());
+								FActorSpawnParameters SpawnParameters;
+								SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+								buildingBannerRef = GetWorld()->SpawnActor<ABuildingBanner>(buildingBannerToSpawn, building->GetActorLocation(), building->GetActorRotation(),SpawnParameters);
 								if (buildingBannerRef)
 								{
+									GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("Banner Matched"));
+									building->buildingBannerRelated = buildingBannerRef;
 									buildingBannerRef->SetActorLocation(building->bannerLocation);
 									AllBanners.Add(buildingBannerRef);
-									building->buildingBannerRelated = buildingBannerRef;
 									buildingBannerRef->buildingRelated = building;
 								}
+								else
+								{
+									GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Red, TEXT("Banner Error Happened"));
+								}
 							}
+							else
+							{
+								GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Red, TEXT(" ERROR building->buildingBannerRelated"));
+							}
+						}
+						else
+						{
+							GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Red, TEXT("buildingBannerToSpawn null ERROR"));
 						}
 
 					}

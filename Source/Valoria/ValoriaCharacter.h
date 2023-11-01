@@ -90,6 +90,7 @@ protected:
 	bool bIsStartedWork{false};
 	bool bCanCheckForStartWork{false};
 
+
 	// animations
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Animations, meta=(AllowPrivateAccess = "true"))
 	class UAnimMontage* BuildingAnimation;
