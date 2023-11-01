@@ -86,6 +86,12 @@ public:
 	ABuildingBanner* buildingBannerRelated;
 
 	FVector bannerLocation;
+
+
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_ConstructionHUD(bool active,int constructNum,ABuilding* building);
+
 protected:
 	virtual void BeginPlay() override;
 	void ValidateBuildLocation(FVector loc);

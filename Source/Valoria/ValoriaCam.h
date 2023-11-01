@@ -78,6 +78,7 @@ public:
 	void DeselectAllCharacters();
 	bool IsAllNewWorkersStartedWork(TArray<AValoriaCharacter*> workers);
 	void DestroyAllBanners();
+	void DeselectAllBuildings();
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	ABuilding* buildingRef;

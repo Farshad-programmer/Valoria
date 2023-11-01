@@ -223,6 +223,33 @@ void AValoriaCam::DestroyAllBanners()
 	}
 }
 
+void AValoriaCam::DeselectAllBuildings()
+{
+	TArray<AActor*>buildingActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABuilding::StaticClass(), buildingActors);
+
+	for (auto buildingActor : buildingActors)
+	{
+		ABuilding* buildingActorCasted = Cast<ABuilding>(buildingActor);
+
+		if (buildingActorCasted && buildingActorCasted->GetBuildingMesh())
+		{
+			if (buildingActorCasted->GetBuildingType() == EBuildingType::Barracks && buildingActorCasted->GetBuildingMesh()->bRenderCustomDepth)
+			{
+				if (buildingBannerRef && !buildingBannerRef->bBannerAdjusted)
+				{
+					buildingActorCasted->GetBuildingMesh()->SetRenderCustomDepth(false);
+					buildingActorCasted->BP_ConstructionHUD(false,0,nullptr);
+				}
+				else
+				{
+					bRunCustomDepthSpecialMode = true;
+				}
+			}
+		}
+	}
+}
+
 void AValoriaCam::OnSelectStarted()
 {
 	/*if (Hit.GetActor())
@@ -332,6 +359,7 @@ void AValoriaCam::OnSelectStarted()
 						{
 							buildingActorCasted->GetBuildingMesh()->SetRenderCustomDepth(false);
 						}
+						buildingActorCasted->BP_ConstructionHUD(false,0,nullptr);
 					}
 				}
 			}
@@ -415,6 +443,7 @@ void AValoriaCam::OnSelectStarted()
 						{
 							buildingActorCasted->GetBuildingMesh()->SetRenderCustomDepth(false);
 						}
+						buildingActorCasted->BP_ConstructionHUD(false,0,nullptr);
 					}
 				}
 			}
@@ -433,7 +462,9 @@ void AValoriaCam::OnSelectStarted()
 				if (building->GetBuildingType() == EBuildingType::Barracks)
 				{
 					GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Yellow, TEXT("Building selected"));
-					BP_ConstructionHUD(true, 1, buildingRef);
+					//DeselectAllBuildings();
+					//BP_ConstructionHUD(true, 1, buildingRef);
+					building->BP_ConstructionHUD(true,1,buildingRef);
 					building->GetBuildingMesh()->SetRenderCustomDepth(true);
 					building->SetIsBuildingSelected(true);
 					// spawning Banner
@@ -499,6 +530,7 @@ void AValoriaCam::OnSelectStarted()
 					player->buildingRef = nullptr;
 				}
 			}
+			DeselectAllBuildings();
 		}
 
 		if (!Hit.GetActor()->ActorHasTag("Player"))
@@ -520,28 +552,7 @@ void AValoriaCam::OnSelectStarted()
 			{
 				bMovingBanner = false;
 			}
-			TArray<AActor*>buildingActors;
-			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABuilding::StaticClass(), buildingActors);
-
-			for (auto buildingActor : buildingActors)
-			{
-				ABuilding* buildingActorCasted = Cast<ABuilding>(buildingActor);
-
-				if (buildingActorCasted && buildingActorCasted->GetBuildingMesh())
-				{
-					if (buildingActorCasted->GetBuildingType() == EBuildingType::Barracks && buildingActorCasted->GetBuildingMesh()->bRenderCustomDepth)
-					{
-						if (buildingBannerRef && !buildingBannerRef->bBannerAdjusted)
-						{
-							buildingActorCasted->GetBuildingMesh()->SetRenderCustomDepth(false);
-						}
-						else
-						{
-							bRunCustomDepthSpecialMode = true;
-						}
-					}
-				}
-			}
+			DeselectAllBuildings();
 
 			BP_ConstructionHUD(false, 0, nullptr);
 		}
