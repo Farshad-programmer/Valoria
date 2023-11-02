@@ -171,16 +171,16 @@ private:
 	bool bCanPlaceBuilding{false};
 	bool bIsPlacingBuidling {false};
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game ,meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game ,meta=(AllowPrivateAccess = "true"))
 	int32 wood {100};
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game ,meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game ,meta=(AllowPrivateAccess = "true"))
 	int32 stone {100};
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game, meta=(AllowPrivateAccess = "true"))
 	int32 gold {50};
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game, meta=(AllowPrivateAccess = "true"))
 	int32 science {20};
 
 public:	
