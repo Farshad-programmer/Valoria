@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "ValoriaGameMode.generated.h"
 
+class AEnemyAI;
 UCLASS(minimalapi)
 class AValoriaGameMode : public AGameModeBase
 {
@@ -13,6 +14,17 @@ class AValoriaGameMode : public AGameModeBase
 
 public:
 	AValoriaGameMode();
+	void BeginPlay() override;
+
+
+
+private:
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game, meta=(AllowPrivateAccess = "true"))
+	int32 numberOfEnemies;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game, meta=(AllowPrivateAccess = "true"))
+	TSubclassOf<AEnemyAI>enemyAIClass;
+	
 };
 
 

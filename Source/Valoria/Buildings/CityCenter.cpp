@@ -17,17 +17,12 @@ ACityCenter::ACityCenter()
 }
 
 
+
 void ACityCenter::BeginPlay()
 {
 	Super::BeginPlay();
-	if (bIsStarterCityCenter)
-	{
-		constructionCounter = constrcutionFinishValue;
-		BuildingMesh->SetMaterial(0,buildingMat);
-	}
+	SetBuildingToStarterBuilding();
 	
-	
-
 }
 
 
@@ -45,4 +40,13 @@ void ACityCenter::Tick(float DeltaTime)
 		}
 	}
 
+}
+
+void ACityCenter::SetBuildingToStarterBuilding()
+{
+	if (bIsStarterCityCenter)
+	{
+		constructionCounter = constrcutionFinishValue;
+		BuildingMesh->SetMaterial(0,buildingMat);
+	}
 }

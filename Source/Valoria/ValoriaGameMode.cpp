@@ -4,6 +4,7 @@
 #include "ValoriaPlayerController.h"
 #include "ValoriaCharacter.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Valoria/AI/EnemyAI.h"
 
 AValoriaGameMode::AValoriaGameMode()
 {
@@ -19,8 +20,25 @@ AValoriaGameMode::AValoriaGameMode()
 
 	// set default controller to our Blueprinted controller
 	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerBPClass(TEXT("/Game/Blueprints/Player/BP_ValoriaPlayerController"));
-	if(PlayerControllerBPClass.Class != NULL)
+	if (PlayerControllerBPClass.Class != NULL)
 	{
 		PlayerControllerClass = PlayerControllerBPClass.Class;
 	}
+
+	numberOfEnemies = 2;
+}
+
+void AValoriaGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	for (int i = 0; i < 2; ++i)
+	{
+		if (GetWorld() && enemyAIClass)
+		{
+			GetWorld()->SpawnActor<AEnemyAI>(enemyAIClass, FVector(0.f), FRotator(0.f));
+		}
+	}
+
+
 }
