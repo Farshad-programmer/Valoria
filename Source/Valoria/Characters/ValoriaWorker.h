@@ -9,6 +9,8 @@
 /**
  * 
  */
+
+class ABarracks;
 UCLASS()
 class VALORIA_API AValoriaWorker : public AValoriaCharacter
 {
@@ -22,8 +24,19 @@ public:
 	void StartBuilding();
 	void StartWork();
 	void CheckCharacterDistanceWithBuilding();
+
+
+	// AI functions
+	void AIMoveToBuildingLocation();
 	
 private:
+
+
+
+
+
+
+	// AI private functions
 
 protected:
 	virtual void BeginPlay() override;

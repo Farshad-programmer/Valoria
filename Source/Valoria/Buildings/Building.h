@@ -92,6 +92,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_ConstructionHUD(bool active,int constructNum,ABuilding* building);
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	UMaterial* buildingMat;
+
+
 protected:
 	virtual void BeginPlay() override;
 	void ValidateBuildLocation(FVector loc);
@@ -99,8 +104,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* BuildingMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
-	UMaterial* buildingMat;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float constrcutionFinishValue = 10000.f;
@@ -159,6 +163,9 @@ public:
 	FORCEINLINE bool GetIsBuildingSpawned()const {return bIsBuildingSpawned;}
 	FORCEINLINE bool GetIsBuildingSelected()const {return bIsBuildingSelected;}
 	FORCEINLINE UBoxComponent* GetBox()const {return box;}
+	FORCEINLINE UStaticMesh* GetLevel1Mesh() const {return level1Mesh;}
+
+
 	FORCEINLINE void SetIsBuildingSpawned(bool IsSpawned){bIsBuildingSpawned = IsSpawned;}
 	FORCEINLINE void SetBuildingIsAllowedToBeBuilt(bool canPlace){bBuildingIsAllowedToBeBuilt = canPlace;}
 	FORCEINLINE void SetIsBuildingSelected(bool isSelected){bIsBuildingSelected = isSelected;}

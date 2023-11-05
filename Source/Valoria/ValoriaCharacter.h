@@ -104,6 +104,8 @@ public:
 
 
 
+
+
 	FORCEINLINE void SetSelectionNiagaraVisibility(bool makeVisible){SelectionNiagara->SetVisibility(makeVisible);}
 	FORCEINLINE void SetCheckForStartWork(bool canCheck){bCanCheckForStartWork = canCheck;}
 	FORCEINLINE void SetIsStartedWork(bool isStarted){bIsStartedWork = isStarted;}

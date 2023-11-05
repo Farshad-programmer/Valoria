@@ -2,6 +2,8 @@
 
 
 #include "ValoriaWorker.h"
+
+#include "AIController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Valoria/ValoriaCam.h"
 #include "Components/CapsuleComponent.h"
@@ -11,7 +13,8 @@
 #include "Valoria/Buildings/Building.h"
 #include "NavigationSystem.h"
 #include "Valoria/Resources/ResourceMaster.h"
-
+#include "Kismet/KismetMathLibrary.h"
+#include "Valoria/Buildings/Barracks.h"
 
 AValoriaWorker::AValoriaWorker()
 {
@@ -21,6 +24,7 @@ AValoriaWorker::AValoriaWorker()
 void AValoriaWorker::BeginPlay()
 {
 	Super::BeginPlay();
+
 }
 
 
@@ -43,6 +47,7 @@ void AValoriaWorker::CheckCharacterDistanceWithBuilding()
 		//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::FromInt(distance));
 		if (distance <= buildingRef->GetWorkersStartWorkDistance())
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Red, TEXT("distance <= buildingRef->GetWorkersStartWorkDistance()"));
 			StartBuilding();
 		}
 		else
@@ -64,6 +69,16 @@ void AValoriaWorker::CheckCharacterDistanceWithBuilding()
 		}
 	}
 
+}
+
+void AValoriaWorker::AIMoveToBuildingLocation()
+{
+	AAIController* DefaultAIController = Cast<AAIController>(GetController());
+	if (DefaultAIController && buildingRef)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Green, TEXT("AIMoveToBuildingLocation"));
+		DefaultAIController->MoveToLocation(buildingRef->GetActorLocation());
+	}
 }
 
 
@@ -139,5 +154,7 @@ void AValoriaWorker::StartWork()
 		}
 	}
 }
+
+
 
 

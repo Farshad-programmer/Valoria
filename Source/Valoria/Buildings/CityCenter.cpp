@@ -44,7 +44,7 @@ void ACityCenter::Tick(float DeltaTime)
 
 void ACityCenter::SetBuildingToStarterBuilding()
 {
-	if (bIsStarterCityCenter)
+	if (bIsStarterCityCenter && BuildingMesh && buildingMat)
 	{
 		constructionCounter = constrcutionFinishValue;
 		BuildingMesh->SetMaterial(0,buildingMat);

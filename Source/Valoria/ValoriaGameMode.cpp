@@ -4,7 +4,7 @@
 #include "ValoriaPlayerController.h"
 #include "ValoriaCharacter.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Valoria/AI/EnemyAI.h"
+#include "Valoria/AI/AValoriaAI.h"
 
 AValoriaGameMode::AValoriaGameMode()
 {
@@ -32,11 +32,15 @@ void AValoriaGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	for (int i = 0; i < 2; ++i)
+	for (int i = 0; i < startingAIBase; ++i)
 	{
 		if (GetWorld() && enemyAIClass)
 		{
-			GetWorld()->SpawnActor<AEnemyAI>(enemyAIClass, FVector(0.f), FRotator(0.f));
+			AValoriaAI* spawnedAI = GetWorld()->SpawnActor<AValoriaAI>(enemyAIClass, FVector(0.f), FRotator(0.f));
+			if (spawnedAI)
+			{
+				spawnedAI->enemyStatus = EEnemyStatus::enemy;
+			}
 		}
 	}
 
