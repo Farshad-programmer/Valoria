@@ -14,6 +14,7 @@
 #include "NavigationSystem.h"
 #include "Valoria/Resources/ResourceMaster.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Valoria/AI/AValoriaAI.h"
 #include "Valoria/Buildings/Barracks.h"
 
 AValoriaWorker::AValoriaWorker()
@@ -71,13 +72,22 @@ void AValoriaWorker::CheckCharacterDistanceWithBuilding()
 
 }
 
-void AValoriaWorker::AIMoveToBuildingLocation()
+void AValoriaWorker::AIMoveToBuildingLocation(AValoriaAI* AIRef)
 {
 	AAIController* DefaultAIController = Cast<AAIController>(GetController());
 	if (DefaultAIController && buildingRef)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Green, TEXT("AIMoveToBuildingLocation"));
+		buildingRef->valoriaAIRef = AIRef;
 		DefaultAIController->MoveToLocation(buildingRef->GetActorLocation());
+		if(buildingRef->valoriaAIRef->enemyStatus == EEnemyStatus::ally)
+		{
+			buildingRef->SetBuildingOwner(EBuildingOwner::ally);
+		}
+		else if(buildingRef->valoriaAIRef->enemyStatus == EEnemyStatus::enemy)
+		{
+			buildingRef->SetBuildingOwner(EBuildingOwner::enemy);
+		}
 	}
 }
 

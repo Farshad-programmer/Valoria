@@ -9,6 +9,7 @@
 #include "Valoria/Buildings/CityCenter.h"
 #include "Valoria/Characters/ValoriaWorker.h"
 #include "Valoria/Buildings/Barracks.h"
+#include "Valoria/Characters/ValoriaInfantry.h"
 
 // Sets default values
 AValoriaAI::AValoriaAI()
@@ -22,6 +23,9 @@ void AValoriaAI::BeginPlay()
 	Super::BeginPlay();
 	TArray<AActor*>mapBordersActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMapBorder::StaticClass(), mapBordersActors);
+
+	GetWorldTimerManager().SetTimer(spawnSoldierTimerHandle,this,&AValoriaAI::SpawnSoldier,5.f,true);
+
 
 	bool bspawning = true;
 	while (bspawning)
@@ -79,6 +83,20 @@ void AValoriaAI::Tick(float DeltaTime)
 }
 
 
+void AValoriaAI::SpawnSoldier()
+{
+	if (bHasBarracks && baseUnit < 30)
+	{
+		if(valoriaInfantryClass && GetWorld())
+		{
+			AValoriaInfantry* spawnedInfantry = GetWorld()->SpawnActor<AValoriaInfantry>(valoriaInfantryClass, barracksLocation[0], FRotator(0.f));
+			if (spawnedInfantry)
+			{
+				baseUnit++;
+			}
+		}
+	}
+}
 
 void AValoriaAI::FindAPlaceForMakingBarracksforAI()
 {
@@ -117,5 +135,5 @@ void AValoriaAI::FindAPlaceForMakingBarracksforAI()
 
 void AValoriaAI::AIMoveToBuilding()
 {
-	Spawnedworker->AIMoveToBuildingLocation();
+	Spawnedworker->AIMoveToBuildingLocation(this);
 }

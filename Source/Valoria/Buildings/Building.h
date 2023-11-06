@@ -14,6 +14,16 @@ enum class EBuildingType:uint8
 	CityCenter
 };
 
+
+UENUM(BlueprintType)
+enum class EBuildingOwner:uint8
+{
+	self,
+	ownerless,
+	ally,
+	enemy
+};
+
 class AValoriaCam;
 class USceneComponent;
 class UWidgetComponent;
@@ -23,6 +33,7 @@ class ABuildingBanner;
 class UBoxComponent;
 class AMapBorder;
 class AValoriaWorker;
+class AValoriaAI;
 UCLASS()
 class VALORIA_API ABuilding : public AActor
 {
@@ -96,6 +107,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	UMaterial* buildingMat;
 
+	UPROPERTY()
+	AValoriaAI* valoriaAIRef;
 
 protected:
 	virtual void BeginPlay() override;
@@ -149,6 +162,7 @@ protected:
 	int32 science;
 
 	EBuildingType buildingType;
+	EBuildingOwner buildingOwner;
 public:
 
 	FORCEINLINE bool GetBuildingIsAllowedToBeBuilt()const {return bBuildingIsAllowedToBeBuilt;}
@@ -169,4 +183,5 @@ public:
 	FORCEINLINE void SetIsBuildingSpawned(bool IsSpawned){bIsBuildingSpawned = IsSpawned;}
 	FORCEINLINE void SetBuildingIsAllowedToBeBuilt(bool canPlace){bBuildingIsAllowedToBeBuilt = canPlace;}
 	FORCEINLINE void SetIsBuildingSelected(bool isSelected){bIsBuildingSelected = isSelected;}
+	FORCEINLINE void SetBuildingOwner(EBuildingOwner owner){buildingOwner = owner;}
 };

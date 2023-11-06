@@ -11,6 +11,7 @@
  */
 
 class ABarracks;
+class AValoriaAI;
 UCLASS()
 class VALORIA_API AValoriaWorker : public AValoriaCharacter
 {
@@ -27,7 +28,7 @@ public:
 
 
 	// AI functions
-	void AIMoveToBuildingLocation();
+	void AIMoveToBuildingLocation(AValoriaAI* AIRef);
 	
 private:
 

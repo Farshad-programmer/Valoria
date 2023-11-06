@@ -11,6 +11,7 @@
 #include "Valoria/Characters/ValoriaWorker.h"
 #include "Valoria/MapBorder/MapBorder.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Valoria/AI/AValoriaAI.h"
 
 // Sets default values
 ABuilding::ABuilding()
@@ -78,6 +79,11 @@ void ABuilding::Tick(float DeltaTime)
 			}
 
 			bConstructionProgressStarted = false;
+			if (valoriaAIRef && buildingOwner != EBuildingOwner::self)
+			{
+				valoriaAIRef->bHasBarracks = true;
+				valoriaAIRef->barracksLocation.Add(this->GetActorLocation() + FVector(500.f,500.f,500.f));
+			}
 			if (buidlingWorkers.Num())
 			{
 				for (auto worker : buidlingWorkers)
