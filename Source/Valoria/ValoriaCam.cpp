@@ -98,6 +98,10 @@ void AValoriaCam::Tick(float DeltaTime)
 						playerController->CurrentMouseCursor = EMouseCursor::Default;
 					}
 				}
+				else if(checkCoursorHit.GetActor()->ActorHasTag("AI"))
+				{
+					playerController->CurrentMouseCursor = EMouseCursor::Hand;
+				}
 				else
 				{
 					playerController->CurrentMouseCursor = EMouseCursor::Default;

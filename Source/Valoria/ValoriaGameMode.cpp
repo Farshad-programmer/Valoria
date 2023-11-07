@@ -39,7 +39,7 @@ void AValoriaGameMode::BeginPlay()
 			AValoriaAI* spawnedAI = GetWorld()->SpawnActor<AValoriaAI>(enemyAIClass, FVector(0.f), FRotator(0.f));
 			if (spawnedAI)
 			{
-				spawnedAI->enemyStatus = EEnemyStatus::enemy;
+				spawnedAI->enemyStatus = EAIStatus::enemy;
 			}
 		}
 	}

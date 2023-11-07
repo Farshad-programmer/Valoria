@@ -80,11 +80,11 @@ void AValoriaWorker::AIMoveToBuildingLocation(AValoriaAI* AIRef)
 		GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Green, TEXT("AIMoveToBuildingLocation"));
 		buildingRef->valoriaAIRef = AIRef;
 		DefaultAIController->MoveToLocation(buildingRef->GetActorLocation());
-		if(buildingRef->valoriaAIRef->enemyStatus == EEnemyStatus::ally)
+		if(buildingRef->valoriaAIRef->enemyStatus == EAIStatus::ally)
 		{
 			buildingRef->SetBuildingOwner(EBuildingOwner::ally);
 		}
-		else if(buildingRef->valoriaAIRef->enemyStatus == EEnemyStatus::enemy)
+		else if(buildingRef->valoriaAIRef->enemyStatus == EAIStatus::enemy)
 		{
 			buildingRef->SetBuildingOwner(EBuildingOwner::enemy);
 		}

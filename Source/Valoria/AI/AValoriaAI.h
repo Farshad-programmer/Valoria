@@ -12,9 +12,10 @@ class ABarracks;
 class AMapBorder;
 class AValoriaInfantry;
 UENUM(BlueprintType)
-enum class EEnemyStatus:uint8
+enum class EAIStatus:uint8
 {
 	ally,
+	neutral,
 	enemy
 };
 
@@ -28,7 +29,7 @@ public:
 	AValoriaAI();
 
 
-	EEnemyStatus enemyStatus;
+	EAIStatus enemyStatus;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
 	TSubclassOf<ABarracks> barracksClass;
@@ -51,6 +52,15 @@ private:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
 	TSubclassOf<AValoriaInfantry> valoriaInfantryClass;
+
+
+	uint32 wood {100};
+	uint32 stone {100};
+	uint32 gold {50};
+	uint32 science {20};
+
+
+
 
 	FVector AIBaseCenterLocation ;
 
