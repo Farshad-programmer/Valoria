@@ -17,6 +17,8 @@
 #include "NavigationSystem.h"
 #include "Valoria/Resources/ResourceMaster.h"
 #include "Components/WidgetComponent.h"
+#include "Animation/AnimMontage.h"
+#include "Components/BoxComponent.h"
 
 AValoriaCharacter::AValoriaCharacter()
 {
@@ -46,6 +48,10 @@ AValoriaCharacter::AValoriaCharacter()
 	Weapon->SetupAttachment(GetMesh(), "RightHandWeaponSocket");
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	WeaponCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("Weapon Collider"));
+	WeaponCollider->SetupAttachment(GetMesh(), "RightHandWeaponSocket");
+	WeaponCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	// Create a camera...
 	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
 	TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
@@ -71,7 +77,7 @@ void AValoriaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	health = maxHealth;
-
+	WeaponCollider->OnComponentBeginOverlap.AddDynamic(this, &AValoriaCharacter::WeaponBeginOverlap);
 
 }
 
@@ -86,6 +92,7 @@ void AValoriaCharacter::Tick(float DeltaSeconds)
 	if (bCanCheckDistanceWithAI)
 	{
 		CheckCharacterDistanceWithAI();
+		//RotateToEnemy(DeltaSeconds);
 	}
 }
 
@@ -197,6 +204,17 @@ void AValoriaCharacter::RotateToResource(float deltaTime)
 	SetActorRotation(FRotator(0.f, FindLookAtRotationOutput.Yaw, 0.f));
 }
 
+void AValoriaCharacter::RotateToEnemy(float deltaTime)
+{
+	if (attacker == nullptr || !bCanRotateToEnemy)return;
+
+	FRotator actorRotation = GetActorRotation();
+	FVector actorLocation = GetActorLocation();
+	FRotator FindLookAtRotationOutput = UKismetMathLibrary::FindLookAtRotation(actorLocation, attacker->GetActorLocation());
+	FRotator RInterpToOutput = FMath::RInterpTo(actorRotation, FindLookAtRotationOutput, deltaTime, 15.f);
+	SetActorRotation(FRotator(0.f, FindLookAtRotationOutput.Yaw, 0.f));
+}
+
 
 void AValoriaCharacter::StopWorkAnimation()
 {
@@ -234,7 +252,7 @@ void AValoriaCharacter::CheckCharacterDistanceWithAI()
 		//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::FromInt(distance));
 		if (distance <= 250.f)
 		{
-			bCanCheckDistanceWithAI = false;
+			//bCanCheckDistanceWithAI = false;
 			GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Yellow, TEXT("the player is near of the enemy"));
 			Attack();
 		}
@@ -247,5 +265,67 @@ void AValoriaCharacter::CheckCharacterDistanceWithAI()
 
 void AValoriaCharacter::Attack()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Red, TEXT("Attack started"));
+	AValoriaCharacter* AItoKill = Cast<AValoriaCharacter>(AIToAttackRef);
+	if (attackAnimationMontage && AItoKill)
+	{
+		UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+		if (animInstance)
+		{
+			if (AItoKill->health > 0 && !bIsAttacking && !animInstance->IsAnyMontagePlaying())
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("Attacking"));
+				bIsAttacking = true;
+				animInstance->Montage_Play(attackAnimationMontage);
+			}
+		}
+	}
+}
+
+void AValoriaCharacter::WeaponBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != this && OtherActor->ActorHasTag("AI"))
+	{
+		AValoriaCharacter* overlapedCharacter = Cast<AValoriaCharacter>(OtherActor);
+		if (overlapedCharacter)
+		{
+			UGameplayStatics::ApplyDamage(overlapedCharacter, 50.f, GetController(), this, UDamageType::StaticClass());
+		}
+	}
+}
+
+float AValoriaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+	AController* EventInstigator, AActor* DamageCauser)
+{
+	attacker = Cast<AValoriaCharacter>(DamageCauser);
+	bCanRotateToEnemy = true;
+	if (attacker)
+	{
+		bCanCheckDistanceWithAI = true;
+		AIToAttackRef = attacker;
+	}
+
+	float damagedToApplied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	damagedToApplied = FMath::Min(health, damagedToApplied);
+	health -= damagedToApplied;
+	if (health <= 0)
+	{
+		death();
+		health = 0;
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, FString::FromInt(health));
+	return health;
+
+}
+
+void AValoriaCharacter::death()
+{
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	if (animInstance && deathAnimationMontage)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("death"));
+		animInstance->Montage_Play(deathAnimationMontage);
+		Tags.Empty();
+		SetLifeSpan(7.f);
+	}
 }

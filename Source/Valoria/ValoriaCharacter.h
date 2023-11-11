@@ -12,6 +12,8 @@ class UNiagaraComponent;
 class ABuilding;
 class AResourceMaster;
 class UWidgetComponent;
+class UAnimMontage;
+class UBoxComponent;
 UCLASS(Blueprintable)
 class AValoriaCharacter : public ACharacter
 {
@@ -55,8 +57,19 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* Weapon;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* WeaponCollider;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* Widget;
+
+
+	// Animation montages
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation montage", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* attackAnimationMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation montage", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* deathAnimationMontage;
 
 
 
@@ -66,10 +79,13 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= stat, meta=(AllowPrivateAccess = "true"))
 	float maxHealth = 300.f;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
+	bool bIsAttacking{false};
+
 
 	TArray<AActor*> characters;
 
-	
+
 
 	bool bHasProblemToFindDistanceWithBuilding{false};
 	int32 workerIssueCounter {0};
@@ -80,21 +96,36 @@ private:
 	float distanceValue = 400.f;
 	void RotateToBuilding(float deltaTime);
 	void RotateToResource(float deltaTime);
+	void RotateToEnemy(float deltaTime);
 	bool bCanRotateToBuilding{true};
 	bool bCanCheckDistanceWithAI{false};
+	bool bCanRotateToEnemy{false};
 
 	UPROPERTY()
 	AActor* AIToAttackRef;
 
+	UPROPERTY()
+	AValoriaCharacter* attacker;
+
 	void CheckCharacterDistanceWithAI();
 	void Attack();
-	
+
+
+
+
+	UFUNCTION()
+	void WeaponBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	void death();
 
 protected:
 	virtual void BeginPlay() override;
 	bool bIsStartedWork{false};
 	bool bCanCheckForStartWork{false};
 	bool bCanAttack{true};
+	
 
 
 	// animations
@@ -117,5 +148,7 @@ public:
 	FORCEINLINE void SetIsStartedWork(bool isStarted){bIsStartedWork = isStarted;}
 	FORCEINLINE void SetOverlayWidgetVisibility(bool bShow){Widget->SetVisibility(bShow);}
 };
+
+
 
 

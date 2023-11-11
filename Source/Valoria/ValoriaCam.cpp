@@ -721,7 +721,11 @@ void AValoriaCam::OnSetDestinationStarted()
 
 			if (playerController && !bCanPlaceBuilding && !bIsPlacingBuidling)
 			{
-				players[0]->MoveToLocation(Hit.GetActor()->GetActorLocation(), false, nullptr, nullptr,true,Hit.GetActor());
+				for (auto player : players)
+				{
+					player->MoveToLocation(Hit.GetActor()->GetActorLocation(), false, nullptr, nullptr,true,Hit.GetActor());
+				}
+				//players[0]->MoveToLocation(Hit.GetActor()->GetActorLocation(), false, nullptr, nullptr,true,Hit.GetActor());
 			}
 		}
 
