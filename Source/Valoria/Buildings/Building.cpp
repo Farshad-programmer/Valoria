@@ -237,7 +237,6 @@ void ABuilding::ValidateBuildLocation(FVector loc)
 				BuildingMesh->SetMaterial(0, buildingGreenMat);
 			}
 			bCanCheck = true;
-			GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Blue, TEXT("888888888888888888888888"));
 		}
 	}
 }

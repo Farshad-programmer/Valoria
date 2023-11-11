@@ -19,7 +19,7 @@
 
 AValoriaWorker::AValoriaWorker()
 {
-
+	bCanAttack = false;
 }
 
 void AValoriaWorker::BeginPlay()

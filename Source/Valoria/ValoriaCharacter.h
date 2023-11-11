@@ -34,7 +34,7 @@ public:
 	UPROPERTY()
 	AResourceMaster* resourceRef;
 
-	void MoveToLocation(const FVector loc,bool canWork,ABuilding* building = nullptr,AResourceMaster* resource = nullptr);
+	void MoveToLocation(const FVector loc,bool canWork,ABuilding* building = nullptr,AResourceMaster* resource = nullptr,bool canKillAI = false,AActor* AIRef = nullptr);
 
 	void StopWorkAnimation();
 
@@ -81,14 +81,20 @@ private:
 	void RotateToBuilding(float deltaTime);
 	void RotateToResource(float deltaTime);
 	bool bCanRotateToBuilding{true};
+	bool bCanCheckDistanceWithAI{false};
 
+	UPROPERTY()
+	AActor* AIToAttackRef;
 
-
+	void CheckCharacterDistanceWithAI();
+	void Attack();
+	
 
 protected:
 	virtual void BeginPlay() override;
 	bool bIsStartedWork{false};
 	bool bCanCheckForStartWork{false};
+	bool bCanAttack{true};
 
 
 	// animations

@@ -66,10 +66,12 @@ AValoriaCharacter::AValoriaCharacter()
 
 
 
+
 void AValoriaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	health = maxHealth;
+
 
 }
 
@@ -81,21 +83,28 @@ void AValoriaCharacter::Tick(float DeltaSeconds)
 		RotateToBuilding(DeltaSeconds);
 		RotateToResource(DeltaSeconds);
 	}
+	if (bCanCheckDistanceWithAI)
+	{
+		CheckCharacterDistanceWithAI();
+	}
 }
 
-void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuilding* building, AResourceMaster* resource)
+void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuilding* building, AResourceMaster* resource, bool canKillAI, AActor* AIRef)
 {
+
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, FString::Printf(TEXT("canKillAI: %s"), canKillAI ? TEXT("true") : TEXT("false")));
+
 
 	if (building)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Try to work on Buidling"));
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Try to work on Buidling"));
 		if (!building->bConstructionIsBuilt && building->buildingWorkPointsIndex < building->buildingMaxWorker)
 		{
 			locationToWork = building->GetActorLocation();
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("The building currently has enough workers"));
+			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("The building currently has enough workers"));
 			return;
 		}
 	}
@@ -103,14 +112,14 @@ void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuildin
 
 	if (resource)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Try to work on Resource "));
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Try to work on Resource "));
 		if (resource->buildingWorkPointsIndex < resource->buildingWorkPoints.Num())
 		{
 			locationToWork = resource->GetActorLocation();
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("The resource currently has enough workers"));
+			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("The resource currently has enough workers"));
 			return;
 		}
 	}
@@ -127,11 +136,11 @@ void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuildin
 			bCanCheckForStartWork = true;
 			resourceRef = resource;
 		}
-
 	}
 
 
 	tempLocation = loc;
+
 
 
 	AAIController* DefaultAIController = Cast<AAIController>(GetController());
@@ -139,21 +148,30 @@ void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuildin
 	{
 		if (canWork)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("want work"));
+			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("want work"));
 			DefaultAIController->MoveToLocation(locationToWork);
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("location : %s"), *locationToWork.ToString()));
+			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("location : %s"), *locationToWork.ToString()));
 		}
-		else
+		else if (canKillAI && AIRef && bCanAttack)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("just walking"));
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Orange, FString::Printf(TEXT("location : %s"), *loc.ToString()));
+			AIToAttackRef = AIRef;
+			bCanCheckDistanceWithAI = true;
+			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("Ready to Kill Enemy"));
+			DefaultAIController->MoveToLocation(AIRef->GetActorLocation());
+		}
+		else if (!canKillAI)
+		{
+
+			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Orange, FString::Printf(TEXT("location : %s"), *loc.ToString()));
 			FVector finalLocationToMove = loc;
 			finalLocationToMove.X += UKismetMathLibrary::RandomFloatInRange(20.f, 700.f);
 			finalLocationToMove.Y += UKismetMathLibrary::RandomFloatInRange(20.f, 700.f);
 			DefaultAIController->MoveToLocation(finalLocationToMove);
-		}
 
+		}
 	}
+
+
 
 }
 
@@ -205,4 +223,29 @@ void AValoriaCharacter::StopWorkAnimation()
 		}
 	}
 
+}
+
+
+void AValoriaCharacter::CheckCharacterDistanceWithAI()
+{
+	if (AIToAttackRef)
+	{
+		float distance = AIToAttackRef->GetDistanceTo(this);
+		//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::FromInt(distance));
+		if (distance <= 250.f)
+		{
+			bCanCheckDistanceWithAI = false;
+			GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Yellow, TEXT("the player is near of the enemy"));
+			Attack();
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Yellow, TEXT("the player is far away from Enemy"));
+		}
+	}
+}
+
+void AValoriaCharacter::Attack()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Red, TEXT("Attack started"));
 }

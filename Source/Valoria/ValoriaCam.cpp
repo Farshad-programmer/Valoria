@@ -98,9 +98,16 @@ void AValoriaCam::Tick(float DeltaTime)
 						playerController->CurrentMouseCursor = EMouseCursor::Default;
 					}
 				}
-				else if(checkCoursorHit.GetActor()->ActorHasTag("AI"))
+				else if (checkCoursorHit.GetActor()->ActorHasTag("AI"))
 				{
-					playerController->CurrentMouseCursor = EMouseCursor::Hand;
+					if (bIsPlayerSelected || bMarqueeSelected)
+					{
+						playerController->CurrentMouseCursor = EMouseCursor::Hand;
+					}
+					else
+					{
+						playerController->CurrentMouseCursor = EMouseCursor::Default;
+					}
 				}
 				else
 				{
@@ -243,7 +250,7 @@ void AValoriaCam::DeselectAllBuildings()
 				if (buildingBannerRef && !buildingBannerRef->bBannerAdjusted)
 				{
 					buildingActorCasted->GetBuildingMesh()->SetRenderCustomDepth(false);
-					buildingActorCasted->BP_ConstructionHUD(false,0,nullptr);
+					buildingActorCasted->BP_ConstructionHUD(false, 0, nullptr);
 				}
 				else
 				{
@@ -363,14 +370,14 @@ void AValoriaCam::OnSelectStarted()
 						{
 							buildingActorCasted->GetBuildingMesh()->SetRenderCustomDepth(false);
 						}
-						buildingActorCasted->BP_ConstructionHUD(false,0,nullptr);
+						buildingActorCasted->BP_ConstructionHUD(false, 0, nullptr);
 					}
 				}
 			}
 			DeselectAllCharacters();
 			if (!bMarqueeSelected)
 			{
-				if(Hit.GetActor()->ActorHasTag("Worker"))
+				if (Hit.GetActor()->ActorHasTag("Worker"))
 				{
 					BP_ConstructionHUD(true, 0, nullptr);
 				}
@@ -450,7 +457,7 @@ void AValoriaCam::OnSelectStarted()
 						{
 							buildingActorCasted->GetBuildingMesh()->SetRenderCustomDepth(false);
 						}
-						buildingActorCasted->BP_ConstructionHUD(false,0,nullptr);
+						buildingActorCasted->BP_ConstructionHUD(false, 0, nullptr);
 					}
 				}
 			}
@@ -469,7 +476,7 @@ void AValoriaCam::OnSelectStarted()
 				if (building->GetBuildingType() == EBuildingType::Barracks)
 				{
 					GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Yellow, TEXT("Building selected"));
-					building->BP_ConstructionHUD(true,1,buildingRef);
+					building->BP_ConstructionHUD(true, 1, buildingRef);
 					building->GetBuildingMesh()->SetRenderCustomDepth(true);
 					building->SetIsBuildingSelected(true);
 					// spawning Banner
@@ -497,12 +504,12 @@ void AValoriaCam::OnSelectStarted()
 						GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("building currently has an Banner"));
 						if (GetWorld() && buildingBannerToSpawn)
 						{
-							if(!building)
+							if (!building)
 							{
 								GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, TEXT("Error ! building NULL"));
 								return;
 							}
-							if(!building->buildingBannerRelated)
+							if (!building->buildingBannerRelated)
 							{
 								building->buildingBannerRelated = buildingBannerRef;
 							}
@@ -513,7 +520,7 @@ void AValoriaCam::OnSelectStarted()
 								bCanAdjustBuildingBannerPosition = false;
 								FActorSpawnParameters SpawnParameters;
 								SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-								buildingBannerRef = GetWorld()->SpawnActor<ABuildingBanner>(buildingBannerToSpawn, building->GetActorLocation(), building->GetActorRotation(),SpawnParameters);
+								buildingBannerRef = GetWorld()->SpawnActor<ABuildingBanner>(buildingBannerToSpawn, building->GetActorLocation(), building->GetActorRotation(), SpawnParameters);
 								if (buildingBannerRef)
 								{
 									GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("Banner Matched"));
@@ -708,6 +715,17 @@ void AValoriaCam::OnSetDestinationStarted()
 				}
 			}
 		}
+
+		if (Hit.GetActor()->ActorHasTag("AI"))
+		{
+
+			if (playerController && !bCanPlaceBuilding && !bIsPlacingBuidling)
+			{
+				players[0]->MoveToLocation(Hit.GetActor()->GetActorLocation(), false, nullptr, nullptr,true,Hit.GetActor());
+			}
+		}
+
+
 		if (!Hit.GetActor()->ActorHasTag("Building") && !Hit.GetActor()->ActorHasTag("Resource"))
 		{
 			if (playerController)
@@ -740,7 +758,7 @@ void AValoriaCam::OnSetDestinationReleased()
 
 	// We move there and spawn some particles
 	if (!bCourserHitSuccessful)return;
-	if (!Hit.GetActor()->ActorHasTag("Player"))
+	if (!Hit.GetActor()->ActorHasTag("Player") && !Hit.GetActor()->ActorHasTag("AI"))
 	{
 		if (players.Num() > 0)
 		{
