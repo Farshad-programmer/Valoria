@@ -32,4 +32,6 @@ private:
 	bool bIsDrawing{false};
 	int8 marqueeMoveAllowTimerCounter = 0;
 	bool bRunTimer = false;
+
+	TArray<AActor*> SelectedActors;
 };

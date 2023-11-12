@@ -19,12 +19,16 @@
 #include "Components/WidgetComponent.h"
 #include "Animation/AnimMontage.h"
 #include "Components/BoxComponent.h"
+#include "Perception/PawnSensingComponent.h"
+#include "Components/SphereComponent.h"
+#include "Sound/SoundCue.h"
+
+
 
 AValoriaCharacter::AValoriaCharacter()
 {
 	// Set size for player capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
 	// Don't rotate character to camera direction
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -65,6 +69,13 @@ AValoriaCharacter::AValoriaCharacter()
 	Widget->SetupAttachment(GetMesh());
 	Widget->SetVisibility(false);
 
+	enemyDetector = CreateDefaultSubobject<USphereComponent>(TEXT("Enemy Detector"));
+	enemyDetector->SetupAttachment(RootComponent);
+	enemyDetector->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	enemyDetector->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	enemyDetector->SetSphereRadius(5.f);
+
+	pawnSensing = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("Pawn Sensing"));
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
@@ -78,6 +89,17 @@ void AValoriaCharacter::BeginPlay()
 	Super::BeginPlay();
 	health = maxHealth;
 	WeaponCollider->OnComponentBeginOverlap.AddDynamic(this, &AValoriaCharacter::WeaponBeginOverlap);
+	enemyDetector->OnComponentBeginOverlap.AddDynamic(this, &AValoriaCharacter::EnemyDetectorBeginOverlap);
+
+	if (ActorHasTag("Player"))
+	{
+		capitalCode = 1;
+	}
+
+	pawnSensing->OnSeePawn.AddDynamic(this, &AValoriaCharacter::OnSeePawn);
+
+	FTimerHandle checkNearEnemiesHandle;
+	GetWorldTimerManager().SetTimer(checkNearEnemiesHandle, this, &AValoriaCharacter::CheckAllNearEnemies, 3.f, true);
 
 }
 
@@ -92,15 +114,18 @@ void AValoriaCharacter::Tick(float DeltaSeconds)
 	if (bCanCheckDistanceWithAI)
 	{
 		CheckCharacterDistanceWithAI();
-		//RotateToEnemy(DeltaSeconds);
 	}
+	if (bCanRotateToEnemy)
+	{
+		RotateToEnemy(DeltaSeconds);
+	}
+
+
 }
 
 void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuilding* building, AResourceMaster* resource, bool canKillAI, AActor* AIRef)
 {
-
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, FString::Printf(TEXT("canKillAI: %s"), canKillAI ? TEXT("true") : TEXT("false")));
-
+	if (bDied)return;
 
 	if (building)
 	{
@@ -246,19 +271,22 @@ void AValoriaCharacter::StopWorkAnimation()
 
 void AValoriaCharacter::CheckCharacterDistanceWithAI()
 {
+	if (!bCanAttack)return;
+	//if(bIsSelected)return;
+
 	if (AIToAttackRef)
 	{
 		float distance = AIToAttackRef->GetDistanceTo(this);
 		//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::FromInt(distance));
-		if (distance <= 250.f)
+		if (distance <= distanceValue)
 		{
 			//bCanCheckDistanceWithAI = false;
-			GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Yellow, TEXT("the player is near of the enemy"));
+			//GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Yellow, TEXT("the player is near of the enemy"));
 			Attack();
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Yellow, TEXT("the player is far away from Enemy"));
+			//GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Yellow, TEXT("the player is far away from Enemy"));
 		}
 	}
 }
@@ -273,9 +301,36 @@ void AValoriaCharacter::Attack()
 		{
 			if (AItoKill->health > 0 && !bIsAttacking && !animInstance->IsAnyMontagePlaying())
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("Attacking"));
 				bIsAttacking = true;
+				bCanRotateToEnemy = false;
 				animInstance->Montage_Play(attackAnimationMontage);
+			}
+		}
+	}
+}
+
+void AValoriaCharacter::CheckAllNearEnemies()
+{
+	if (!bCanAttack)return;
+	//if (bCanCheckDistanceWithAI) return;
+	//if (bCanRotateToEnemy)return;
+	//if(bIsSelected)return;
+	if (bRunAway) return;
+
+	GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Purple, TEXT("CheckAllNearEnemies"));
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AValoriaCharacter::StaticClass(), AllEnemies);
+	for (AActor* enemy : AllEnemies)
+	{
+		AValoriaCharacter* newEnemy = Cast<AValoriaCharacter>(enemy);
+		if (newEnemy && newEnemy != this && newEnemy->capitalCode != capitalCode && !newEnemy->bDied && newEnemy->GetDistanceTo(this) < 2500.f)
+		{
+			AAIController* DefaultAIController = Cast<AAIController>(GetController());
+			if (DefaultAIController)
+			{
+				DefaultAIController->MoveToLocation(newEnemy->GetActorLocation(), 100.f);
+				bCanRotateToEnemy = true;
+				bCanCheckDistanceWithAI = true;
+				AIToAttackRef = newEnemy;
 			}
 		}
 	}
@@ -284,14 +339,38 @@ void AValoriaCharacter::Attack()
 void AValoriaCharacter::WeaponBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor != this && OtherActor->ActorHasTag("AI"))
+	if (OtherActor && OtherActor != this)
 	{
 		AValoriaCharacter* overlapedCharacter = Cast<AValoriaCharacter>(OtherActor);
-		if (overlapedCharacter)
+		if (overlapedCharacter && overlapedCharacter->GetCapitalCode() != capitalCode)
 		{
-			UGameplayStatics::ApplyDamage(overlapedCharacter, 50.f, GetController(), this, UDamageType::StaticClass());
+			UGameplayStatics::ApplyDamage(overlapedCharacter, damagePower, GetController(), this, UDamageType::StaticClass());
+			if (fightSound)
+			{
+				UGameplayStatics::SpawnSoundAtLocation(this, fightSound, GetActorLocation());
+			}
 		}
 	}
+}
+
+void AValoriaCharacter::EnemyDetectorBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	//if (OtherActor && OtherActor != this)
+	//{
+	//	AValoriaCharacter* overlapedCharacter = Cast<AValoriaCharacter>(OtherActor);
+	//	if (overlapedCharacter && overlapedCharacter->GetCapitalCode() != capitalCode)
+	//	{
+	//		AAIController* DefaultAIController = Cast<AAIController>(GetController());
+	//		if (DefaultAIController)
+	//		{
+	//			DefaultAIController->MoveToLocation(overlapedCharacter->GetActorLocation(),100.f);
+	//		}
+	//		bCanRotateToEnemy = true;
+	//		bCanCheckDistanceWithAI = true;
+	//		AIToAttackRef = overlapedCharacter;
+	//	}
+	//}
 }
 
 float AValoriaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -299,19 +378,31 @@ float AValoriaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 {
 	attacker = Cast<AValoriaCharacter>(DamageCauser);
 	bCanRotateToEnemy = true;
-	if (attacker)
+	if (attacker && bCanAttack)
 	{
 		bCanCheckDistanceWithAI = true;
-		AIToAttackRef = attacker;
-	}
+		if (AIToAttackRef == nullptr)
+		{
+			AIToAttackRef = attacker;
+		}
 
+	}
+	bRunAway = false;
 	float damagedToApplied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	damagedToApplied = FMath::Min(health, damagedToApplied);
 	health -= damagedToApplied;
+	WeaponCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	if (health <= 0)
 	{
 		death();
 		health = 0;
+		if (attacker)
+		{
+			attacker->AIToAttackRef = nullptr;
+			attacker->attacker = nullptr;
+			attacker->SetCanRotateToEnemy(false);
+			attacker->SetCanCheckDistanceWithAI(false);
+		}
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, FString::FromInt(health));
 	return health;
@@ -320,12 +411,67 @@ float AValoriaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 
 void AValoriaCharacter::death()
 {
+	if (diedSound)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(this, diedSound, GetActorLocation());
+	}
+	bDied = true;
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	enemyDetector->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
 	if (animInstance && deathAnimationMontage)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("death"));
 		animInstance->Montage_Play(deathAnimationMontage);
 		Tags.Empty();
-		SetLifeSpan(7.f);
+		SetLifeSpan(2.f);
 	}
+}
+
+void AValoriaCharacter::OnSeePawn(APawn* Pawn)
+{
+	if (bDied)
+	{
+		AAIController* DefaultAIController = Cast<AAIController>(GetController());
+		if (DefaultAIController)
+		{
+			DefaultAIController->StopMovement();
+			GetCharacterMovement()->StopActiveMovement();
+			bCanRotateToEnemy = false;
+			bCanCheckDistanceWithAI = false;
+			AIToAttackRef = nullptr;
+			return;
+		}
+	}
+
+	AValoriaCharacter* seenPawn = Cast<AValoriaCharacter>(Pawn);
+	if (seenPawn && seenPawn->health > 0 && seenPawn->GetCapitalCode() != capitalCode && AIToAttackRef == nullptr)
+	{
+		AAIController* DefaultAIController = Cast<AAIController>(GetController());
+		if (DefaultAIController)
+		{
+			DefaultAIController->MoveToLocation(seenPawn->GetActorLocation(), distanceValue);
+		}
+		bCanRotateToEnemy = true;
+		bCanCheckDistanceWithAI = true;
+		AIToAttackRef = seenPawn;
+
+		FLatentActionInfo latentActionInfo;
+		latentActionInfo.Linkage = 0;
+		latentActionInfo.CallbackTarget = this;
+		latentActionInfo.ExecutionFunction = "OnCoolDownCheckSeenEnemy";
+		latentActionInfo.UUID = 53344322;
+		UKismetSystemLibrary::RetriggerableDelay(this, 0.6f, latentActionInfo);
+	}
+
+}
+
+void AValoriaCharacter::OnCoolDownCheckSeenEnemy()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, TEXT("OnCoolDownCheckSeenEnemy"));
+	bCanRotateToEnemy = false;
+	bCanCheckDistanceWithAI = false;
+	AIToAttackRef = nullptr;
 }

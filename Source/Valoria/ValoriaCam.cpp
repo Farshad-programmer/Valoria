@@ -185,6 +185,7 @@ void AValoriaCam::DeselectAllCharacters()
 
 			player->SetSelectionNiagaraVisibility(false);
 			player->SetOverlayWidgetVisibility(false);
+			player->SetIsSelected(false);
 			bMarqueeSelected = false;
 		}
 		players.Empty();
@@ -263,6 +264,7 @@ void AValoriaCam::DeselectAllBuildings()
 
 void AValoriaCam::OnSelectStarted()
 {
+
 	/*if (Hit.GetActor())
 	{
 		if (!Hit.GetActor()->ActorHasTag("Banner") && !Hit.GetActor()->ActorHasTag("Building") && !Hit.GetActor()->ActorHasTag("Player"))
@@ -312,6 +314,7 @@ void AValoriaCam::OnSelectStarted()
 	bCourserHitSuccessful = false;
 	bIsLeftMousePressed = true;
 
+
 	if (playerController)
 	{
 		bCourserHitSuccessful = playerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit);
@@ -332,14 +335,15 @@ void AValoriaCam::OnSelectStarted()
 		}
 		if (!bIsPlayerSelected)
 		{
-			if (Hit.GetActor()->ActorHasTag("Player"))
+			if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Player"))
 			{
 				bIsPlayerSelected = true;
 				bMovingBanner = false;
 			}
 		}
 
-		if (Hit.GetActor()->ActorHasTag("Banner"))
+
+		if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Banner"))
 		{
 			buildingBannerRef = Cast<ABuildingBanner>(Hit.GetActor());
 			if (buildingBannerRef)
@@ -352,8 +356,7 @@ void AValoriaCam::OnSelectStarted()
 			}
 		}
 
-
-		if (Hit.GetActor()->ActorHasTag("Player"))
+		if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Player"))
 		{
 			bMovingBanner = false;
 			DestroyAllBanners();
@@ -377,7 +380,7 @@ void AValoriaCam::OnSelectStarted()
 			DeselectAllCharacters();
 			if (!bMarqueeSelected)
 			{
-				if (Hit.GetActor()->ActorHasTag("Worker"))
+				if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Worker"))
 				{
 					BP_ConstructionHUD(true, 0, nullptr);
 				}
@@ -391,6 +394,9 @@ void AValoriaCam::OnSelectStarted()
 						players[0]->SetSelectionNiagaraVisibility(true);
 						players[0]->SetCheckForStartWork(false);
 						players[0]->SetOverlayWidgetVisibility(true);
+						players[0]->SetCanRotateToEnemy(false);
+						players[0]->SetCanCheckDistanceWithAI(false);
+						players[0]->SetIsSelected(true);
 
 						if (players[0]->GetIsStartedWork())
 						{
@@ -441,7 +447,7 @@ void AValoriaCam::OnSelectStarted()
 				}
 			}
 		}
-		if (Hit.GetActor()->ActorHasTag("Building"))
+		if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Building"))
 		{
 			bMovingBanner = false;
 			TArray<AActor*>buildingActors;
@@ -558,7 +564,7 @@ void AValoriaCam::OnSelectStarted()
 			}
 
 		}
-		if (!Hit.GetActor()->ActorHasTag("Building"))
+		if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Building"))
 		{
 			bBuildingSelected = false;
 			if (playerController)
@@ -572,7 +578,7 @@ void AValoriaCam::OnSelectStarted()
 			DeselectAllBuildings();
 		}
 
-		if (!Hit.GetActor()->ActorHasTag("Player"))
+		if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Player"))
 		{
 			if (playerController)
 			{
@@ -585,7 +591,7 @@ void AValoriaCam::OnSelectStarted()
 				}
 			}
 		}
-		if (!Hit.GetActor()->ActorHasTag("Player") && !Hit.GetActor()->ActorHasTag("Building"))
+		if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Player") && !Hit.GetActor()->ActorHasTag("Building"))
 		{
 			if (!Hit.GetActor()->ActorHasTag("Banner"))
 			{
@@ -677,12 +683,12 @@ void AValoriaCam::OnSetDestinationStarted()
 		}
 		if (!bIsPlayerSelected)
 		{
-			if (Hit.GetActor()->ActorHasTag("Player"))
+			if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Player"))
 			{
 				bIsPlayerSelected = true;
 			}
 		}
-		if (Hit.GetActor()->ActorHasTag("Building"))
+		if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Building"))
 		{
 			ABuilding* building = Cast<ABuilding>(Hit.GetActor());
 
@@ -699,7 +705,7 @@ void AValoriaCam::OnSetDestinationStarted()
 			}
 		}
 
-		if (Hit.GetActor()->ActorHasTag("Resource"))
+		if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Resource"))
 		{
 			AResourceMaster* resource = Cast<AResourceMaster>(Hit.GetActor());
 
@@ -716,26 +722,30 @@ void AValoriaCam::OnSetDestinationStarted()
 			}
 		}
 
-		if (Hit.GetActor()->ActorHasTag("AI"))
+		if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("AI"))
 		{
 
 			if (playerController && !bCanPlaceBuilding && !bIsPlacingBuidling)
 			{
 				for (auto player : players)
 				{
-					player->MoveToLocation(Hit.GetActor()->GetActorLocation(), false, nullptr, nullptr,true,Hit.GetActor());
+					if (player)
+					{
+						player->SetRunAway(false);
+						player->MoveToLocation(Hit.GetActor()->GetActorLocation(), false, nullptr, nullptr,true,Hit.GetActor());
+					}
 				}
-				//players[0]->MoveToLocation(Hit.GetActor()->GetActorLocation(), false, nullptr, nullptr,true,Hit.GetActor());
 			}
 		}
 
-
-		if (!Hit.GetActor()->ActorHasTag("Building") && !Hit.GetActor()->ActorHasTag("Resource"))
+		// I need to check !Hit.GetActor()->ActorHasTag("AI") it still need more test to see if I need to keep it or no !
+		if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Building") && !Hit.GetActor()->ActorHasTag("Resource") && !Hit.GetActor()->ActorHasTag("AI"))
 		{
 			if (playerController)
 			{
 				for (auto player : players)
 				{
+					player->SetRunAway(true);
 					player->SetCheckForStartWork(false);
 					player->buildingRef = nullptr;
 					player->resourceRef = nullptr;
@@ -762,7 +772,7 @@ void AValoriaCam::OnSetDestinationReleased()
 
 	// We move there and spawn some particles
 	if (!bCourserHitSuccessful)return;
-	if (!Hit.GetActor()->ActorHasTag("Player") && !Hit.GetActor()->ActorHasTag("AI"))
+	if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Player") && !Hit.GetActor()->ActorHasTag("AI"))
 	{
 		if (players.Num() > 0)
 		{
@@ -772,6 +782,9 @@ void AValoriaCam::OnSetDestinationReleased()
 				{
 					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Player Move "));
 					players[0]->MoveToLocation(Hit.Location, false, nullptr, nullptr);
+					players[0]->SetRunAway(true);
+					players[0]->SetCanRotateToEnemy(false);
+					players[0]->SetCanCheckDistanceWithAI(false);
 					UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, CachedDestination, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
 				}
 
@@ -780,7 +793,8 @@ void AValoriaCam::OnSetDestinationReleased()
 			{
 				if (bCanMarqueeMove)
 				{
-					if (!Hit.GetActor()->ActorHasTag("Building") && !Hit.GetActor()->ActorHasTag("Resource"))
+					// I need to check !Hit.GetActor()->ActorHasTag("AI") it still need more test to see if I need to keep it or no !
+					if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Building") && !Hit.GetActor()->ActorHasTag("Resource") && !Hit.GetActor()->ActorHasTag("AI"))
 					{
 						// move Marquee
 						GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Players all Move "));
@@ -789,6 +803,9 @@ void AValoriaCam::OnSetDestinationReleased()
 						{
 							for (auto player : players)
 							{
+								player->SetRunAway(true);
+								player->SetCanRotateToEnemy(false);
+								player->SetCanCheckDistanceWithAI(false);
 								player->MoveToLocation(Hit.Location, false, nullptr, nullptr);
 							}
 						}
@@ -802,7 +819,7 @@ void AValoriaCam::OnSetDestinationReleased()
 		}
 
 	}
-	else if (Hit.GetActor()->ActorHasTag("Building"))
+	else if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Building"))
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, Hit.Location, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
 	}

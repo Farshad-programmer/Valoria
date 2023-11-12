@@ -16,16 +16,18 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Valoria/AI/AValoriaAI.h"
 #include "Valoria/Buildings/Barracks.h"
+#include "Components/SphereComponent.h"
 
 AValoriaWorker::AValoriaWorker()
 {
 	bCanAttack = false;
+	soliderClass = ESoliderClass::worker;
 }
 
 void AValoriaWorker::BeginPlay()
 {
 	Super::BeginPlay();
-
+	enemyDetector->SetSphereRadius(5.f);
 }
 
 

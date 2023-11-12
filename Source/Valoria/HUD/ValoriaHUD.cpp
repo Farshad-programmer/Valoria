@@ -13,6 +13,8 @@
 #include "Valoria/Resources/ResourceMaster.h"
 
 
+
+
 void AValoriaHUD::DrawHUD()
 {
 	Super::DrawHUD();
@@ -51,13 +53,27 @@ void AValoriaHUD::HandleMarqueeSelection()
 		DrawRect(FLinearColor(0.f, 0.11f, 0.92f, 0.2f), startMousePos.X, startMousePos.Y, screenW, screenH);
 	}
 
+
+
 	APlayerController* playerController = GetOwningPlayerController();
 	if (playerController)
 	{
-		TArray<AActor*> SelectedActors;
-		GetActorsInSelectionRectangle(AActor::StaticClass(), startMousePos, currentMousePos, SelectedActors, false, false);
+		SelectedActors.Empty();
+		TArray<AActor*>allSelectedActors;
+		GetActorsInSelectionRectangle(AValoriaCharacter::StaticClass(), startMousePos, currentMousePos, allSelectedActors, false, false);
+		
 		AValoriaCam* valoriaCam = Cast<AValoriaCam>(playerController->GetPawn());
 
+		for (auto act : allSelectedActors)
+		{
+			if(act->ActorHasTag("Player"))
+			{
+				if(bIsDrawing)
+				{
+					SelectedActors.AddUnique(act);
+				}
+			}
+		}
 		if ((currentMousePos - startMousePos).Size() > 100.f)
 		{
 			if (valoriaCam)
@@ -72,6 +88,9 @@ void AValoriaHUD::HandleMarqueeSelection()
 						{
 							selectedValoria->SetSelectionNiagaraVisibility(true);
 							selectedValoria->SetOverlayWidgetVisibility(true);
+							selectedValoria->SetCanRotateToEnemy(false);
+							selectedValoria->SetCanCheckDistanceWithAI(false);
+							selectedValoria->SetIsSelected(true);
 							valoriaCam->players.AddUnique(selectedValoria);
 							if (selectedValoria->GetIsStartedWork())
 							{
@@ -137,6 +156,7 @@ void AValoriaHUD::MarqueePressed()
 
 void AValoriaHUD::MarqueeReleased()
 {
+	SelectedActors.Empty();
 	bIsDrawing = false;
 	bCanDrawSelection = false;
 	APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
@@ -166,3 +186,12 @@ void AValoriaHUD::MarqueeHeld()
 	}
 
 }
+
+
+
+
+
+	//for (auto AllSelectedActor : allSelectedActors)
+	//	{
+	//		DrawDebugSphere(GetWorld(),AllSelectedActor->GetActorLocation(),200.f,25,FColor::Yellow);
+	//	}
