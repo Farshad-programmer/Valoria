@@ -31,6 +31,10 @@ public:
 
 	EAIStatus enemyStatus;
 
+
+	FString tag;
+	int32 capitalCode;
+
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
 	TSubclassOf<ABarracks> barracksClass;
 

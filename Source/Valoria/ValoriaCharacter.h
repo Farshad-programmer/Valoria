@@ -8,12 +8,29 @@
 #include "GameFramework/Character.h"
 #include "ValoriaCharacter.generated.h"
 
+
 class UNiagaraComponent;
 class ABuilding;
 class AResourceMaster;
 class UWidgetComponent;
 class UAnimMontage;
 class UBoxComponent;
+class UPawnSensingComponent;
+class USphereComponent;
+class USoundCue;
+
+
+UENUM(BlueprintType)
+enum class ESoliderClass:uint8
+{
+	worker,
+	swordman,
+	spearman,
+	commander
+};
+
+
+
 UCLASS(Blueprintable)
 class AValoriaCharacter : public ACharacter
 {
@@ -63,6 +80,10 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* Widget;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	UPawnSensingComponent* pawnSensing;
+
+
 
 	// Animation montages
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation montage", meta = (AllowPrivateAccess = "true"))
@@ -71,7 +92,15 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation montage", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* deathAnimationMontage;
 
+	// sounds
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
+	USoundCue* fightSound;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
+	USoundCue* diedSound;
 
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= stat, meta=(AllowPrivateAccess = "true"))
+	float distanceValue = 400.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= stat, meta=(AllowPrivateAccess = "true"))
 	float health ;
@@ -79,9 +108,12 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= stat, meta=(AllowPrivateAccess = "true"))
 	float maxHealth = 300.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= stat, meta=(AllowPrivateAccess = "true"))
+	float damagePower{50.f};
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
 	bool bIsAttacking{false};
 
+	bool bDied{false};
 
 	TArray<AActor*> characters;
 
@@ -92,14 +124,17 @@ private:
 
 	FVector locationToWork;
 	FVector tempLocation;
-	
-	float distanceValue = 400.f;
+
+
 	void RotateToBuilding(float deltaTime);
 	void RotateToResource(float deltaTime);
 	void RotateToEnemy(float deltaTime);
 	bool bCanRotateToBuilding{true};
 	bool bCanCheckDistanceWithAI{false};
 	bool bCanRotateToEnemy{false};
+	bool bIsSelected{false};
+	bool bRunAway{false};
+	int32 capitalCode ;
 
 	UPROPERTY()
 	AActor* AIToAttackRef;
@@ -111,14 +146,31 @@ private:
 	void Attack();
 
 
+	TArray<AActor*> AllEnemies;
+	void CheckAllNearEnemies();
 
 
 	UFUNCTION()
 	void WeaponBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 
+	UFUNCTION()
+	void EnemyDetectorBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+
+
+
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	void death();
+
+
+	// Pawn Sensing
+	UFUNCTION()
+	void OnSeePawn(APawn* Pawn);
+
+
+	//Timers
+	UFUNCTION()
+	void OnCoolDownCheckSeenEnemy();
 
 protected:
 	virtual void BeginPlay() override;
@@ -127,6 +179,12 @@ protected:
 	bool bCanAttack{true};
 	
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	USphereComponent* enemyDetector;
+
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Solider Class", meta = (AllowPrivateAccess = "true"))
+	ESoliderClass soliderClass;
 
 	// animations
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Animations, meta=(AllowPrivateAccess = "true"))
@@ -138,16 +196,21 @@ protected:
 public:
 	FORCEINLINE bool GetIsStartedWork()const {return bIsStartedWork;}
 	FORCEINLINE UWidgetComponent* GetOverlayWidget()const {return Widget;}
+	FORCEINLINE int32 GetCapitalCode()const {return capitalCode;}
 
 
-
-
-
+	FORCEINLINE void SetRunAway(bool runAway){bRunAway = runAway;}
+	FORCEINLINE void SetIsSelected(bool selected){bIsSelected = selected;}
 	FORCEINLINE void SetSelectionNiagaraVisibility(bool makeVisible){SelectionNiagara->SetVisibility(makeVisible);}
 	FORCEINLINE void SetCheckForStartWork(bool canCheck){bCanCheckForStartWork = canCheck;}
 	FORCEINLINE void SetIsStartedWork(bool isStarted){bIsStartedWork = isStarted;}
 	FORCEINLINE void SetOverlayWidgetVisibility(bool bShow){Widget->SetVisibility(bShow);}
+	FORCEINLINE void SetCapitalCode(int32 newCode){capitalCode = newCode;}
+	FORCEINLINE void SetCanCheckDistanceWithAI(bool canCheck){bCanCheckDistanceWithAI = canCheck;}
+	FORCEINLINE void SetCanRotateToEnemy(bool canRotate){bCanRotateToEnemy = canRotate;}
 };
+
+
 
 
 

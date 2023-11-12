@@ -15,7 +15,8 @@
 AValoriaAI::AValoriaAI()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
+	tag = FString(TEXT("AI")) + FString::FromInt(FMath::RandRange(1,9999));
+	capitalCode = FMath::RandRange(1,9999);
 }
 
 void AValoriaAI::BeginPlay()
@@ -69,6 +70,13 @@ void AValoriaAI::BeginPlay()
 			AIBaseCenterLocation.Y += 500.f;
 			AIBaseCenterLocation.Z += 300.f;
 			Spawnedworker = GetWorld()->SpawnActor<AValoriaWorker>(valoriaWorkerClass, AIBaseCenterLocation, FRotator(0.f));
+			if (Spawnedworker)
+			{
+				FName myTag = FName(*tag);
+				Spawnedworker->Tags.Add(myTag);
+				Spawnedworker->SetCapitalCode(capitalCode);
+				baseUnit++;
+			}
 		}
 	}
 
@@ -92,6 +100,9 @@ void AValoriaAI::SpawnSoldier()
 			AValoriaInfantry* spawnedInfantry = GetWorld()->SpawnActor<AValoriaInfantry>(valoriaInfantryClass, barracksLocation[0], FRotator(0.f));
 			if (spawnedInfantry)
 			{
+				FName myTag = FName(*tag);
+				spawnedInfantry->Tags.Add(myTag);
+				spawnedInfantry->SetCapitalCode(capitalCode);
 				baseUnit++;
 			}
 		}
