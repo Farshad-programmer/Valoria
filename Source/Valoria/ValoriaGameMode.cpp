@@ -40,6 +40,8 @@ void AValoriaGameMode::BeginPlay()
 			if (spawnedAI)
 			{
 				spawnedAI->enemyStatus = EAIStatus::enemy;
+				spawnedAI->capitalName = CapitalNames[capitalNameIndex];
+				capitalNameIndex++;
 			}
 		}
 	}

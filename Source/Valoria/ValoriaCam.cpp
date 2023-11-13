@@ -732,14 +732,14 @@ void AValoriaCam::OnSetDestinationStarted()
 					if (player)
 					{
 						player->SetRunAway(false);
-						player->MoveToLocation(Hit.GetActor()->GetActorLocation(), false, nullptr, nullptr,true,Hit.GetActor());
+						player->MoveToLocation(Hit.GetActor()->GetActorLocation(), false, nullptr, nullptr, true, Hit.GetActor());
 					}
 				}
 			}
 		}
 
 		// I need to check !Hit.GetActor()->ActorHasTag("AI") it still need more test to see if I need to keep it or no !
-		if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Building") && !Hit.GetActor()->ActorHasTag("Resource") && !Hit.GetActor()->ActorHasTag("AI"))
+		/*if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Building") && !Hit.GetActor()->ActorHasTag("Resource") && !Hit.GetActor()->ActorHasTag("AI"))
 		{
 			if (playerController)
 			{
@@ -751,7 +751,7 @@ void AValoriaCam::OnSetDestinationStarted()
 					player->resourceRef = nullptr;
 				}
 			}
-		}
+		}*/
 	}
 }
 
@@ -803,10 +803,13 @@ void AValoriaCam::OnSetDestinationReleased()
 						{
 							for (auto player : players)
 							{
-								player->SetRunAway(true);
-								player->SetCanRotateToEnemy(false);
-								player->SetCanCheckDistanceWithAI(false);
-								player->MoveToLocation(Hit.Location, false, nullptr, nullptr);
+								if (player && Hit.bBlockingHit)
+								{
+									player->SetRunAway(true);
+									player->SetCanRotateToEnemy(false);
+									player->SetCanCheckDistanceWithAI(false);
+									player->MoveToLocation(Hit.Location, false, nullptr, nullptr);
+								}
 							}
 						}
 					}

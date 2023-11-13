@@ -103,6 +103,7 @@ void AValoriaAI::SpawnSoldier()
 				FName myTag = FName(*tag);
 				spawnedInfantry->Tags.Add(myTag);
 				spawnedInfantry->SetCapitalCode(capitalCode);
+				infantryNumber++;
 				baseUnit++;
 			}
 		}

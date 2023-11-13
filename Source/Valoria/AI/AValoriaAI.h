@@ -42,6 +42,24 @@ public:
 
 	TArray<FVector> barracksLocation ;
 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
+	FString capitalName;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
+	int32 infantryNumber = 0;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
+	int32 gold = 20;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
+	int32 stone = 50;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
+	int32 wood = 100;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
+	int32 science = 20;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -57,11 +75,7 @@ private:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
 	TSubclassOf<AValoriaInfantry> valoriaInfantryClass;
 
-
-	uint32 wood {100};
-	uint32 stone {100};
-	uint32 gold {50};
-	uint32 science {20};
+	
 
 
 

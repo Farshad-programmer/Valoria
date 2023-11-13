@@ -27,7 +27,11 @@ private:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game, meta=(AllowPrivateAccess = "true"))
 	int32 startingAIBase = 2;
-	
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game, meta=(AllowPrivateAccess = "true"))
+	TArray<FString>CapitalNames;
+
+	int32 capitalNameIndex{0};
 };
 
 
