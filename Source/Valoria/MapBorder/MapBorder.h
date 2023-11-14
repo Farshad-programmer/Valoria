@@ -12,6 +12,7 @@ enum class EBorderStatus:uint8
 	self,
 	ownerless,
 	ally,
+	neutral,
 	enemy
 };
 

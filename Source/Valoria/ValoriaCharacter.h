@@ -6,6 +6,7 @@
 #include "NiagaraComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/Character.h"
+#include "Valoria/Additives.h"
 #include "ValoriaCharacter.generated.h"
 
 
@@ -52,7 +53,8 @@ public:
 
 	void StopWorkAnimation();
 
-
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
+	EAIStatus enemyStatus;
 
 private:
 	
@@ -86,7 +88,11 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
 	USoundCue* diedSound;
 
+
+
 	
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= stat, meta=(AllowPrivateAccess = "true"))
 	float distanceValue = 400.f;
 

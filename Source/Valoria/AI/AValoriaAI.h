@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Valoria/Additives.h"
 #include "AValoriaAI.generated.h"
 
 class ACityCenter;
@@ -11,13 +12,7 @@ class AValoriaWorker;
 class ABarracks;
 class AMapBorder;
 class AValoriaInfantry;
-UENUM(BlueprintType)
-enum class EAIStatus:uint8
-{
-	ally,
-	neutral,
-	enemy
-};
+
 
 
 UCLASS()
@@ -28,7 +23,7 @@ class VALORIA_API AValoriaAI : public AActor
 public:	
 	AValoriaAI();
 
-
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
 	EAIStatus enemyStatus;
 
 
@@ -102,7 +97,13 @@ private:
 	uint32 baseUnit{0};
 
 
+	UFUNCTION()
+	void InitialAIStatus();
+
 	void FindAPlaceForMakingBarracksforAI();
+
+	void UpdateAIUnits();
+
 
 public:	
 	virtual void Tick(float DeltaTime) override;

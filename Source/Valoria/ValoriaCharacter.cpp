@@ -74,6 +74,8 @@ AValoriaCharacter::AValoriaCharacter()
 void AValoriaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	enemyStatus = EAIStatus::neutral;
 	health = maxHealth;
 	WeaponCollider->OnComponentBeginOverlap.AddDynamic(this, &AValoriaCharacter::WeaponBeginOverlap);
 	enemyDetector->OnComponentBeginOverlap.AddDynamic(this, &AValoriaCharacter::EnemyDetectorBeginOverlap);
@@ -87,6 +89,7 @@ void AValoriaCharacter::BeginPlay()
 
 	FTimerHandle checkNearEnemiesHandle;
 	GetWorldTimerManager().SetTimer(checkNearEnemiesHandle, this, &AValoriaCharacter::CheckAllNearEnemies, 3.f, true);
+
 
 }
 
@@ -281,7 +284,7 @@ void AValoriaCharacter::CheckCharacterDistanceWithAI()
 void AValoriaCharacter::Attack()
 {
 	AValoriaCharacter* AItoKill = Cast<AValoriaCharacter>(AIToAttackRef);
-	if (attackAnimationMontage && AItoKill)
+	if (attackAnimationMontage && AItoKill && AItoKill->enemyStatus == EAIStatus::enemy)
 	{
 		UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
 		if (animInstance)
@@ -312,7 +315,7 @@ void AValoriaCharacter::CheckAllNearEnemies()
 		if (newEnemy && newEnemy != this && newEnemy->capitalCode != capitalCode && !newEnemy->bDied && newEnemy->GetDistanceTo(this) < 2500.f)
 		{
 			AAIController* DefaultAIController = Cast<AAIController>(GetController());
-			if (DefaultAIController)
+			if (DefaultAIController && newEnemy->enemyStatus == EAIStatus::enemy)
 			{
 				DefaultAIController->MoveToLocation(newEnemy->GetActorLocation(), 100.f);
 				bCanRotateToEnemy = true;
@@ -434,7 +437,7 @@ void AValoriaCharacter::OnSeePawn(APawn* Pawn)
 	}
 
 	AValoriaCharacter* seenPawn = Cast<AValoriaCharacter>(Pawn);
-	if (seenPawn && seenPawn->health > 0 && seenPawn->GetCapitalCode() != capitalCode && AIToAttackRef == nullptr)
+	if (seenPawn && seenPawn->health > 0 && seenPawn->enemyStatus == EAIStatus::enemy && seenPawn->GetCapitalCode() != capitalCode && AIToAttackRef == nullptr)
 	{
 		AAIController* DefaultAIController = Cast<AAIController>(GetController());
 		if (DefaultAIController)
