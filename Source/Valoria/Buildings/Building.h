@@ -62,7 +62,6 @@ private:
 	UMaterial* buildingRedMat;
 
 
-
 	
 
 
@@ -135,6 +134,18 @@ protected:
 	FHitResult Hit;
 
 	void CheckCanBuild();
+	void LineTraceFloorCheckers();
+
+	bool bEdge1;
+	bool bEdge2;
+	bool bEdge3;
+	bool bEdge4;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
+	float buildingRadius = 300.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
+	float buildingHeight = 300.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Details)
 	bool bCanCheck{true};

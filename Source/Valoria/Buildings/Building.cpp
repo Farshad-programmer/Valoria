@@ -13,6 +13,9 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Valoria/AI/AValoriaAI.h"
 
+
+// BP_House az aval bayad besazamesh , yani delete va recreate beshe
+
 // Sets default values
 ABuilding::ABuilding()
 {
@@ -27,6 +30,7 @@ ABuilding::ABuilding()
 	flagStarterPoint->SetupAttachment(BuildingMesh);
 	characterStarterPoint = CreateDefaultSubobject<USceneComponent>(TEXT("character Starter Point"));
 	characterStarterPoint->SetupAttachment(BuildingMesh);
+
 
 
 
@@ -55,11 +59,11 @@ void ABuilding::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(buildingWorkPointsIndex > 0)
+	if (buildingWorkPointsIndex > 0)
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("%s"),*GetName()));
 	}
-	
+
 
 
 	if (bConstructionProgressStarted)
@@ -82,7 +86,7 @@ void ABuilding::Tick(float DeltaTime)
 			if (valoriaAIRef && buildingOwner != EBuildingOwner::self)
 			{
 				valoriaAIRef->bHasBarracks = true;
-				valoriaAIRef->barracksLocation.Add(this->GetActorLocation() + FVector(500.f,500.f,500.f));
+				valoriaAIRef->barracksLocation.Add(this->GetActorLocation() + FVector(500.f, 500.f, 500.f));
 			}
 			if (buidlingWorkers.Num())
 			{
@@ -103,6 +107,7 @@ void ABuilding::Tick(float DeltaTime)
 		if (bIsBuildingSpawned)
 		{
 			CheckCanBuild();
+			LineTraceFloorCheckers();
 			valoriaCam->SetIsPlacingBuidling(true);
 			APlayerController* playerController = UGameplayStatics::GetPlayerController(this, 0);
 			if (playerController)
@@ -119,7 +124,6 @@ void ABuilding::Tick(float DeltaTime)
 					//FRotator rot = UKismetMathLibrary::MakeRotFromZX(Hit.ImpactPoint,GetActorForwardVector());
 					//SetActorRotation(rot);
 					ValidateBuildLocation(loc);
-
 				}
 			}
 
@@ -165,12 +169,12 @@ void ABuilding::Tick(float DeltaTime)
 								BorderRef->borderStatus = EBorderStatus::self;
 								BorderRef->bBorderHasCityCenter = true;
 							}
-							if(valoriaCam->PlayerTemp)
+							if (valoriaCam->PlayerTemp)
 							{
-								valoriaCam->PlayerTemp->MoveToLocation(this->GetActorLocation(),true,this,nullptr);
+								valoriaCam->PlayerTemp->MoveToLocation(this->GetActorLocation(), true, this, nullptr);
 								valoriaCam->PlayerTemp = nullptr;
 							}
-							
+
 						}
 					}
 				}
@@ -270,4 +274,93 @@ void ABuilding::CheckCanBuild()
 	}
 
 }
+
+void ABuilding::LineTraceFloorCheckers()
+{
+	if (GetWorld())
+	{
+		FHitResult hitResult1;
+		FVector start1 = GetActorLocation() + FVector(0.f, -buildingRadius, 0.f);
+		FVector end1 = start1 + FVector(0.f, 0.f, -buildingHeight);
+		FCollisionQueryParams params1;
+		params1.AddIgnoredActor(this);
+		GetWorld()->LineTraceSingleByChannel(hitResult1, start1, end1, ECollisionChannel::ECC_WorldStatic, params1);
+		//DrawDebugLine(GetWorld(), start1, end1, FColor::Yellow, true, -1, 0, 20.f);
+		if (hitResult1.bBlockingHit)
+		{
+			bEdge1 = true;
+		}
+		else
+		{
+			bEdge1 = false;
+		}
+
+		FHitResult hitResult2;
+		FVector start2 = GetActorLocation() + FVector(0.f, buildingRadius, 0.f);
+		FVector end2 = start2 + FVector(0.f, 0.f, -buildingHeight);
+		FCollisionQueryParams params2;
+		params2.AddIgnoredActor(this);
+		GetWorld()->LineTraceSingleByChannel(hitResult2, start2, end2, ECollisionChannel::ECC_WorldStatic, params2);
+		//DrawDebugLine(GetWorld(),start2, end2, FColor::Yellow, true, -1, 0, 20.f);
+		if (hitResult1.bBlockingHit)
+		{
+			bEdge2 = true;
+		}
+		else
+		{
+			bEdge2 = false;
+		}
+
+		FHitResult hitResult3;
+		FVector start3 = GetActorLocation() + FVector(-buildingRadius, 0.f, 0.f);
+		FVector end3 = start3 + FVector(0.f, 0.f, -buildingHeight);
+		FCollisionQueryParams params3;
+		params3.AddIgnoredActor(this);
+		GetWorld()->LineTraceSingleByChannel(hitResult3,start3, end3, ECollisionChannel::ECC_WorldStatic, params3);
+		//DrawDebugLine(GetWorld(), start3, end3, FColor::Yellow, true, -1, 0, 20.f);
+		if (hitResult3.bBlockingHit)
+		{
+			bEdge3 = true;
+		}
+		else
+		{
+			bEdge3 = false;
+		}
+
+		FHitResult hitResult4;
+		FVector start4 = GetActorLocation() + FVector(buildingRadius, 0.f, 0.f);
+		FVector end4 = start4 + FVector(0.f, 0.f, -buildingHeight);
+		FCollisionQueryParams params4;
+		params4.AddIgnoredActor(this);
+		GetWorld()->LineTraceSingleByChannel(hitResult4, start4, end4, ECollisionChannel::ECC_WorldStatic, params4);
+		//DrawDebugLine(GetWorld(), start4, end4, FColor::Yellow, true, -1, 0, 20.f);
+		if (hitResult4.bBlockingHit)
+		{
+			bEdge4 = true;
+		}
+		else
+		{
+			bEdge4 = false;
+		}
+	}
+
+
+	if (bEdge1 && bEdge2 && bEdge3 && bEdge4)
+	{
+		bBuildingIsAllowedToBeBuilt = true;
+		if (valoriaCam->buildingRef && !bBuildingPlaced && buildingGreenMat)
+		{
+			valoriaCam->buildingRef->BuildingMesh->SetMaterial(0, buildingGreenMat);
+		}
+	}
+	else
+	{
+		bBuildingIsAllowedToBeBuilt = false;
+		if (valoriaCam->buildingRef && !bBuildingPlaced && buildingRedMat)
+		{
+			valoriaCam->buildingRef->BuildingMesh->SetMaterial(0, buildingRedMat);
+		}
+	}
+}
+
 
