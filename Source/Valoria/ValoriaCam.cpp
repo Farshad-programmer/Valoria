@@ -982,3 +982,9 @@ void AValoriaCam::SpawnSoldier(int32 soldierCode, ABuilding* building)
 
 //GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Blue, FString::FromInt(players.Num()));
 
+
+
+
+//FString MyFString = capitalName;
+//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, MyFString);
+

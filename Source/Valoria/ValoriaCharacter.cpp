@@ -261,24 +261,30 @@ void AValoriaCharacter::StopWorkAnimation()
 
 void AValoriaCharacter::CheckCharacterDistanceWithAI()
 {
-	if (!bCanAttack)return;
-	//if(bIsSelected)return;
-
-	if (AIToAttackRef)
+	if (bCanAttack)
 	{
-		float distance = AIToAttackRef->GetDistanceTo(this);
-		//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::FromInt(distance));
-		if (distance <= distanceValue)
+		if (AIToAttackRef)
 		{
-			//bCanCheckDistanceWithAI = false;
-			//GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Yellow, TEXT("the player is near of the enemy"));
-			Attack();
-		}
-		else
-		{
-			//GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Yellow, TEXT("the player is far away from Enemy"));
+			float distance = AIToAttackRef->GetDistanceTo(this);
+			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::FromInt(distance));
+			if (distance <= distanceValue)
+			{
+				//bCanCheckDistanceWithAI = false;
+				//GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Yellow, TEXT("the player is near of the enemy"));
+				Attack();
+			}
+			else
+			{
+				//GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Yellow, TEXT("the player is far away from Enemy"));
+			}
 		}
 	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("bCanAttack is false"));
+	}
+
+
 }
 
 void AValoriaCharacter::Attack()
@@ -307,7 +313,7 @@ void AValoriaCharacter::CheckAllNearEnemies()
 	//if(bIsSelected)return;
 	if (bRunAway) return;
 
-	GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Purple, TEXT("CheckAllNearEnemies"));
+	//GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Purple, TEXT("CheckAllNearEnemies"));
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AValoriaCharacter::StaticClass(), AllEnemies);
 	for (AActor* enemy : AllEnemies)
 	{
@@ -315,13 +321,34 @@ void AValoriaCharacter::CheckAllNearEnemies()
 		if (newEnemy && newEnemy != this && newEnemy->capitalCode != capitalCode && !newEnemy->bDied && newEnemy->GetDistanceTo(this) < 2500.f)
 		{
 			AAIController* DefaultAIController = Cast<AAIController>(GetController());
-			if (DefaultAIController && newEnemy->enemyStatus == EAIStatus::enemy)
+			if (ActorHasTag("Player"))
 			{
-				DefaultAIController->MoveToLocation(newEnemy->GetActorLocation(), 100.f);
-				bCanRotateToEnemy = true;
-				bCanCheckDistanceWithAI = true;
-				AIToAttackRef = newEnemy;
+				if (DefaultAIController && newEnemy->enemyStatus == EAIStatus::enemy)
+				{
+					DefaultAIController->MoveToLocation(newEnemy->GetActorLocation(), 100.f);
+					bCanRotateToEnemy = true;
+					bCanCheckDistanceWithAI = true;
+					AIToAttackRef = newEnemy;
+				}
 			}
+			else
+			{
+				if (DefaultAIController)
+				{
+					for (auto code : enemyUnitCodeToAttack)
+					{
+						if (code == 1) // 1 is for player
+						{
+							DefaultAIController->MoveToLocation(newEnemy->GetActorLocation(), 100.f);
+							bCanRotateToEnemy = true;
+							bCanCheckDistanceWithAI = true;
+							AIToAttackRef = newEnemy;
+							break;
+						}
+					}
+				}
+			}
+
 		}
 	}
 }
@@ -436,25 +463,73 @@ void AValoriaCharacter::OnSeePawn(APawn* Pawn)
 		}
 	}
 
-	AValoriaCharacter* seenPawn = Cast<AValoriaCharacter>(Pawn);
-	if (seenPawn && seenPawn->health > 0 && seenPawn->enemyStatus == EAIStatus::enemy && seenPawn->GetCapitalCode() != capitalCode && AIToAttackRef == nullptr)
-	{
-		AAIController* DefaultAIController = Cast<AAIController>(GetController());
-		if (DefaultAIController)
-		{
-			DefaultAIController->MoveToLocation(seenPawn->GetActorLocation(), distanceValue);
-		}
-		bCanRotateToEnemy = true;
-		bCanCheckDistanceWithAI = true;
-		AIToAttackRef = seenPawn;
 
-		FLatentActionInfo latentActionInfo;
-		latentActionInfo.Linkage = 0;
-		latentActionInfo.CallbackTarget = this;
-		latentActionInfo.ExecutionFunction = "OnCoolDownCheckSeenEnemy";
-		latentActionInfo.UUID = 53344322;
-		UKismetSystemLibrary::RetriggerableDelay(this, 0.6f, latentActionInfo);
+	if (ActorHasTag("Player"))
+	{
+		AValoriaCharacter* seenPawn = Cast<AValoriaCharacter>(Pawn);
+		if (seenPawn && seenPawn->health > 0 && seenPawn->enemyStatus == EAIStatus::enemy && seenPawn->GetCapitalCode() != capitalCode && AIToAttackRef == nullptr)
+		{
+			AAIController* DefaultAIController = Cast<AAIController>(GetController());
+
+			if (DefaultAIController)
+			{
+				DefaultAIController->MoveToLocation(seenPawn->GetActorLocation(), distanceValue);
+			}
+			bCanRotateToEnemy = true;
+			bCanCheckDistanceWithAI = true;
+			AIToAttackRef = seenPawn;
+
+			FLatentActionInfo latentActionInfo;
+			latentActionInfo.Linkage = 0;
+			latentActionInfo.CallbackTarget = this;
+			latentActionInfo.ExecutionFunction = "OnCoolDownCheckSeenEnemy";
+			latentActionInfo.UUID = 53344322;
+			UKismetSystemLibrary::RetriggerableDelay(this, 0.6f, latentActionInfo);
+		}
 	}
+	else
+	{
+
+		bool bAICanAttack = false;
+		AValoriaCharacter* seenPawn = Cast<AValoriaCharacter>(Pawn);
+		if (seenPawn && seenPawn->health > 0 && seenPawn->GetCapitalCode() != capitalCode && AIToAttackRef == nullptr)
+		{
+			AAIController* DefaultAIController = Cast<AAIController>(GetController());
+
+			for (auto code : enemyUnitCodeToAttack)
+			{
+				if (code == 1) // 1 is for player
+				{
+					DefaultAIController->MoveToLocation(seenPawn->GetActorLocation(), 100.f);
+					bCanRotateToEnemy = true;
+					bCanCheckDistanceWithAI = true;
+					AIToAttackRef = seenPawn;
+					bAICanAttack = true;
+				}
+			}
+
+			if (bAICanAttack)
+			{
+				if (DefaultAIController)
+				{
+					DefaultAIController->MoveToLocation(seenPawn->GetActorLocation(), distanceValue);
+				}
+				bCanAttack = true;
+				bCanRotateToEnemy = true;
+				bCanCheckDistanceWithAI = true;
+				AIToAttackRef = seenPawn;
+			}
+
+			FLatentActionInfo latentActionInfo;
+			latentActionInfo.Linkage = 0;
+			latentActionInfo.CallbackTarget = this;
+			latentActionInfo.ExecutionFunction = "OnCoolDownCheckSeenEnemy";
+			latentActionInfo.UUID = 53344322;
+			UKismetSystemLibrary::RetriggerableDelay(this, 0.6f, latentActionInfo);
+		}
+	}
+
+
 
 }
 

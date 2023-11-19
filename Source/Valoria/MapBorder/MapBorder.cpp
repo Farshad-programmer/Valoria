@@ -25,3 +25,10 @@ void AMapBorder::Tick(float DeltaTime)
 
 }
 
+
+void AMapBorder::UpdateBorderOwnerFromBlueprint()
+{
+	UpdateBorderOwner(borderStatus);
+}
+
+

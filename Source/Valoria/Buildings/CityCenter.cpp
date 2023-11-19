@@ -3,10 +3,16 @@
 
 #include "CityCenter.h"
 
+#include "Components/TextRenderComponent.h"
 #include "Valoria/MapBorder/MapBorder.h"
+#include "Components/TextRenderComponent.h"
+
 
 ACityCenter::ACityCenter()
 {
+	capitalNameTextRender = CreateDefaultSubobject<UTextRenderComponent>(TEXT("capital Name Text Render"));
+	capitalNameTextRender->SetupAttachment(GetRootComponent());
+
 	workersStartWorkDistance = 400.f;
 	wood = 30;
 	stone = 30;
@@ -14,6 +20,7 @@ ACityCenter::ACityCenter()
 	science = 0;
 
 	buildingType = EBuildingType::CityCenter;
+
 }
 
 
@@ -41,6 +48,7 @@ void ACityCenter::Tick(float DeltaTime)
 	}
 
 }
+
 
 void ACityCenter::SetBuildingToStarterBuilding()
 {

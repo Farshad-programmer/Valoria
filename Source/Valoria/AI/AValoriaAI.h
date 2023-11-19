@@ -23,11 +23,12 @@ class VALORIA_API AValoriaAI : public AActor
 public:	
 	AValoriaAI();
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game, meta=(AllowPrivateAccess = "true"))
 	EAIStatus enemyStatus;
 
-
 	FString tag;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game, meta=(AllowPrivateAccess = "true"))
 	int32 capitalCode;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
@@ -78,7 +79,7 @@ private:
 	FVector AIBaseCenterLocation ;
 
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game, meta=(AllowPrivateAccess = "true"))
 	AMapBorder* mapBorderRef;
 
 	UPROPERTY()

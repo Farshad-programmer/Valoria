@@ -53,8 +53,11 @@ public:
 
 	void StopWorkAnimation();
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game, meta=(AllowPrivateAccess = "true"))
 	EAIStatus enemyStatus;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
+	TArray<int32>enemyUnitCodeToAttack;
 
 private:
 	
@@ -128,7 +131,11 @@ private:
 	bool bCanRotateToEnemy{false};
 	bool bIsSelected{false};
 	bool bRunAway{false};
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
 	int32 capitalCode ;
+
+	
 
 	UPROPERTY()
 	AActor* AIToAttackRef;

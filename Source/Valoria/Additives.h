@@ -2,7 +2,7 @@
 
 
 UENUM(BlueprintType)
-enum class EAIStatus
+enum class EAIStatus:uint8
 {
 	ally,
 	neutral,

@@ -110,6 +110,9 @@ public:
 	UPROPERTY()
 	AValoriaAI* valoriaAIRef;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Details, meta = (AllowPrivateAccess = "true"))
+	FString capitalName ;
+
 protected:
 	virtual void BeginPlay() override;
 	void ValidateBuildLocation(FVector loc);
@@ -128,6 +131,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Details, meta = (AllowPrivateAccess = "true"))
 	AMapBorder* BorderRef;
+
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
 	float workersStartWorkDistance = {400.f};

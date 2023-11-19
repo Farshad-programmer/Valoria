@@ -35,6 +35,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Details,meta = (AllowPrivateAccess = "true"))
 	bool bBorderHasCityCenter{false};
 
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateBorderOwnerFromBlueprint();
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateBorderOwner(EBorderStatus status);
 

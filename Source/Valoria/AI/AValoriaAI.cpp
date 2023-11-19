@@ -2,6 +2,8 @@
 
 
 #include "AValoriaAI.h"
+
+#include "Components/TextRenderComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Valoria/MapBorder/MapBorder.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -24,20 +26,25 @@ AValoriaAI::AValoriaAI()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	tag = FString(TEXT("AI")) + FString::FromInt(FMath::RandRange(1, 9999));
-	capitalCode = FMath::RandRange(1, 9999);
 	enemyStatus = EAIStatus::neutral;
 }
 
 void AValoriaAI::BeginPlay()
 {
 	Super::BeginPlay();
+	capitalCode = FMath::RandRange(1, 9999);
 	enemyStatus = EAIStatus::neutral;
 
 
 
 	FTimerHandle AIStartStatusHandler;
 	GetWorldTimerManager().SetTimer(AIStartStatusHandler, this, &AValoriaAI::InitialAIStatus, 0.2f, false);
+}
 
+
+void AValoriaAI::InitialAIStatus()
+{
+	enemyStatus = EAIStatus::neutral;
 
 
 	TArray<AActor*>mapBordersActors;
@@ -63,6 +70,8 @@ void AValoriaAI::BeginPlay()
 				{
 					SpawnedCityCenter->SetIsStarterCityCenter(true);
 					SpawnedCityCenter->SetBuildingToStarterBuilding();
+					SpawnedCityCenter->capitalName = capitalName;
+					SpawnedCityCenter->SetCapitalNameTextRender();
 					mapBorderRef->bBorderHasCityCenter = true;
 					mapBorderRef->borderStatus = EBorderStatus::neutral;
 
@@ -101,12 +110,6 @@ void AValoriaAI::BeginPlay()
 	FindAPlaceForMakingBarracksforAI();
 }
 
-
-void AValoriaAI::InitialAIStatus()
-{
-	enemyStatus = EAIStatus::neutral;
-}
-
 void AValoriaAI::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -128,6 +131,7 @@ void AValoriaAI::SpawnSoldier()
 				spawnedInfantry->SetCapitalCode(capitalCode);
 				infantryNumber++;
 				baseUnit++;
+				spawnedInfantry->enemyStatus = enemyStatus;
 				UpdateAIUnits();
 			}
 		}
@@ -185,9 +189,13 @@ void AValoriaAI::UpdateAIUnits()
 		for (AActor* unit : enemyUnits)
 		{
 			AValoriaCharacter* NewUnit = Cast<AValoriaCharacter>(unit);
-			if (NewUnit && !NewUnit->ActorHasTag("Player"))
+			if (NewUnit && !NewUnit->ActorHasTag("Player") && NewUnit->GetCapitalCode() == capitalCode)
 			{
 				NewUnit->enemyStatus = enemyStatus;
+				if(enemyStatus == EAIStatus::enemy)
+				{
+					NewUnit->enemyUnitCodeToAttack.Add(1); // 1 is for player so AI can attack player
+				}
 			}
 		}
 	}
@@ -197,3 +205,6 @@ void AValoriaAI::AIMoveToBuilding()
 {
 	Spawnedworker->AIMoveToBuildingLocation(this);
 }
+
+
+
