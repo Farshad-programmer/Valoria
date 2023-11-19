@@ -10,6 +10,15 @@
 #include "Valoria/Buildings/Barracks.h"
 #include "Valoria/Characters/ValoriaInfantry.h"
 
+
+// Guide
+// AI workers will make barracks  in FindAPlaceForMakingBarracksforAI function
+// barracks will spawn soldiers unit if in Building.cpp we set buildingOwner != EBuildingOwner::self in tick function
+
+
+
+
+
 // Sets default values
 AValoriaAI::AValoriaAI()
 {
@@ -23,6 +32,8 @@ void AValoriaAI::BeginPlay()
 {
 	Super::BeginPlay();
 	enemyStatus = EAIStatus::neutral;
+
+
 
 	FTimerHandle AIStartStatusHandler;
 	GetWorldTimerManager().SetTimer(AIStartStatusHandler, this, &AValoriaAI::InitialAIStatus, 0.2f, false);
@@ -153,6 +164,7 @@ void AValoriaAI::FindAPlaceForMakingBarracksforAI()
 		{
 			spawnedBarraks->GetBuildingMesh()->SetStaticMesh(spawnedBarraks->GetLevel1Mesh());
 			spawnedBarraks->GetBuildingMesh()->SetMaterial(0, spawnedBarraks->buildingMat);
+			spawnedBarraks->SetBuildingOwner(EBuildingOwner::neutral);
 		}
 		if (Spawnedworker)
 		{

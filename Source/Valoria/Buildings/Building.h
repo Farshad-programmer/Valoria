@@ -21,7 +21,8 @@ enum class EBuildingOwner:uint8
 	self,
 	ownerless,
 	ally,
-	enemy
+	enemy,
+	neutral
 };
 
 class AValoriaCam;
