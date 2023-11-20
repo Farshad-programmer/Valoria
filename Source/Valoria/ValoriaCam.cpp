@@ -48,26 +48,12 @@ void AValoriaCam::BeginPlay()
 
 }
 
+
 // Called every frame
 void AValoriaCam::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	/*
-	if (buildingRef)
-	{
-		if (buildingRef->GetBuildingIsAllowedToBeBuilt())
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("%s"),*buildingRef->GetName()));
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Red, FString::Printf(TEXT("%s"),*buildingRef->GetName()));
-		}
-	}
-	 */
-
-
-
+	
 
 	if (playerController)
 	{
@@ -81,49 +67,7 @@ void AValoriaCam::Tick(float DeltaTime)
 		}
 
 		FHitResult checkCoursorHit;
-		bool bHitHapened = playerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, checkCoursorHit);
-
-		if (bHitHapened)
-		{
-			if (playerController)
-			{
-				if (checkCoursorHit.GetActor()->ActorHasTag("Building") || checkCoursorHit.GetActor()->ActorHasTag("Resource"))
-				{
-					if (bIsPlayerSelected || bMarqueeSelected)
-					{
-						playerController->CurrentMouseCursor = EMouseCursor::GrabHand;
-					}
-					else
-					{
-						playerController->CurrentMouseCursor = EMouseCursor::Default;
-					}
-				}
-				else if (checkCoursorHit.GetActor()->ActorHasTag("AI"))
-				{
-					if (bIsPlayerSelected || bMarqueeSelected)
-					{
-						playerController->CurrentMouseCursor = EMouseCursor::Hand;
-					}
-					else
-					{
-						playerController->CurrentMouseCursor = EMouseCursor::Default;
-					}
-				}
-				else
-				{
-					playerController->CurrentMouseCursor = EMouseCursor::Default;
-					if (checkCoursorHit.GetActor()->ActorHasTag("Banner"))
-					{
-						bMouseIsOnBanner = true;
-					}
-					else
-					{
-						bMouseIsOnBanner = false;
-					}
-				}
-			}
-
-		}
+		UpdateMouseCursor(checkCoursorHit);
 
 		if (bCanAdjustBuildingBannerPosition && buildingBannerRef)
 		{
@@ -146,10 +90,54 @@ void AValoriaCam::Tick(float DeltaTime)
 
 
 	}
-
-
-
 }
+
+void AValoriaCam::UpdateMouseCursor(FHitResult& checkCoursorHit)
+{
+	bool bHitHapened = playerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, checkCoursorHit);
+	if (bHitHapened)
+	{
+		if (playerController)
+		{
+			if (checkCoursorHit.GetActor()->ActorHasTag("Building") || checkCoursorHit.GetActor()->ActorHasTag("Resource"))
+			{
+				if (bIsPlayerSelected || bMarqueeSelected)
+				{
+					playerController->CurrentMouseCursor = EMouseCursor::GrabHand;
+				}
+				else
+				{
+					playerController->CurrentMouseCursor = EMouseCursor::Default;
+				}
+			}
+			else if (checkCoursorHit.GetActor()->ActorHasTag("AI") || checkCoursorHit.GetActor()->ActorHasTag("AIBase"))
+			{
+				if (bIsPlayerSelected || bMarqueeSelected)
+				{
+					playerController->CurrentMouseCursor = EMouseCursor::Hand;
+				}
+				else
+				{
+					playerController->CurrentMouseCursor = EMouseCursor::Default;
+				}
+			}
+			else
+			{
+				playerController->CurrentMouseCursor = EMouseCursor::Default;
+				if (checkCoursorHit.GetActor()->ActorHasTag("Banner"))
+				{
+					bMouseIsOnBanner = true;
+				}
+				else
+				{
+					bMouseIsOnBanner = false;
+				}
+			}
+		}
+
+	}
+}
+
 
 void AValoriaCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -646,7 +634,7 @@ void AValoriaCam::OnDeselectStarted()
 	DeselectAllCharacters();
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Deselect all "));
 	bCanMarqueeMove = false;
-	if (buildingRef)
+	if (buildingRef && buildingRef->GetIsBuildingSpawned())
 	{
 		buildingRef->Destroy();
 		bIsPlacingBuidling = false;
@@ -704,7 +692,6 @@ void AValoriaCam::OnSetDestinationStarted()
 				}
 			}
 		}
-
 		if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Resource"))
 		{
 			AResourceMaster* resource = Cast<AResourceMaster>(Hit.GetActor());
@@ -714,6 +701,23 @@ void AValoriaCam::OnSetDestinationStarted()
 				if (players.Num() == 1)
 				{
 					players[0]->MoveToLocation(Hit.Location, true, nullptr, resource);
+				}
+				else
+				{
+					return;
+				}
+			}
+		}
+
+		if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("AIBase"))
+		{
+			ABuilding* building = Cast<ABuilding>(Hit.GetActor());
+
+			if (playerController)
+			{
+				if (players.Num() == 1)
+				{
+					players[0]->MoveToLocation(Hit.Location, false, building, nullptr,false,nullptr,true);
 				}
 				else
 				{
@@ -757,6 +761,9 @@ void AValoriaCam::OnSetDestinationStarted()
 
 void AValoriaCam::OnSetDestinationReleased()
 {
+	if(Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("AIBase")) return;
+
+
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("OnSetDestinationReleased "));
 
 	bIsLeftMousePressed = false;

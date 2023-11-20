@@ -49,7 +49,8 @@ public:
 	UPROPERTY()
 	AResourceMaster* resourceRef;
 
-	void MoveToLocation(const FVector loc,bool canWork,ABuilding* building = nullptr,AResourceMaster* resource = nullptr,bool canKillAI = false,AActor* AIRef = nullptr);
+
+	void MoveToLocation(const FVector loc,bool canWork,ABuilding* building = nullptr,AResourceMaster* resource = nullptr,bool canKillAI = false,AActor* AIRef = nullptr,bool canDestroy = false);
 
 	void StopWorkAnimation();
 
@@ -90,7 +91,8 @@ private:
 	USoundCue* fightSound;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
 	USoundCue* diedSound;
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
+	USoundCue* destroyBaseSound;
 
 
 	
@@ -144,8 +146,9 @@ private:
 	AValoriaCharacter* attacker;
 
 	void CheckCharacterDistanceWithAI();
+	void CheckCharacterDistanceWithBuildingToDestroy();
 	void Attack();
-
+	void DestroyBuilding();
 
 	TArray<AActor*> AllEnemies;
 	void CheckAllNearEnemies();
@@ -177,6 +180,7 @@ protected:
 	virtual void BeginPlay() override;
 	bool bIsStartedWork{false};
 	bool bCanCheckForStartWork{false};
+	bool bCanCheckForStartDestroy{false};
 	bool bCanAttack{true};
 	
 

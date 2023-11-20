@@ -14,6 +14,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "NavigationSystem.h"
+#include "AI/AValoriaAI.h"
 #include "Valoria/Resources/ResourceMaster.h"
 #include "Components/WidgetComponent.h"
 #include "Animation/AnimMontage.h"
@@ -109,24 +110,28 @@ void AValoriaCharacter::Tick(float DeltaSeconds)
 	{
 		RotateToEnemy(DeltaSeconds);
 	}
+	if (bCanCheckForStartDestroy)
+	{
+		RotateToBuilding(DeltaSeconds);
+		CheckCharacterDistanceWithBuildingToDestroy();
+	}
 
 
 }
 
-void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuilding* building, AResourceMaster* resource, bool canKillAI, AActor* AIRef)
+void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuilding* building, AResourceMaster* resource, bool canKillAI, AActor* AIRef, bool canDestroy)
 {
 	if (bDied)return;
 
-	if (building)
+
+	if (building && !canDestroy)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Try to work on Buidling"));
 		if (!building->bConstructionIsBuilt && building->buildingWorkPointsIndex < building->buildingMaxWorker)
 		{
 			locationToWork = building->GetActorLocation();
 		}
 		else
 		{
-			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("The building currently has enough workers"));
 			return;
 		}
 	}
@@ -134,14 +139,13 @@ void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuildin
 
 	if (resource)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Try to work on Resource "));
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, TEXT("resource"));
 		if (resource->buildingWorkPointsIndex < resource->buildingWorkPoints.Num())
 		{
 			locationToWork = resource->GetActorLocation();
 		}
 		else
 		{
-			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("The resource currently has enough workers"));
 			return;
 		}
 	}
@@ -170,31 +174,44 @@ void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuildin
 	{
 		if (canWork)
 		{
-			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("want work"));
 			DefaultAIController->MoveToLocation(locationToWork);
-			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("location : %s"), *locationToWork.ToString()));
 		}
 		else if (canKillAI && AIRef && bCanAttack)
 		{
 			AIToAttackRef = AIRef;
 			bCanCheckDistanceWithAI = true;
-			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("Ready to Kill Enemy"));
 			DefaultAIController->MoveToLocation(AIRef->GetActorLocation());
 		}
-		else if (!canKillAI)
+		else if (!canKillAI && !canDestroy)
 		{
-
-			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Orange, FString::Printf(TEXT("location : %s"), *loc.ToString()));
 			FVector finalLocationToMove = loc;
 			finalLocationToMove.X += UKismetMathLibrary::RandomFloatInRange(20.f, 700.f);
 			finalLocationToMove.Y += UKismetMathLibrary::RandomFloatInRange(20.f, 700.f);
 			DefaultAIController->MoveToLocation(finalLocationToMove);
+		}
+		else if (canDestroy)
+		{
+			buildingRef = building;
+			if (buildingRef)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, TEXT("buildingRef is VALID"));
+				FVector finalLocationToMove = buildingRef->GetActorLocation();
+
+				DefaultAIController->MoveToLocation(finalLocationToMove);
+				bCanCheckForStartDestroy = true;
+				bCanRotateToBuilding = true;
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, TEXT("buildingRef is NOT VALID "));
+			}
 
 		}
 	}
-
-
-
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, TEXT("DefaultAIController NOT VALID"));
+	}
 }
 
 void AValoriaCharacter::RotateToBuilding(float deltaTime)
@@ -287,6 +304,20 @@ void AValoriaCharacter::CheckCharacterDistanceWithAI()
 
 }
 
+void AValoriaCharacter::CheckCharacterDistanceWithBuildingToDestroy()
+{
+	if (buildingRef)
+	{
+		float distance = buildingRef->GetDistanceTo(this);
+		//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Orange, FString::FromInt(distance));
+		if (distance <= 700.f)
+		{
+			bCanRotateToBuilding = false;
+			DestroyBuilding();
+		}
+	}
+}
+
 void AValoriaCharacter::Attack()
 {
 	AValoriaCharacter* AItoKill = Cast<AValoriaCharacter>(AIToAttackRef);
@@ -300,6 +331,37 @@ void AValoriaCharacter::Attack()
 				bIsAttacking = true;
 				bCanRotateToEnemy = false;
 				animInstance->Montage_Play(attackAnimationMontage);
+			}
+		}
+	}
+}
+
+void AValoriaCharacter::DestroyBuilding()
+{
+	if (attackAnimationMontage) // I need add this in condition---> && buildingRef->valoriaAIRef->enemyStatus == EAIStatus::enemy
+	{
+		UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+		if (animInstance)
+		{
+			if (!animInstance->IsAnyMontagePlaying())
+			{
+				if (buildingRef->GetconstructionCounter() > 0)
+				{
+					animInstance->Montage_Play(attackAnimationMontage);
+					if(destroyBaseSound)
+					{
+						UGameplayStatics::SpawnSoundAtLocation(this,destroyBaseSound,GetActorLocation());
+					}
+					buildingRef->DamageBuilding(damagePower);
+				}
+				else
+				{
+					bCanCheckForStartDestroy = false;
+					buildingRef->valoriaAIRef->bHasBarracks = false;
+					buildingRef->Destroy();
+					buildingRef = nullptr;
+					animInstance->Montage_Stop(0.f,attackAnimationMontage);
+				}
 			}
 		}
 	}

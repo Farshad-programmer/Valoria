@@ -43,6 +43,11 @@ ABuilding::ABuilding()
 	BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 }
 
+void ABuilding::DamageBuilding(float damage)
+{
+	constructionCounter -= damage;
+}
+
 void ABuilding::BeginPlay()
 {
 	Super::BeginPlay();

@@ -72,6 +72,8 @@ void AValoriaAI::InitialAIStatus()
 					SpawnedCityCenter->SetBuildingToStarterBuilding();
 					SpawnedCityCenter->capitalName = capitalName;
 					SpawnedCityCenter->SetCapitalNameTextRender();
+					SpawnedCityCenter->SetBuildingOwner(EBuildingOwner::neutral);
+					SpawnedCityCenter->valoriaAIRef = this;
 					mapBorderRef->bBorderHasCityCenter = true;
 					mapBorderRef->borderStatus = EBorderStatus::neutral;
 
@@ -169,6 +171,7 @@ void AValoriaAI::FindAPlaceForMakingBarracksforAI()
 			spawnedBarraks->GetBuildingMesh()->SetStaticMesh(spawnedBarraks->GetLevel1Mesh());
 			spawnedBarraks->GetBuildingMesh()->SetMaterial(0, spawnedBarraks->buildingMat);
 			spawnedBarraks->SetBuildingOwner(EBuildingOwner::neutral);
+			spawnedBarraks->valoriaAIRef = this;
 		}
 		if (Spawnedworker)
 		{

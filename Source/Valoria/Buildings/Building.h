@@ -113,6 +113,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Details, meta = (AllowPrivateAccess = "true"))
 	FString capitalName ;
 
+	void DamageBuilding(float damage);
+
 protected:
 	virtual void BeginPlay() override;
 	void ValidateBuildLocation(FVector loc);
@@ -179,12 +181,15 @@ protected:
 	int32 science;
 
 	EBuildingType buildingType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
 	EBuildingOwner buildingOwner;
 public:
 
 	FORCEINLINE bool GetBuildingIsAllowedToBeBuilt()const {return bBuildingIsAllowedToBeBuilt;}
 	FORCEINLINE bool GetConstructionIsBuilt()const {return bConstructionIsBuilt;}
 	FORCEINLINE float GetWorkersStartWorkDistance()const {return workersStartWorkDistance;}
+	FORCEINLINE float GetconstructionCounter()const {return constructionCounter;}
 	FORCEINLINE int32 GetStone()const {return stone;}
 	FORCEINLINE int32 GetWood()const {return wood;}
 	FORCEINLINE int32 GetGold()const {return gold;}
