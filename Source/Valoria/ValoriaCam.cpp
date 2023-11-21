@@ -53,7 +53,7 @@ void AValoriaCam::BeginPlay()
 void AValoriaCam::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+
 
 	if (playerController)
 	{
@@ -169,12 +169,14 @@ void AValoriaCam::DeselectAllCharacters()
 	{
 		for (auto player : players)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("DeselectAllCharacters "));
-
-			player->SetSelectionNiagaraVisibility(false);
-			player->SetOverlayWidgetVisibility(false);
-			player->SetIsSelected(false);
-			bMarqueeSelected = false;
+			if (player)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("DeselectAllCharacters "));
+				player->SetSelectionNiagaraVisibility(false);
+				player->SetOverlayWidgetVisibility(false);
+				player->SetIsSelected(false);
+				bMarqueeSelected = false;
+			}
 		}
 		players.Empty();
 	}
@@ -234,16 +236,20 @@ void AValoriaCam::DeselectAllBuildings()
 
 		if (buildingActorCasted && buildingActorCasted->GetBuildingMesh())
 		{
-			if (buildingActorCasted->GetBuildingType() == EBuildingType::Barracks && buildingActorCasted->GetBuildingMesh()->bRenderCustomDepth)
+			UStaticMeshComponent* buildingMesh = buildingActorCasted->GetBuildingMesh();
+			if (buildingMesh && buildingMesh->bRenderCustomDepth)
 			{
-				if (buildingBannerRef && !buildingBannerRef->bBannerAdjusted)
+				if (buildingActorCasted->GetBuildingType() == EBuildingType::Barracks)
 				{
-					buildingActorCasted->GetBuildingMesh()->SetRenderCustomDepth(false);
-					buildingActorCasted->BP_ConstructionHUD(false, 0, nullptr);
-				}
-				else
-				{
-					bRunCustomDepthSpecialMode = true;
+					if (buildingBannerRef && !buildingBannerRef->bBannerAdjusted)
+					{
+						buildingMesh->SetRenderCustomDepth(false);
+						buildingActorCasted->BP_ConstructionHUD(false, 0, nullptr);
+					}
+					else
+					{
+						bRunCustomDepthSpecialMode = true;
+					}
 				}
 			}
 		}
@@ -715,13 +721,9 @@ void AValoriaCam::OnSetDestinationStarted()
 
 			if (playerController)
 			{
-				if (players.Num() == 1)
+				for (auto player : players)
 				{
-					players[0]->MoveToLocation(Hit.Location, false, building, nullptr,false,nullptr,true);
-				}
-				else
-				{
-					return;
+					player->MoveToLocation(Hit.Location, false, building, nullptr, false, nullptr, true);
 				}
 			}
 		}
@@ -761,7 +763,7 @@ void AValoriaCam::OnSetDestinationStarted()
 
 void AValoriaCam::OnSetDestinationReleased()
 {
-	if(Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("AIBase")) return;
+	if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("AIBase")) return;
 
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("OnSetDestinationReleased "));
@@ -791,6 +793,7 @@ void AValoriaCam::OnSetDestinationReleased()
 					players[0]->MoveToLocation(Hit.Location, false, nullptr, nullptr);
 					players[0]->SetRunAway(true);
 					players[0]->SetCanRotateToEnemy(false);
+					players[0]->SetCanRotateToBuilding(false);
 					players[0]->SetCanCheckDistanceWithAI(false);
 					UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, CachedDestination, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
 				}
@@ -814,6 +817,7 @@ void AValoriaCam::OnSetDestinationReleased()
 								{
 									player->SetRunAway(true);
 									player->SetCanRotateToEnemy(false);
+									player->SetCanRotateToBuilding(false);
 									player->SetCanCheckDistanceWithAI(false);
 									player->MoveToLocation(Hit.Location, false, nullptr, nullptr);
 								}

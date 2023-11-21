@@ -35,6 +35,8 @@ class UBoxComponent;
 class AMapBorder;
 class AValoriaWorker;
 class AValoriaAI;
+class UParticleSystem;
+class USoundCue;
 UCLASS()
 class VALORIA_API ABuilding : public AActor
 {
@@ -79,6 +81,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details)
 	USceneComponent* characterStarterPoint;
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
+	USoundCue* destroyBaseSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* destroyBaseParticle;
 
 
 	int32 buildingMaxWorker{3};

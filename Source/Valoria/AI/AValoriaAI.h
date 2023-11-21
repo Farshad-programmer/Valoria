@@ -56,6 +56,20 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
 	int32 science = 20;
 
+	int32 capitalToAttack = 0;
+
+	bool bInWarState{false};
+	bool bBaseToAttackIdentified{false};
+	bool bOrderUnitsToAttackBase{false};
+	bool bOrderUnitsToAttackUnits{false};
+	int32 attackCounter {2};
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
+	TArray<int32>enemiesCode;
+
+	UPROPERTY()
+	ACityCenter* baseToAttack;
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -71,9 +85,11 @@ private:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
 	TSubclassOf<AValoriaInfantry> valoriaInfantryClass;
 
-	
 
-
+	void CheckWarState();
+	void FindNearestBaseToAttack();
+	void OrderSoldiersToAttack(int32 enemyCapitalCodeToAttack);
+	void CheckingUnitNumberInBase();
 
 
 	FVector AIBaseCenterLocation ;
@@ -96,7 +112,7 @@ private:
 	void SpawnSoldier();
 
 	uint32 baseUnit{0};
-
+	uint32 unitInCapital{0};
 
 	UFUNCTION()
 	void InitialAIStatus();
@@ -110,3 +126,4 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 };
+

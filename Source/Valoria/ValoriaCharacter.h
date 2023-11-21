@@ -19,7 +19,8 @@ class UBoxComponent;
 class UPawnSensingComponent;
 class USphereComponent;
 class USoundCue;
-
+class UParticleSystem;
+class AValoriaAI;
 
 UENUM(BlueprintType)
 enum class ESoliderClass:uint8
@@ -60,6 +61,13 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
 	TArray<int32>enemyUnitCodeToAttack;
 
+	UPROPERTY()
+	AValoriaAI* unitAIOwner;
+
+	// AI
+	bool bMustAttackBase{false};
+
+
 private:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Efect, meta = (AllowPrivateAccess = "true"))
@@ -92,10 +100,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
 	USoundCue* diedSound;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
-	USoundCue* destroyBaseSound;
-
-
-	
+	USoundCue* damageBaseSound;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= stat, meta=(AllowPrivateAccess = "true"))
@@ -110,11 +115,17 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= stat, meta=(AllowPrivateAccess = "true"))
 	float damagePower{50.f};
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
-	bool bIsAttacking{false};
+	bool bIsAttackingUnits{false};
+
+	bool bFacingUnitEnemy{false};
 
 	bool bDied{false};
-
+	bool bInWarState{false};
+	bool bCanAttackBaseAgain{false};
 	TArray<AActor*> characters;
+
+
+
 
 
 
@@ -202,7 +213,7 @@ public:
 	FORCEINLINE bool GetIsStartedWork()const {return bIsStartedWork;}
 	FORCEINLINE UWidgetComponent* GetOverlayWidget()const {return Widget;}
 	FORCEINLINE int32 GetCapitalCode()const {return capitalCode;}
-
+	FORCEINLINE bool GetInWarState()const {return bInWarState;}
 
 	FORCEINLINE void SetRunAway(bool runAway){bRunAway = runAway;}
 	FORCEINLINE void SetIsSelected(bool selected){bIsSelected = selected;}
@@ -213,6 +224,8 @@ public:
 	FORCEINLINE void SetCapitalCode(int32 newCode){capitalCode = newCode;}
 	FORCEINLINE void SetCanCheckDistanceWithAI(bool canCheck){bCanCheckDistanceWithAI = canCheck;}
 	FORCEINLINE void SetCanRotateToEnemy(bool canRotate){bCanRotateToEnemy = canRotate;}
+	FORCEINLINE void SetInWarState(bool state){bInWarState = state;}
+	FORCEINLINE void SetCanRotateToBuilding(bool canRotate){bCanRotateToBuilding = canRotate;}
 };
 
 
