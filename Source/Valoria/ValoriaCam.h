@@ -14,22 +14,46 @@ class AValoriaHUD;
 class ABuilding;
 class ABuildingBanner;
 class AValoriaInfantry;
+class UCameraComponent;
 UCLASS()
 class VALORIA_API AValoriaCam : public APawn
 {
 	GENERATED_BODY()
 
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* ValeriaCamera;
-
-
 public:
-	// Sets default values for this pawn's properties
-	AValoriaCam();
 
-	// Called every frame
+	// public functions
+
+	AValoriaCam();
 	virtual void Tick(float DeltaTime) override;
+	void DeselectAllCharacters();
+	bool IsAllNewWorkersStartedWork(TArray<AValoriaCharacter*> workers);
+	void DestroyAllBanners();
+	void DeselectAllBuildings();
+	void CheckWhenHittedActorIsPlayer();
+	void UpdateWood(bool plus,int32 amount);
+	void UpdateGold(bool plus,int32 amount);
+	void UpdateStone(bool plus,int32 amount);
+	void UpdateScience(bool plus,int32 amount);
+
+	// blueprint callable functions
+
+	UFUNCTION(BlueprintCallable)
+	void SpawnConstruction(int32 constructionID);
+
+	UFUNCTION(BlueprintCallable)
+	void SpawnSoldier(int32 soldierCode,ABuilding* building);
+
+
+
+	// blueprint implement event functions
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_ConstructionHUD(bool active,int constructNum,ABuilding* building);
+	//constructNum => 0:building 1:Barracks
+
+	// public variables
+
 
 		/** Time Threshold to know if it was a short press */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
@@ -48,14 +72,10 @@ public:
 	class UInputAction* SelectClickAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* Deselect;
+	UInputAction* Deselect;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* SetDestinationClickAction;
-
-
-
-
+	UInputAction* SetDestinationClickAction;
 
 	UPROPERTY()
 	TArray<AValoriaCharacter*>players;
@@ -75,11 +95,6 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Spawning)
 	TSubclassOf<AValoriaInfantry> valoriaCommanderToSpawn;
 
-	void DeselectAllCharacters();
-	bool IsAllNewWorkersStartedWork(TArray<AValoriaCharacter*> workers);
-	void DestroyAllBanners();
-	void DeselectAllBuildings();
-
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	ABuilding* buildingRef;
 
@@ -88,89 +103,41 @@ public:
 
 	UPROPERTY()
 	AValoriaCharacter* PlayerTemp ;
-
-
-
-	// blueprint callable functions
-
-	UFUNCTION(BlueprintCallable)
-	void SpawnConstruction(int32 constructionID);
-
-	UFUNCTION(BlueprintCallable)
-	void SpawnSoldier(int32 soldierCode,ABuilding* building);
-
-	// blueprint implement event functions
-	UFUNCTION(BlueprintImplementableEvent)
-	void BP_ConstructionHUD(bool active,int constructNum,ABuilding* building);
-	//constructNum => 0:building 1:Barracks
-
-	void UpdateWood(bool plus,int32 amount);
-	void UpdateGold(bool plus,int32 amount);
-	void UpdateStone(bool plus,int32 amount);
-	void UpdateScience(bool plus,int32 amount);
-
+	
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	void UpdateBannerLocationPlacement(FHitResult checkCoursorHit);
 	void UpdateMouseCursor(FHitResult& checkCoursorHit);
-
-	/** True if the controlled character should navigate to the mouse cursor. */
-	uint32 bMoveToMouseCursor : 1;
-
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	/** Input handlers for SetDestination action. */
-	void OnInputStarted();
 	void OnSelectStarted();
 	void OnSelectReleased();
 	void OnDeselectStarted();
 	void OnSetDestinationStarted();
+	void MakeMarqueeReleased();
+	void MovePlayerOnMap();
 	void OnSetDestinationReleased();
 
 
 	
-
-
-
-
+	/** True if the controlled character should navigate to the mouse cursor. */
+	uint32 bMoveToMouseCursor : 1;
+	
 private:
-	FVector CachedDestination;
-	FHitResult Hit;
-	float FollowTime; // For how long it has been pressed
 
-	bool bIsPlayerSelected{false};
-	bool bCanAdjustBuildingBannerPosition{false};
+	// private variables
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* ValeriaCamera;
 
 	UPROPERTY()
 	ABuildingBanner* buildingBannerRef;
+
+	UPROPERTY()
 	TArray<ABuildingBanner*>AllBanners;
 
 	UPROPERTY()
 	TArray<AActor*> characters;
-
-	bool bIsLeftMousePressed{false};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
-	bool bMovingBanner{false};
-
-	bool bAdjustingBanner{true};
-
-	int adjustingBannerCounter = 0;
-	bool bBuildingSelected{false};
-	bool bRunCustomDepthSpecialMode{false};
-	bool bMouseIsOnBanner{false};
-	void RenderCustomDepthHandle();
-	UPROPERTY()
-	AValoriaPlayerController* valoriaPlayerController;
-
-	UPROPERTY()
-	APlayerController* playerController;
-
-	bool bMarqueeSelected{false};
-	bool bCanMarqueeMove{false};
-	bool bCourserHitSuccessful;
-	bool bCanPlaceBuilding{false};
-	bool bIsPlacingBuidling {false};
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game ,meta=(AllowPrivateAccess = "true"))
 	int32 wood {100};
@@ -183,6 +150,35 @@ private:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game, meta=(AllowPrivateAccess = "true"))
 	int32 science {20};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
+	bool bMovingBanner{false};
+
+	UPROPERTY()
+	AValoriaPlayerController* valoriaPlayerController;
+
+	UPROPERTY()
+	APlayerController* playerController;
+
+	bool bAdjustingBanner{true};
+	bool bIsLeftMousePressed{false};
+	int adjustingBannerCounter = 0;
+	bool bBuildingSelected{false};
+	bool bRunCustomDepthSpecialMode{false};
+	bool bMouseIsOnBanner{false};
+	bool bMarqueeSelected{false};
+	bool bCanMarqueeMove{false};
+	bool bCourserHitSuccessful;
+	bool bCanPlaceBuilding{false};
+	bool bIsPlacingBuidling {false};
+	FVector CachedDestination;
+	FHitResult Hit;
+	float FollowTime; // For how long it has been pressed
+	bool bIsPlayerSelected{false};
+	bool bCanAdjustBuildingBannerPosition{false};
+
+	// Private functions
+	void RenderCustomDepthHandle();
 
 public:	
 		// All getter and setter here

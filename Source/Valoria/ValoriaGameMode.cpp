@@ -31,7 +31,11 @@ AValoriaGameMode::AValoriaGameMode()
 void AValoriaGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	SpawnSpecificAIClassForStartGame();
+}
 
+void AValoriaGameMode::SpawnSpecificAIClassForStartGame()
+{
 	for (int i = 0; i < startingAIBase; ++i)
 	{
 		if (GetWorld() && enemyAIClass)
@@ -45,6 +49,4 @@ void AValoriaGameMode::BeginPlay()
 			}
 		}
 	}
-
-
 }

@@ -7,6 +7,7 @@
 #include "ValoriaGameMode.generated.h"
 
 class AValoriaAI;
+
 UCLASS(minimalapi)
 class AValoriaGameMode : public AGameModeBase
 {
@@ -14,6 +15,7 @@ class AValoriaGameMode : public AGameModeBase
 
 public:
 	AValoriaGameMode();
+	void SpawnSpecificAIClassForStartGame();
 	void BeginPlay() override;
 
 

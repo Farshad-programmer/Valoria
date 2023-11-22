@@ -39,22 +39,24 @@ class AValoriaCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
+	// public functions
 	AValoriaCharacter();
-
-	// Called every frame.
 	virtual void Tick(float DeltaSeconds) override;
+	void CheckIfNeedMoveToBuildingOrResourcePlaces(ABuilding* building, AResourceMaster* resource, bool canDestroy);
+	void CheckIfCanWork(bool canWork, ABuilding* building, AResourceMaster* resource);
+	void MoveToSpecificLocation(FVector loc, bool canWork, ABuilding* building, bool canKillAI, AActor* AIRef,
+	                            bool canDestroy);
+	void MoveToLocation(const FVector loc,bool canWork,ABuilding* building = nullptr,AResourceMaster* resource = nullptr,bool canKillAI = false,AActor* AIRef = nullptr,bool canDestroy = false);
+	void StopWorkAnimation();
+
+	// public variables
 
 	UPROPERTY()
 	ABuilding* buildingRef;
 
 	UPROPERTY()
 	AResourceMaster* resourceRef;
-
-
-	void MoveToLocation(const FVector loc,bool canWork,ABuilding* building = nullptr,AResourceMaster* resource = nullptr,bool canKillAI = false,AActor* AIRef = nullptr,bool canDestroy = false);
-
-	void StopWorkAnimation();
-
+	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game, meta=(AllowPrivateAccess = "true"))
 	EAIStatus enemyStatus;
 
@@ -69,9 +71,11 @@ public:
 
 
 private:
-	
+
+	// private variables********************
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Efect, meta = (AllowPrivateAccess = "true"))
-	class UNiagaraComponent* SelectionNiagara;
+	UNiagaraComponent* SelectionNiagara;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* Weapon;
@@ -84,7 +88,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	UPawnSensingComponent* pawnSensing;
-
 
 
 	// Animation montages
@@ -114,41 +117,12 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= stat, meta=(AllowPrivateAccess = "true"))
 	float damagePower{50.f};
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
 	bool bIsAttackingUnits{false};
 
-	bool bFacingUnitEnemy{false};
-
-	bool bDied{false};
-	bool bInWarState{false};
-	bool bCanAttackBaseAgain{false};
+	UPROPERTY()
 	TArray<AActor*> characters;
-
-
-
-
-
-
-	bool bHasProblemToFindDistanceWithBuilding{false};
-	int32 workerIssueCounter {0};
-
-	FVector locationToWork;
-	FVector tempLocation;
-
-
-	void RotateToBuilding(float deltaTime);
-	void RotateToResource(float deltaTime);
-	void RotateToEnemy(float deltaTime);
-	bool bCanRotateToBuilding{true};
-	bool bCanCheckDistanceWithAI{false};
-	bool bCanRotateToEnemy{false};
-	bool bIsSelected{false};
-	bool bRunAway{false};
-
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
-	int32 capitalCode ;
-
-	
 
 	UPROPERTY()
 	AActor* AIToAttackRef;
@@ -156,14 +130,37 @@ private:
 	UPROPERTY()
 	AValoriaCharacter* attacker;
 
+	UPROPERTY()
+	TArray<AActor*> AllEnemies;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
+	int32 capitalCode ;
+
+	bool bFacingUnitEnemy{false};
+	bool bDied{false};
+	bool bInWarState{false};
+	bool bCanAttackBaseAgain{false};
+	bool bHasProblemToFindDistanceWithBuilding{false};
+	int32 workerIssueCounter {0};
+	FVector locationToWork;
+	FVector tempLocation;
+	bool bCanRotateToBuilding{true};
+	bool bCanCheckDistanceWithAI{false};
+	bool bCanRotateToEnemy{false};
+	bool bIsSelected{false};
+	bool bRunAway{false};
+
+	// Private Functions
+	void RotateToBuilding(float deltaTime);
+	void RotateToResource(float deltaTime);
+	void RotateToEnemy(float deltaTime);
 	void CheckCharacterDistanceWithAI();
 	void CheckCharacterDistanceWithBuildingToDestroy();
 	void Attack();
 	void DestroyBuilding();
-
-	TArray<AActor*> AllEnemies;
 	void CheckAllNearEnemies();
-
+	void death();
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION()
 	void WeaponBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
@@ -172,16 +169,9 @@ private:
 	void EnemyDetectorBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 
 
-
-	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-
-	void death();
-
-
 	// Pawn Sensing
 	UFUNCTION()
 	void OnSeePawn(APawn* Pawn);
-
 
 	//Timers
 	UFUNCTION()
@@ -189,12 +179,7 @@ private:
 
 protected:
 	virtual void BeginPlay() override;
-	bool bIsStartedWork{false};
-	bool bCanCheckForStartWork{false};
-	bool bCanCheckForStartDestroy{false};
-	bool bCanAttack{true};
 	
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	USphereComponent* enemyDetector;
 
@@ -204,9 +189,12 @@ protected:
 
 	// animations
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Animations, meta=(AllowPrivateAccess = "true"))
-	class UAnimMontage* BuildingAnimation;
+	UAnimMontage* BuildingAnimation;
 
-	
+	bool bIsStartedWork{false};
+	bool bCanCheckForStartWork{false};
+	bool bCanCheckForStartDestroy{false};
+	bool bCanAttack{true};
 
 
 public:

@@ -103,8 +103,8 @@ void ABuilding::ConstructionProcess(float DeltaTime)
 }
 void ABuilding::MovingBuildingToFindRightPlace()
 {
-	CheckCanBuild();
 	LineTraceFloorCheckers();
+	CheckCanBuild();
 	valoriaCam->SetIsPlacingBuidling(true);
 	APlayerController* playerController = UGameplayStatics::GetPlayerController(this, 0);
 	if (playerController)

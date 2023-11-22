@@ -69,10 +69,6 @@ AValoriaCharacter::AValoriaCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 }
-
-
-
-
 void AValoriaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -84,17 +80,14 @@ void AValoriaCharacter::BeginPlay()
 
 	if (ActorHasTag("Player"))
 	{
-		capitalCode = 1;
+		capitalCode = 1; // player capital coded seted to 1
 	}
 
 	pawnSensing->OnSeePawn.AddDynamic(this, &AValoriaCharacter::OnSeePawn);
 
 	FTimerHandle checkNearEnemiesHandle;
 	GetWorldTimerManager().SetTimer(checkNearEnemiesHandle, this, &AValoriaCharacter::CheckAllNearEnemies, 3.f, true);
-
-
 }
-
 void AValoriaCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -132,30 +125,28 @@ void AValoriaCharacter::Tick(float DeltaSeconds)
 			//GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Red, TEXT("bCanRotateToEnemy "));
 		}
 	}
-
-
-
 }
-
 void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuilding* building, AResourceMaster* resource, bool canKillAI, AActor* AIRef, bool canDestroy)
 {
 	if (bDied)return;
-
-
+	CheckIfNeedMoveToBuildingOrResourcePlaces(building, resource, canDestroy);
+	CheckIfCanWork(canWork, building, resource);
+	//tempLocation = loc;
+	MoveToSpecificLocation(loc, canWork, building, canKillAI, AIRef, canDestroy);
+}
+void AValoriaCharacter::CheckIfNeedMoveToBuildingOrResourcePlaces(ABuilding* building, AResourceMaster* resource, bool canDestroy)
+{
 	if (building && !canDestroy)
 	{
-
 		if (!building->bConstructionIsBuilt && building->buildingWorkPointsIndex < building->buildingMaxWorker)
 		{
 			locationToWork = building->GetActorLocation();
 		}
 		else
 		{
-			return;
+			
 		}
 	}
-
-
 	if (resource)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, TEXT("resource"));
@@ -165,10 +156,12 @@ void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuildin
 		}
 		else
 		{
-			return;
+			
 		}
 	}
-
+}
+void AValoriaCharacter::CheckIfCanWork(bool canWork, ABuilding* building, AResourceMaster* resource)
+{
 	if (canWork)
 	{
 		if (building)
@@ -182,12 +175,9 @@ void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuildin
 			resourceRef = resource;
 		}
 	}
-
-
-	tempLocation = loc;
-
-
-
+}
+void AValoriaCharacter::MoveToSpecificLocation(const FVector loc, bool canWork, ABuilding* building, bool canKillAI, AActor* AIRef, bool canDestroy)
+{
 	AAIController* DefaultAIController = Cast<AAIController>(GetController());
 	if (DefaultAIController)
 	{
@@ -235,7 +225,6 @@ void AValoriaCharacter::MoveToLocation(const FVector loc, bool canWork, ABuildin
 		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, TEXT("DefaultAIController NOT VALID"));
 	}
 }
-
 void AValoriaCharacter::RotateToBuilding(float deltaTime)
 {
 	if (buildingRef == nullptr || !bCanRotateToBuilding)return;
@@ -248,7 +237,6 @@ void AValoriaCharacter::RotateToBuilding(float deltaTime)
 	FRotator RInterpToOutput = FMath::RInterpTo(actorRotation, FindLookAtRotationOutput, deltaTime, 15.f);
 	SetActorRotation(FRotator(0.f, FindLookAtRotationOutput.Yaw, 0.f));
 }
-
 void AValoriaCharacter::RotateToResource(float deltaTime)
 {
 	if (resourceRef == nullptr || !bCanRotateToBuilding)return;
@@ -259,7 +247,6 @@ void AValoriaCharacter::RotateToResource(float deltaTime)
 	FRotator RInterpToOutput = FMath::RInterpTo(actorRotation, FindLookAtRotationOutput, deltaTime, 15.f);
 	SetActorRotation(FRotator(0.f, FindLookAtRotationOutput.Yaw, 0.f));
 }
-
 void AValoriaCharacter::RotateToEnemy(float deltaTime)
 {
 	if (AIToAttackRef == nullptr || !bCanRotateToEnemy)return;
@@ -271,8 +258,6 @@ void AValoriaCharacter::RotateToEnemy(float deltaTime)
 	FRotator RInterpToOutput = FMath::RInterpTo(actorRotation, FindLookAtRotationOutput, deltaTime, 15.f);
 	SetActorRotation(FRotator(0.f, FindLookAtRotationOutput.Yaw, 0.f));
 }
-
-
 void AValoriaCharacter::StopWorkAnimation()
 {
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
@@ -283,7 +268,6 @@ void AValoriaCharacter::StopWorkAnimation()
 		{
 			GetMesh()->SetRenderCustomDepth(false);
 		}
-
 	}
 	if (buildingRef && buildingRef->buidlingWorkers.Num() <= 0)
 	{
@@ -301,10 +285,7 @@ void AValoriaCharacter::StopWorkAnimation()
 
 		}
 	}
-
 }
-
-
 void AValoriaCharacter::CheckCharacterDistanceWithAI()
 {
 	if (AIToAttackRef)
@@ -323,7 +304,6 @@ void AValoriaCharacter::CheckCharacterDistanceWithAI()
 		}
 	}
 }
-
 void AValoriaCharacter::CheckCharacterDistanceWithBuildingToDestroy()
 {
 	if (buildingRef)
@@ -337,7 +317,6 @@ void AValoriaCharacter::CheckCharacterDistanceWithBuildingToDestroy()
 		}
 	}
 }
-
 void AValoriaCharacter::Attack()
 {
 	AValoriaCharacter* AItoKill = Cast<AValoriaCharacter>(AIToAttackRef);
@@ -370,7 +349,6 @@ void AValoriaCharacter::Attack()
 		}
 	}
 }
-
 void AValoriaCharacter::DestroyBuilding()
 {
 	if(ActorHasTag("Player"))
@@ -423,17 +401,12 @@ void AValoriaCharacter::DestroyBuilding()
 		}
 	}
 }
-
 void AValoriaCharacter::CheckAllNearEnemies()
 {
 	if(bMustAttackBase) return;
 	if (!bCanAttack)return;
-	//if (bCanCheckDistanceWithAI) return;
-	//if (bCanRotateToEnemy)return;
-	//if(bIsSelected)return;
 	if (bRunAway) return;
 
-	//GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Purple, TEXT("CheckAllNearEnemies"));
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AValoriaCharacter::StaticClass(), AllEnemies);
 	for (AActor* enemy : AllEnemies)
 	{
@@ -468,7 +441,6 @@ void AValoriaCharacter::CheckAllNearEnemies()
 					}
 				}
 			}
-
 		}
 		else
 		{
@@ -552,7 +524,6 @@ float AValoriaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, FString::FromInt(health));
 	return health;
-
 }
 
 void AValoriaCharacter::death()
@@ -575,7 +546,6 @@ void AValoriaCharacter::death()
 		SetLifeSpan(2.f);
 	}
 }
-
 void AValoriaCharacter::OnSeePawn(APawn* Pawn)
 {
 	if (bDied)
@@ -611,9 +581,8 @@ void AValoriaCharacter::OnSeePawn(APawn* Pawn)
 			bCanRotateToEnemy = true;
 			bCanCheckDistanceWithAI = true;
 			AIToAttackRef = seenPawn;
-			
 
-
+			// Retargatable Delay
 			FLatentActionInfo latentActionInfo;
 			latentActionInfo.Linkage = 0;
 			latentActionInfo.CallbackTarget = this;
@@ -624,7 +593,6 @@ void AValoriaCharacter::OnSeePawn(APawn* Pawn)
 	}
 	else
 	{
-
 		bool bAICanAttack = false;
 		AValoriaCharacter* seenPawn = Cast<AValoriaCharacter>(Pawn);
 		if (seenPawn && seenPawn->health > 0 && seenPawn->GetCapitalCode() != capitalCode && AIToAttackRef == nullptr)
@@ -640,10 +608,8 @@ void AValoriaCharacter::OnSeePawn(APawn* Pawn)
 					bCanCheckDistanceWithAI = true;
 					AIToAttackRef = seenPawn;
 					bAICanAttack = true;
-					
 				}
 			}
-
 			if (bAICanAttack)
 			{
 				if (DefaultAIController)
@@ -655,8 +621,6 @@ void AValoriaCharacter::OnSeePawn(APawn* Pawn)
 				bCanRotateToEnemy = true;
 				bCanCheckDistanceWithAI = true;
 				AIToAttackRef = seenPawn;
-				
-
 			}
 
 			FLatentActionInfo latentActionInfo;
@@ -667,11 +631,7 @@ void AValoriaCharacter::OnSeePawn(APawn* Pawn)
 			UKismetSystemLibrary::RetriggerableDelay(this, 0.6f, latentActionInfo);
 		}
 	}
-
-
-
 }
-
 void AValoriaCharacter::OnCoolDownCheckSeenEnemy()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, TEXT("OnCoolDownCheckSeenEnemy"));
