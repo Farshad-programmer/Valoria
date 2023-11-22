@@ -21,20 +21,16 @@ UCLASS()
 class VALORIA_API AMapBorder : public AActor
 {
 	GENERATED_BODY()
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
-	UBoxComponent* borderbox;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
-	UBoxComponent* cityCenterboxChecker;
 	
 public:	
 	AMapBorder();
+	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Details)
 	EBorderStatus borderStatus;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Details,meta = (AllowPrivateAccess = "true"))
 	bool bBorderHasCityCenter{false};
-
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateBorderOwnerFromBlueprint();
@@ -46,10 +42,14 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* borderbox;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* cityCenterboxChecker;
 
 	
 public:	
-	virtual void Tick(float DeltaTime) override;
+
 
 };

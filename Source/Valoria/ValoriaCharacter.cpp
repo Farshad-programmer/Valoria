@@ -412,7 +412,7 @@ void AValoriaCharacter::DestroyBuilding()
 						}
 						if (buildingRef->valoriaAIRef)
 						{
-							buildingRef->valoriaAIRef->bHasBarracks = false;
+							buildingRef->valoriaAIRef->SetHasBarracks(false);
 						}
 						buildingRef->Destroy();
 						buildingRef = nullptr;

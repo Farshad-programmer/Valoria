@@ -22,7 +22,6 @@ void AMapBorder::BeginPlay()
 void AMapBorder::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 

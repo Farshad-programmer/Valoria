@@ -13,8 +13,6 @@ enum class EBuildingType:uint8
 	Barracks,
 	CityCenter
 };
-
-
 UENUM(BlueprintType)
 enum class EBuildingOwner:uint8
 {
@@ -24,7 +22,6 @@ enum class EBuildingOwner:uint8
 	enemy,
 	neutral
 };
-
 class AValoriaCam;
 class USceneComponent;
 class UWidgetComponent;
@@ -42,13 +39,69 @@ class VALORIA_API ABuilding : public AActor
 {
 	GENERATED_BODY()
 
+public:
+
+	// public functions
+
+	ABuilding();
+	virtual void Tick(float DeltaTime) override;
+	void DamageBuilding(float damage);
+
+	// BlueprintImplementableEvent Functions
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_ConstructionHUD(bool active,int constructNum,ABuilding* building);
+	
+	// public variables
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details)
+	USceneComponent* flagStarterPoint;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details)
+	USceneComponent* characterStarterPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
+	USoundCue* destroyBaseSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* destroyBaseParticle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details)
+	int32 workerNumber{0};
+
+	UPROPERTY()
+	TArray<AValoriaCharacter*>buidlingWorkers;
+
+	UPROPERTY()
+	ABuildingBanner* buildingBannerRelated;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	UMaterial* buildingMat;
+
+	UPROPERTY()
+	AValoriaAI* valoriaAIRef;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Details, meta = (AllowPrivateAccess = "true"))
+	FString capitalName ;
+	
+	int32 buildingMaxWorker{3};
+	int32 buildingWorkPointsIndex;
+	FVector bannerLocation;
+	bool bConstructionProgressStarted{false};
+	bool bConstructionIsBuilt{false};
+	bool bBuildingHasBanner{false};
+
 private:
+
+
+	// private variables
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* Widget;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	UBoxComponent* box;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	UStaticMesh* level1Mesh;
 
@@ -65,72 +118,41 @@ private:
 	UMaterial* buildingRedMat;
 
 
-	
-
-
 	bool bUpdatingNeeds{true};
 
-public:	
-	ABuilding();
-	virtual void Tick(float DeltaTime) override;
 
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details)
-	USceneComponent* flagStarterPoint;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details)
-	USceneComponent* characterStarterPoint;
+	// Subclasses
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
-	USoundCue* destroyBaseSound;
+	// Timer handles
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
-	UParticleSystem* destroyBaseParticle;
-
-
-	int32 buildingMaxWorker{3};
-	int32 buildingWorkPointsIndex;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details)
-	int32 workerNumber{0};
-
-	UPROPERTY()
-	TArray<AValoriaCharacter*>buidlingWorkers;
-
-	bool bConstructionProgressStarted{false};
-	bool bConstructionIsBuilt{false};
-	bool bBuildingHasBanner{false};
-
-	UPROPERTY()
-	ABuildingBanner* buildingBannerRelated;
-
-	FVector bannerLocation;
+	// Private Functions
 
 
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void BP_ConstructionHUD(bool active,int constructNum,ABuilding* building);
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
-	UMaterial* buildingMat;
-
-	UPROPERTY()
-	AValoriaAI* valoriaAIRef;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Details, meta = (AllowPrivateAccess = "true"))
-	FString capitalName ;
-
-	void DamageBuilding(float damage);
 
 protected:
+
+
+	
+	// Protocted Functions
+
 	virtual void BeginPlay() override;
+	void PlacingBuilding();
+	void MovingBuildingToFindRightPlace();
+	void UpdateBuildingNeeds();
+	void ConstructionProcess(float DeltaTime);
 	void ValidateBuildLocation(FVector loc);
+	void CheckCanBuild();
+	void LineTraceFloorCheckers();
+
+	// protected variables
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
-	class UStaticMeshComponent* BuildingMesh;
-
-
+	UStaticMeshComponent* BuildingMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float constrcutionFinishValue = 10000.f;
@@ -138,24 +160,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float constructionCounter{0};
 
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Details, meta = (AllowPrivateAccess = "true"))
 	AMapBorder* BorderRef;
 
-
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
 	float workersStartWorkDistance = {400.f};
-	int32 buildingLevel {0};
-	FHitResult Hit;
-
-	void CheckCanBuild();
-	void LineTraceFloorCheckers();
-
-	bool bEdge1;
-	bool bEdge2;
-	bool bEdge3;
-	bool bEdge4;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
 	float buildingRadius = 300.f;
@@ -166,34 +175,43 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Details)
 	bool bCanCheck{true};
 
-	UPROPERTY()
-	AValoriaCam* valoriaCam;
-
-	float constructionProgressSpeed{200.f};
-
-	bool bIsBuildingSpawned{false};
-	bool bBuildingPlaced{false};
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Details)
 	bool bBuildingIsAllowedToBeBuilt{false};
-	bool bIsBuildingSelected{false};
 
-
-	// needs
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
 	int32 wood;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
 	int32 stone;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
 	int32 gold;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
 	int32 science;
 
-	EBuildingType buildingType;
+	UPROPERTY()
+	AValoriaCam* valoriaCam;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
 	EBuildingOwner buildingOwner;
+
+	int32 buildingLevel {0};
+	EBuildingType buildingType;
+	FHitResult Hit;
+	bool bEdge1;
+	bool bEdge2;
+	bool bEdge3;
+	bool bEdge4;
+	bool bIsBuildingSpawned{false};
+	bool bBuildingPlaced{false};
+	bool bIsBuildingSelected{false};
+	float constructionProgressSpeed{200.f};
+	
+
 public:
 
+	// Getter
 	FORCEINLINE bool GetBuildingIsAllowedToBeBuilt()const {return bBuildingIsAllowedToBeBuilt;}
 	FORCEINLINE bool GetConstructionIsBuilt()const {return bConstructionIsBuilt;}
 	FORCEINLINE float GetWorkersStartWorkDistance()const {return workersStartWorkDistance;}
@@ -210,6 +228,7 @@ public:
 	FORCEINLINE UStaticMesh* GetLevel1Mesh() const {return level1Mesh;}
 
 
+	// Setter
 	FORCEINLINE void SetIsBuildingSpawned(bool IsSpawned){bIsBuildingSpawned = IsSpawned;}
 	FORCEINLINE void SetBuildingIsAllowedToBeBuilt(bool canPlace){bBuildingIsAllowedToBeBuilt = canPlace;}
 	FORCEINLINE void SetIsBuildingSelected(bool isSelected){bIsBuildingSelected = isSelected;}

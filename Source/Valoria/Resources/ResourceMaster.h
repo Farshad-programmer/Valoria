@@ -23,31 +23,66 @@ UCLASS()
 class VALORIA_API AResourceMaster : public AActor
 {
 	GENERATED_BODY()
-private:
 
+public:
+	// public functions
+	virtual void Tick(float DeltaTime) override;
+
+	// public variables
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	int32 workerNumber{0};
+
+	UPROPERTY()
+	TArray<AValoriaCharacter*>ResourceWorkers;
+
+	UPROPERTY()
+	AValoriaCam* valoriaCam;
+
+	UPROPERTY()
+	TArray<AValoriaCharacter*>buidlingWorkers;
+
+	
+	bool bWorkProgressStarted{false};
+	float workProgressSpeed{40.f};
+	TArray<FVector>buildingWorkPoints;
+	int32 buildingWorkPointsIndex;
+
+private:
+	// Private Functions
 	AResourceMaster();
 
+	// private variables
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
-	class UStaticMeshComponent* ResourceMesh;
+	UStaticMeshComponent* ResourceMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	USceneComponent* WorkerPoint1;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	USceneComponent* WorkerPoint2;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	USceneComponent* WorkerPoint3;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* Widget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details,meta = (AllowPrivateAccess = "true"))
+	float workersStartWorkDistance = {400.f};
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float resourceFinishValue = 10000.f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float resourceCounter{0};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	EResourceType resourceType;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	int resourceIncomeDelay = 300;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	int resourceIncomeValue = 1;
 
@@ -56,37 +91,19 @@ private:
 
 	float resourcePlusCounter;
 
-public:
 
-	virtual void Tick(float DeltaTime) override;
-	TArray<FVector>buildingWorkPoints;
-	int32 buildingWorkPointsIndex;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
-	int32 workerNumber{0};
-
-
-	UPROPERTY()
-	TArray<AValoriaCharacter*>ResourceWorkers;
-
-	
-	UPROPERTY()
-	AValoriaCam* valoriaCam;
-
-	bool bWorkProgressStarted{false};
-
-	float workProgressSpeed{40.f};
-	 
-
-	UPROPERTY()
-	TArray<AValoriaCharacter*>buidlingWorkers;
 
 protected:
 	virtual void BeginPlay() override;
+	void UpdateResources(float DeltaTime);
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Details)
-	float workersStartWorkDistance = {400.f};
 
-public:	
+public:
+
+	// Getter
 	FORCEINLINE float GetWorkersStartWorkDistance()const {return workersStartWorkDistance;}
+
+
+	// Setter
 
 };

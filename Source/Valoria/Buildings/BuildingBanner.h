@@ -10,9 +10,6 @@ UCLASS()
 class VALORIA_API ABuildingBanner : public AActor
 {
 	GENERATED_BODY()
-private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
-	class UStaticMeshComponent* BannerMesh;
 
 public:	
 	ABuildingBanner();
@@ -23,9 +20,14 @@ public:
 	UPROPERTY()
 	ABuilding* buildingRelated;
 
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* BannerMesh;
+
 protected:
 	virtual void BeginPlay() override;
 
-public:	
+public:
+
 
 };

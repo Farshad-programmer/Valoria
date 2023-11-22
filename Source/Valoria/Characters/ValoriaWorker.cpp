@@ -23,14 +23,11 @@ AValoriaWorker::AValoriaWorker()
 	bCanAttack = false;
 	soliderClass = ESoliderClass::worker;
 }
-
 void AValoriaWorker::BeginPlay()
 {
 	Super::BeginPlay();
 	enemyDetector->SetSphereRadius(5.f);
 }
-
-
 void AValoriaWorker::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -39,9 +36,6 @@ void AValoriaWorker::Tick(float DeltaSeconds)
 		CheckCharacterDistanceWithBuilding();
 	}
 }
-
-
-
 void AValoriaWorker::CheckCharacterDistanceWithBuilding()
 {
 	if (buildingRef)
@@ -61,7 +55,6 @@ void AValoriaWorker::CheckCharacterDistanceWithBuilding()
 	if (resourceRef)
 	{
 		float distance = resourceRef->GetDistanceTo(this);
-		//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::FromInt(distance));
 		if (distance <= resourceRef->GetWorkersStartWorkDistance())
 		{
 			StartWork();
@@ -71,9 +64,7 @@ void AValoriaWorker::CheckCharacterDistanceWithBuilding()
 			GEngine->AddOnScreenDebugMessage(-1, 0.02f, FColor::Orange, TEXT("distance  > GetWorkersStartWorkDistance"));
 		}
 	}
-
 }
-
 void AValoriaWorker::AIMoveToBuildingLocation(AValoriaAI* AIRef)
 {
 	AAIController* DefaultAIController = Cast<AAIController>(GetController());
@@ -92,8 +83,17 @@ void AValoriaWorker::AIMoveToBuildingLocation(AValoriaAI* AIRef)
 		}
 	}
 }
-
-
+void AValoriaWorker::DeselectAllCharactersIfAllWorkerStartedWork()
+{
+	AValoriaCam* valoriaCam = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this, 0));
+	if (valoriaCam)
+	{
+		if (valoriaCam->IsAllNewWorkersStartedWork(valoriaCam->players))
+		{
+			valoriaCam->DeselectAllCharacters();
+		}
+	}
+}
 void AValoriaWorker::StartBuilding()
 {
 	GetCharacterMovement()->StopMovementImmediately();
@@ -108,7 +108,6 @@ void AValoriaWorker::StartBuilding()
 			buildingRef->bConstructionProgressStarted = true;
 			bIsStartedWork = true;
 			buildingRef->buildingWorkPointsIndex++;
-			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, FString::FromInt(buildingRef->buildingWorkPointsIndex));
 			buildingRef->workerNumber++;
 			buildingRef->buidlingWorkers.Add(this);
 			bCanCheckForStartWork = false;
@@ -117,20 +116,9 @@ void AValoriaWorker::StartBuilding()
 				GetMesh()->SetRenderCustomDepth(true);
 			}
 		}
-
 	}
-	AValoriaCam* valoriaCam = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this, 0));
-	if (valoriaCam)
-	{
-		if (valoriaCam->IsAllNewWorkersStartedWork(valoriaCam->players))
-		{
-			valoriaCam->DeselectAllCharacters();
-		}
-	}
+	DeselectAllCharactersIfAllWorkerStartedWork();
 }
-
-
-
 void AValoriaWorker::StartWork()
 {
 	GetCharacterMovement()->StopMovementImmediately();
@@ -157,14 +145,7 @@ void AValoriaWorker::StartWork()
 		}
 
 	}
-	AValoriaCam* valoriaCam = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this, 0));
-	if (valoriaCam)
-	{
-		if (valoriaCam->IsAllNewWorkersStartedWork(valoriaCam->players))
-		{
-			valoriaCam->DeselectAllCharacters();
-		}
-	}
+	DeselectAllCharactersIfAllWorkerStartedWork();
 }
 
 

@@ -41,29 +41,17 @@ void AValoriaHUD::Tick(float DeltaSeconds)
 		}
 	}
 }
-
 void AValoriaHUD::HandleMarqueeSelection()
 {
 	if (!bCanDrawSelection) return;
-	if (bIsDrawing)
-	{
-		float screenW = currentMousePos.X - startMousePos.X;
-		float screenH = currentMousePos.Y - startMousePos.Y;
-		FString TheFloatStr = FString::SanitizeFloat(startMousePos.X);
-		DrawRect(FLinearColor(0.f, 0.11f, 0.92f, 0.2f), startMousePos.X, startMousePos.Y, screenW, screenH);
-	}
-
-
-
+	DrawMarquee();
 	APlayerController* playerController = GetOwningPlayerController();
 	if (playerController)
 	{
 		SelectedActors.Empty();
 		TArray<AActor*>allSelectedActors;
 		GetActorsInSelectionRectangle(AValoriaCharacter::StaticClass(), startMousePos, currentMousePos, allSelectedActors, false, false);
-		
 		AValoriaCam* valoriaCam = Cast<AValoriaCam>(playerController->GetPawn());
-
 		for (auto act : allSelectedActors)
 		{
 			if(act->ActorHasTag("Player"))
@@ -74,68 +62,87 @@ void AValoriaHUD::HandleMarqueeSelection()
 				}
 			}
 		}
-		if ((currentMousePos - startMousePos).Size() > 100.f)
-		{
-			if (valoriaCam)
-			{
-				valoriaCam->SetIsMarqueeSelected(true);
-				for (auto SelectedActor : SelectedActors)
-				{
-					AValoriaCharacter* selectedValoria = Cast<AValoriaCharacter>(SelectedActor);
-					if (selectedValoria)
-					{
-						if (selectedValoria->ActorHasTag("Player"))
-						{
-							selectedValoria->SetSelectionNiagaraVisibility(true);
-							selectedValoria->SetOverlayWidgetVisibility(true);
-							selectedValoria->SetCanRotateToEnemy(false);
-							selectedValoria->SetCanCheckDistanceWithAI(false);
-							selectedValoria->SetIsSelected(true);
-							valoriaCam->players.AddUnique(selectedValoria);
-							if (selectedValoria->GetIsStartedWork())
-							{
-								selectedValoria->StopWorkAnimation();
-								if (selectedValoria->buildingRef && selectedValoria->GetIsStartedWork() && selectedValoria->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
-								{
-									selectedValoria->buildingRef->buildingWorkPointsIndex--;
-									selectedValoria->buildingRef->workerNumber--;
-									selectedValoria->buildingRef->buidlingWorkers.Remove(selectedValoria);
-									if (selectedValoria->buildingRef->buildingWorkPointsIndex < 0)
-									{
-										selectedValoria->buildingRef->buildingWorkPointsIndex = 0;
-										selectedValoria->buildingRef->workerNumber = 0;
-										selectedValoria->buildingRef->buidlingWorkers.Empty();
-									}
-									selectedValoria->buildingRef = nullptr;
-									selectedValoria->SetOverlayWidgetVisibility(true);
-								}
+		SelectCharactersUnderDrawnRectangle(valoriaCam);
+	}
+}
+void AValoriaHUD::DrawMarquee()
+{
+	if (bIsDrawing)
+	{
+		float screenW = currentMousePos.X - startMousePos.X;
+		float screenH = currentMousePos.Y - startMousePos.Y;
+		FString TheFloatStr = FString::SanitizeFloat(startMousePos.X);
+		DrawRect(FLinearColor(0.f, 0.11f, 0.92f, 0.2f), startMousePos.X, startMousePos.Y, screenW, screenH);
+	}
+}
 
-								if (selectedValoria->resourceRef && selectedValoria->GetIsStartedWork() && selectedValoria->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
-								{
-									selectedValoria->resourceRef->buildingWorkPointsIndex--;
-									selectedValoria->resourceRef->workerNumber--;
-									selectedValoria->resourceRef->buidlingWorkers.Remove(selectedValoria);
-									if (selectedValoria->resourceRef->buildingWorkPointsIndex < 0)
-									{
-										selectedValoria->resourceRef->buildingWorkPointsIndex = 0;
-										selectedValoria->resourceRef->workerNumber = 0;
-										selectedValoria->resourceRef->buidlingWorkers.Empty();
-									}
-									selectedValoria->resourceRef = nullptr;
-								}
-							}
-							else
-							{
-								selectedValoria->SetCheckForStartWork(false);
-								selectedValoria->SetIsStartedWork(false);
-								selectedValoria->buildingRef = nullptr;
-							}
-						}
-					}
+void AValoriaHUD::SelectCharactersUnderDrawnRectangle(AValoriaCam* valoriaCam)
+{
+	if ((currentMousePos - startMousePos).Size() > 100.f)
+	{
+		if (valoriaCam)
+		{
+			valoriaCam->SetIsMarqueeSelected(true);
+			for (auto SelectedActor : SelectedActors)
+			{
+				AValoriaCharacter* selectedValoria = Cast<AValoriaCharacter>(SelectedActor);
+				if (selectedValoria)
+				{
+					UpdateSelectedCharacters(valoriaCam, selectedValoria);
 				}
 			}
 		}
+	}
+}
 
+void AValoriaHUD::UpdateSelectedCharacters(AValoriaCam* valoriaCam, AValoriaCharacter* selectedValoria)
+{
+	if (selectedValoria->ActorHasTag("Player"))
+	{
+		selectedValoria->SetSelectionNiagaraVisibility(true);
+		selectedValoria->SetOverlayWidgetVisibility(true);
+		selectedValoria->SetCanRotateToEnemy(false);
+		selectedValoria->SetCanCheckDistanceWithAI(false);
+		selectedValoria->SetIsSelected(true);
+		valoriaCam->players.AddUnique(selectedValoria);
+		if (selectedValoria->GetIsStartedWork())
+		{
+			selectedValoria->StopWorkAnimation();
+			if (selectedValoria->buildingRef && selectedValoria->GetIsStartedWork() && selectedValoria->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
+			{
+				selectedValoria->buildingRef->buildingWorkPointsIndex--;
+				selectedValoria->buildingRef->workerNumber--;
+				selectedValoria->buildingRef->buidlingWorkers.Remove(selectedValoria);
+				if (selectedValoria->buildingRef->buildingWorkPointsIndex < 0)
+				{
+					selectedValoria->buildingRef->buildingWorkPointsIndex = 0;
+					selectedValoria->buildingRef->workerNumber = 0;
+					selectedValoria->buildingRef->buidlingWorkers.Empty();
+				}
+				selectedValoria->buildingRef = nullptr;
+				selectedValoria->SetOverlayWidgetVisibility(true);
+			}
+
+			if (selectedValoria->resourceRef && selectedValoria->GetIsStartedWork() && selectedValoria->GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
+			{
+				selectedValoria->resourceRef->buildingWorkPointsIndex--;
+				selectedValoria->resourceRef->workerNumber--;
+				selectedValoria->resourceRef->buidlingWorkers.Remove(selectedValoria);
+				if (selectedValoria->resourceRef->buildingWorkPointsIndex < 0)
+				{
+					selectedValoria->resourceRef->buildingWorkPointsIndex = 0;
+					selectedValoria->resourceRef->workerNumber = 0;
+					selectedValoria->resourceRef->buidlingWorkers.Empty();
+				}
+				selectedValoria->resourceRef = nullptr;
+			}
+		}
+		else
+		{
+			selectedValoria->SetCheckForStartWork(false);
+			selectedValoria->SetIsStartedWork(false);
+			selectedValoria->buildingRef = nullptr;
+		}
 	}
 }
 
@@ -184,7 +191,6 @@ void AValoriaHUD::MarqueeHeld()
 			currentMousePos.Y = locationY;
 		}
 	}
-
 }
 
 

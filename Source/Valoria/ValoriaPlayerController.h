@@ -46,23 +46,14 @@ protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
 	uint32 bMoveToMouseCursor : 1;
 
-	virtual void SetupInputComponent() override;
 
 	// To add mapping context
 	virtual void BeginPlay();
 
-	/** Input handlers for SetDestination action. */
-	void OnInputStarted();
-	void OnSetDestinationTriggered();
-	void OnSetDestinationReleased();
-	void OnDeselectStarted();
+
 
 private:
-	FVector CachedDestination;
-	FHitResult Hit;
-	float FollowTime; // For how long it has been pressed
-	bool bIsPlayerSelected{false};
-	TArray<AActor*> characters;
+
 
 
 public:

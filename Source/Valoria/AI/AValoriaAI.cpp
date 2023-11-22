@@ -20,7 +20,6 @@
 
 
 
-
 // Sets default values
 AValoriaAI::AValoriaAI()
 {
@@ -28,39 +27,38 @@ AValoriaAI::AValoriaAI()
 	tag = FString(TEXT("AI")) + FString::FromInt(FMath::RandRange(1, 9999));
 	enemyStatus = EAIStatus::neutral;
 }
-
 void AValoriaAI::BeginPlay()
 {
 	Super::BeginPlay();
 	capitalCode = FMath::RandRange(1, 9999);
 	enemyStatus = EAIStatus::neutral;
 
-
-
 	FTimerHandle AIStartStatusHandler;
 	GetWorldTimerManager().SetTimer(AIStartStatusHandler, this, &AValoriaAI::InitialAIStatus, 0.2f, false);
 }
-
-
 void AValoriaAI::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	CheckingUnitNumberInBase();
 	CheckWarState();
 }
-
-
 void AValoriaAI::InitialAIStatus()
 {
+	// set AI status in start of the game 
 	enemyStatus = EAIStatus::neutral;
 
-
-	TArray<AActor*>mapBordersActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMapBorder::StaticClass(), mapBordersActors);
-
+	// spawn AI Initial soldiers in specific period of time 
 	GetWorldTimerManager().SetTimer(spawnSoldierTimerHandle, this, &AValoriaAI::SpawnSoldier, 5.f, true);
 
-
+	// spawn AI Initial buildings and units
+	SpawnAIFirstCityCenter();
+	SpawnAIFirstWorkers();
+	FindAPlaceForMakingBarracksforAI();
+}
+void AValoriaAI::SpawnAIFirstCityCenter()
+{
+	TArray<AActor*>mapBordersActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMapBorder::StaticClass(), mapBordersActors);
 	bool bspawning = true;
 	while (bspawning)
 	{
@@ -84,21 +82,13 @@ void AValoriaAI::InitialAIStatus()
 					SpawnedCityCenter->valoriaAIRef = this;
 					mapBorderRef->bBorderHasCityCenter = true;
 					mapBorderRef->borderStatus = EBorderStatus::neutral;
-
-					// this part will be implemented later
-					/*if(enemyStatus == EEnemyStatus::enemy)
-					{
-						mapBorderRef->borderStatus = EBorderStatus::enemy;
-					}
-					else if(enemyStatus == EEnemyStatus::ally)
-					{
-						mapBorderRef->borderStatus = EBorderStatus::ally;
-					}*/
 				}
 			}
 		}
 	}
-
+}
+void AValoriaAI::SpawnAIFirstWorkers()
+{
 	for (int i = 0; i < 3; ++i)
 	{
 		if (GetWorld() && valoriaWorkerClass)
@@ -117,86 +107,7 @@ void AValoriaAI::InitialAIStatus()
 			}
 		}
 	}
-
-	FindAPlaceForMakingBarracksforAI();
 }
-
-
-void AValoriaAI::CheckWarState()
-{
-	if (enemyStatus == EAIStatus::enemy)
-	{
-		bInWarState = true;
-		if (enemiesCode.Num() > 0)
-		{
-			capitalToAttack = enemiesCode[0];
-			if (bOrderUnitsToAttackBase)
-			{
-				FindNearestBaseToAttack();
-			}
-		}
-	}
-	else
-	{
-		bInWarState = false;
-	}
-}
-
-void AValoriaAI::FindNearestBaseToAttack()
-{
-	TArray<class AActor*> enemyBases;
-	if (GetWorld())
-	{
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACityCenter::StaticClass(), enemyBases);
-		for (auto enemyBase : enemyBases)
-		{
-			ACityCenter* castedEnemyBase = Cast<ACityCenter>(enemyBase);
-			if (castedEnemyBase)
-			{
-				if (castedEnemyBase->ActorHasTag("PlayerBase"))
-				{
-					baseToAttack = castedEnemyBase;
-					bBaseToAttackIdentified = true;
-					bOrderUnitsToAttackBase = false;
-					OrderSoldiersToAttack(1);
-					break;
-				}
-			}
-		}
-	}
-}
-
-void AValoriaAI::OrderSoldiersToAttack(int32 enemyCapitalCodeToAttack)
-{
-	bool bOrderToAttackbase = false;
-	attackCounter++;
-	if (attackCounter % 3 == 0)
-	{
-		bOrderToAttackbase = true;
-	}
-
-	TArray<class AActor*> units;
-	if (GetWorld())
-	{
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AValoriaCharacter::StaticClass(), units);
-		for (auto unit : units)
-		{
-			AValoriaCharacter* castedUnit = Cast<AValoriaCharacter>(unit);
-			if (castedUnit && !castedUnit->bMustAttackBase && castedUnit->GetCapitalCode() == capitalCode && !castedUnit->ActorHasTag("Worker"))
-			{
-				castedUnit->bMustAttackBase = bOrderToAttackbase;
-				castedUnit->MoveToLocation(baseToAttack->GetActorLocation(), false, baseToAttack, nullptr, false, nullptr, true);
-				castedUnit->SetInWarState(true);
-			}
-
-		}
-		unitInCapital = 0;
-	}
-
-}
-
-
-
 void AValoriaAI::SpawnSoldier()
 {
 	if (bHasBarracks && baseUnit < 30)
@@ -223,8 +134,73 @@ void AValoriaAI::SpawnSoldier()
 		UpdateAIUnits();
 	}
 }
-
-
+void AValoriaAI::CheckWarState()
+{
+	if (enemyStatus == EAIStatus::enemy)
+	{
+		bInWarState = true;
+		if (enemiesCode.Num() > 0)
+		{
+			capitalToAttack = enemiesCode[0];
+			if (bOrderUnitsToAttackBase)
+			{
+				FindNearestBaseToAttack();
+			}
+		}
+	}
+	else
+	{
+		bInWarState = false;
+	}
+}
+void AValoriaAI::FindNearestBaseToAttack()
+{
+	TArray<class AActor*> enemyBases;
+	if (GetWorld())
+	{
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACityCenter::StaticClass(), enemyBases);
+		for (auto enemyBase : enemyBases)
+		{
+			ACityCenter* castedEnemyBase = Cast<ACityCenter>(enemyBase);
+			if (castedEnemyBase)
+			{
+				if (castedEnemyBase->ActorHasTag("PlayerBase"))
+				{
+					baseToAttack = castedEnemyBase;
+					bBaseToAttackIdentified = true;
+					bOrderUnitsToAttackBase = false;
+					OrderSoldiersToAttack(1);
+					break;
+				}
+			}
+		}
+	}
+}
+void AValoriaAI::OrderSoldiersToAttack(int32 enemyCapitalCodeToAttack)
+{
+	bool bOrderToAttackbase = false;
+	attackCounter++;
+	if (attackCounter % 3 == 0) // this is a temporarity logic that set which soldiers must  attack base and which must attack units
+	{
+		bOrderToAttackbase = true;
+	}
+	TArray<class AActor*> units;
+	if (GetWorld())
+	{
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AValoriaCharacter::StaticClass(), units);
+		for (auto unit : units)
+		{
+			AValoriaCharacter* castedUnit = Cast<AValoriaCharacter>(unit);
+			if (castedUnit && !castedUnit->bMustAttackBase && castedUnit->GetCapitalCode() == capitalCode && !castedUnit->ActorHasTag("Worker"))
+			{
+				castedUnit->bMustAttackBase = bOrderToAttackbase;
+				castedUnit->MoveToLocation(baseToAttack->GetActorLocation(), false, baseToAttack, nullptr, false, nullptr, true);
+				castedUnit->SetInWarState(true);
+			}
+		}
+		unitInCapital = 0;
+	}
+}
 void AValoriaAI::CheckingUnitNumberInBase()
 {
 	if (unitInCapital > 5)
@@ -232,7 +208,6 @@ void AValoriaAI::CheckingUnitNumberInBase()
 		bOrderUnitsToAttackBase = true;
 	}
 }
-
 void AValoriaAI::FindAPlaceForMakingBarracksforAI()
 {
 	if (mapBorderRef == nullptr)return;
@@ -269,10 +244,8 @@ void AValoriaAI::FindAPlaceForMakingBarracksforAI()
 		}
 	}
 }
-
 void AValoriaAI::UpdateAIUnits()
 {
-
 	TArray<class AActor*> enemyUnits;;
 	if (GetWorld())
 	{
@@ -291,7 +264,6 @@ void AValoriaAI::UpdateAIUnits()
 		}
 	}
 }
-
 void AValoriaAI::AIMoveToBuilding()
 {
 	Spawnedworker->AIMoveToBuildingLocation(this);

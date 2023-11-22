@@ -2,13 +2,11 @@
 
 
 #include "Building.h"
-
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Valoria/ValoriaCam.h"
 #include "Valoria/ValoriaCharacter.h"
-#include "Valoria/Characters/ValoriaWorker.h"
 #include "Valoria/MapBorder/MapBorder.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Valoria/AI/AValoriaAI.h"
@@ -30,24 +28,17 @@ ABuilding::ABuilding()
 	flagStarterPoint->SetupAttachment(BuildingMesh);
 	characterStarterPoint = CreateDefaultSubobject<USceneComponent>(TEXT("character Starter Point"));
 	characterStarterPoint->SetupAttachment(BuildingMesh);
-
-
-
-
 	if (flagStarterPoint)
 	{
 		flagStarterPoint->SetRelativeLocation(FVector(-310.f, 0.f, 0.f));
 
 	}
-
 	BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 }
-
 void ABuilding::DamageBuilding(float damage)
 {
 	constructionCounter -= damage;
 }
-
 void ABuilding::BeginPlay()
 {
 	Super::BeginPlay();
@@ -57,151 +48,144 @@ void ABuilding::BeginPlay()
 		BuildingMesh->SetMaterial(0, buildingGreenMat);
 	}
 }
-
-
-
 void ABuilding::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (buildingWorkPointsIndex > 0)
-	{
-		//GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("%s"),*GetName()));
-	}
-
-
-
 	if (bConstructionProgressStarted)
 	{
-		constructionCounter += constructionProgressSpeed * workerNumber * DeltaTime;
-		if (constructionCounter >= 2000.f && constructionCounter <= 2100.f)
-		{
-			BuildingMesh->SetStaticMesh(level2Mesh);
-		}
-		if (constructionCounter >= constrcutionFinishValue)
-		{
-			BuildingMesh->SetStaticMesh(level3Mesh);
-			if (BorderRef)
-			{
-				BorderRef->UpdateBorderOwner(EBorderStatus::self);
-				BorderRef = nullptr;
-			}
-
-			bConstructionProgressStarted = false;
-			if (valoriaAIRef && buildingOwner != EBuildingOwner::self)
-			{
-				valoriaAIRef->bHasBarracks = true;
-				valoriaAIRef->barracksLocation.Add(this->GetActorLocation() + FVector(500.f, 500.f, 500.f));
-			}
-			if (buidlingWorkers.Num())
-			{
-				for (auto worker : buidlingWorkers)
-				{
-					worker->StopWorkAnimation();
-					workerNumber = 0;
-					buildingMaxWorker = 0;
-					bConstructionIsBuilt = true;
-				}
-			}
-
-		}
+		ConstructionProcess(DeltaTime);
 	}
 	else
 	{
-
 		if (bIsBuildingSpawned)
 		{
-			CheckCanBuild();
-			LineTraceFloorCheckers();
-			valoriaCam->SetIsPlacingBuidling(true);
-			APlayerController* playerController = UGameplayStatics::GetPlayerController(this, 0);
-			if (playerController)
+			MovingBuildingToFindRightPlace();
+		}
+		else
+		{
+			PlacingBuilding();
+		}
+	}
+}
+void ABuilding::ConstructionProcess(float DeltaTime)
+{
+	constructionCounter += constructionProgressSpeed * workerNumber * DeltaTime;
+	if (constructionCounter >= 2000.f && constructionCounter <= 2100.f)
+	{
+		BuildingMesh->SetStaticMesh(level2Mesh);
+	}
+	if (constructionCounter >= constrcutionFinishValue)
+	{
+		BuildingMesh->SetStaticMesh(level3Mesh);
+		if (BorderRef)
+		{
+			BorderRef->UpdateBorderOwner(EBorderStatus::self);
+			BorderRef = nullptr;
+		}
+
+		bConstructionProgressStarted = false;
+		if (valoriaAIRef && buildingOwner != EBuildingOwner::self)
+		{
+			valoriaAIRef->SetHasBarracks(true);
+			valoriaAIRef->barracksLocation.Add(this->GetActorLocation() + FVector(500.f, 500.f, 500.f));
+		}
+		if (buidlingWorkers.Num())
+		{
+			for (auto worker : buidlingWorkers)
 			{
-				bool bCourserHitSuccessful = playerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Camera, true, Hit);
-				if (bCourserHitSuccessful)
-				{
-					FVector loc = Hit.Location;
-					FVector GridCellSize = FVector(100.0f, 100.0f, 100.0f);
-					loc.X = FMath::FloorToInt(loc.X / GridCellSize.X) * GridCellSize.X;
-					loc.Y = FMath::FloorToInt(loc.Y / GridCellSize.Y) * GridCellSize.Y;
-					loc.Z += 100.f;
-					SetActorLocation(loc);
-					//FRotator rot = UKismetMathLibrary::MakeRotFromZX(Hit.ImpactPoint,GetActorForwardVector());
-					//SetActorRotation(rot);
-					ValidateBuildLocation(loc);
-				}
+				worker->StopWorkAnimation();
+				workerNumber = 0;
+				buildingMaxWorker = 0;
+				bConstructionIsBuilt = true;
 			}
-
-
-
-			if (valoriaCam)
+		}
+	}
+}
+void ABuilding::MovingBuildingToFindRightPlace()
+{
+	CheckCanBuild();
+	LineTraceFloorCheckers();
+	valoriaCam->SetIsPlacingBuidling(true);
+	APlayerController* playerController = UGameplayStatics::GetPlayerController(this, 0);
+	if (playerController)
+	{
+		bool bCourserHitSuccessful = playerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Camera, true, Hit);
+		if (bCourserHitSuccessful)
+		{
+			FVector loc = Hit.Location;
+			FVector GridCellSize = FVector(100.0f, 100.0f, 100.0f);
+			loc.X = FMath::FloorToInt(loc.X / GridCellSize.X) * GridCellSize.X;
+			loc.Y = FMath::FloorToInt(loc.Y / GridCellSize.Y) * GridCellSize.Y;
+			loc.Z += 100.f;
+			SetActorLocation(loc);
+			ValidateBuildLocation(loc);
+		}
+	}
+	if (valoriaCam)
+	{
+		if (valoriaCam->buildingRef == nullptr)
+		{
+			valoriaCam->buildingRef = this;
+		}
+	}
+}
+void ABuilding::UpdateBuildingNeeds()
+{
+	if (bUpdatingNeeds)
+	{
+		bUpdatingNeeds = false;
+		valoriaCam->UpdateGold(false, gold);
+		valoriaCam->UpdateScience(false, science);
+		valoriaCam->UpdateStone(false, stone);
+		valoriaCam->UpdateWood(false, wood);
+	}
+}
+void ABuilding::PlacingBuilding()
+{
+	if (valoriaCam && valoriaCam->buildingRef)
+	{
+		if (bBuildingIsAllowedToBeBuilt)
+		{
+			bBuildingIsAllowedToBeBuilt = false;
+			if (valoriaCam->buildingRef)
 			{
-				if (valoriaCam->buildingRef == nullptr)
+				valoriaCam->SetIsPlacingBuidling(false);
+				BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+				if (level1Mesh && !bConstructionIsBuilt && constructionCounter <= 0.f)
 				{
-					valoriaCam->buildingRef = this;
+					BuildingMesh->SetStaticMesh(level1Mesh);
+					UpdateBuildingNeeds();
+					if (buildingMat)
+					{
+						BuildingMesh->SetMaterial(0, buildingMat);
+					}
+					if (BorderRef)
+					{
+						BorderRef->borderStatus = EBorderStatus::self;
+						BorderRef->bBorderHasCityCenter = true;
+					}
+					if (valoriaCam->PlayerTemp)
+					{
+						valoriaCam->PlayerTemp->MoveToLocation(this->GetActorLocation(), true, this, nullptr);
+						valoriaCam->PlayerTemp = nullptr;
+					}
 				}
 			}
 		}
 		else
 		{
-			if (valoriaCam && valoriaCam->buildingRef)
+			if (!bBuildingPlaced)
 			{
-				if (bBuildingIsAllowedToBeBuilt)
+				bBuildingPlaced = true;
+				valoriaCam->buildingRef->SetBuildingIsAllowedToBeBuilt(false);
+				if (valoriaCam->buildingRef && valoriaCam->GetIsPlacingBuilding())
 				{
-					bBuildingIsAllowedToBeBuilt = false;
-					if (valoriaCam->buildingRef)
-					{
-						valoriaCam->SetIsPlacingBuidling(false);
-						//box->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-						BuildingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
-						if (level1Mesh && !bConstructionIsBuilt && constructionCounter <= 0.f)
-						{
-							BuildingMesh->SetStaticMesh(level1Mesh);
-							if (bUpdatingNeeds)
-							{
-								bUpdatingNeeds = false;
-								valoriaCam->UpdateGold(false, gold);
-								valoriaCam->UpdateScience(false, science);
-								valoriaCam->UpdateStone(false, stone);
-								valoriaCam->UpdateWood(false, wood);
-							}
-							if (buildingMat)
-							{
-								BuildingMesh->SetMaterial(0, buildingMat);
-							}
-							if (BorderRef)
-							{
-								BorderRef->borderStatus = EBorderStatus::self;
-								BorderRef->bBorderHasCityCenter = true;
-							}
-							if (valoriaCam->PlayerTemp)
-							{
-								valoriaCam->PlayerTemp->MoveToLocation(this->GetActorLocation(), true, this, nullptr);
-								valoriaCam->PlayerTemp = nullptr;
-							}
-
-						}
-					}
-				}
-				else
-				{
-					if (!bBuildingPlaced)
-					{
-						bBuildingPlaced = true;
-						valoriaCam->buildingRef->SetBuildingIsAllowedToBeBuilt(false);
-						if (valoriaCam->buildingRef && valoriaCam->GetIsPlacingBuilding())
-						{
-							valoriaCam->SetIsPlacingBuidling(false);
-						}
-
-					}
+					valoriaCam->SetIsPlacingBuidling(false);
 				}
 			}
 		}
 	}
 }
-
-
 void ABuilding::ValidateBuildLocation(FVector loc)
 {
 	TArray<AActor*> OverlappingActors;
@@ -228,7 +212,6 @@ void ABuilding::ValidateBuildLocation(FVector loc)
 					bCanCheck = true;
 				}
 			}
-
 		}
 		if (buildingType != EBuildingType::CityCenter)
 		{
@@ -249,7 +232,6 @@ void ABuilding::ValidateBuildLocation(FVector loc)
 		}
 	}
 }
-
 void ABuilding::CheckCanBuild()
 {
 	if (valoriaCam)
@@ -275,11 +257,8 @@ void ABuilding::CheckCanBuild()
 		{
 			bBuildingIsAllowedToBeBuilt = false;
 		}
-
 	}
-
 }
-
 void ABuilding::LineTraceFloorCheckers()
 {
 	if (GetWorld())
@@ -299,7 +278,6 @@ void ABuilding::LineTraceFloorCheckers()
 		{
 			bEdge1 = false;
 		}
-
 		FHitResult hitResult2;
 		FVector start2 = GetActorLocation() + FVector(0.f, buildingRadius, 0.f);
 		FVector end2 = start2 + FVector(0.f, 0.f, -buildingHeight);
@@ -348,8 +326,6 @@ void ABuilding::LineTraceFloorCheckers()
 			bEdge4 = false;
 		}
 	}
-
-
 	if (bEdge1 && bEdge2 && bEdge3 && bEdge4)
 	{
 		bBuildingIsAllowedToBeBuilt = true;

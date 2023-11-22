@@ -46,7 +46,6 @@ void ACityCenter::Tick(float DeltaTime)
 			}
 		}
 	}
-
 }
 
 

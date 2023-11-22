@@ -23,6 +23,7 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	void StartBuilding();
+	void DeselectAllCharactersIfAllWorkerStartedWork();
 	void StartWork();
 	void CheckCharacterDistanceWithBuilding();
 

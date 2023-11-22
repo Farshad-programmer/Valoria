@@ -35,7 +35,6 @@ void AResourceMaster::BeginPlay()
 	buildingWorkPoints.Emplace(WorkerPoint1->GetRelativeLocation());
 	buildingWorkPoints.Emplace(WorkerPoint2->GetRelativeLocation());
 	buildingWorkPoints.Emplace(WorkerPoint3->GetRelativeLocation());
-
 	valoriaCam = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this, 0));
 }
 
@@ -44,31 +43,33 @@ void AResourceMaster::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if (bWorkProgressStarted)
 	{
-		resourceCounter += workProgressSpeed * workerNumber * DeltaTime;
-		resourcePlusCounter += workProgressSpeed * resourseIncomePower * workerNumber * DeltaTime;
-		
-		GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Yellow, FString::FromInt(resourcePlusCounter));
-		if (valoriaCam && resourcePlusCounter >= resourceIncomeDelay)
+		UpdateResources(DeltaTime);
+	}
+}
+void AResourceMaster::UpdateResources(float DeltaTime)
+{
+	resourceCounter += workProgressSpeed * workerNumber * DeltaTime;
+	resourcePlusCounter += workProgressSpeed * resourseIncomePower * workerNumber * DeltaTime;
+	GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Yellow, FString::FromInt(resourcePlusCounter));
+	if (valoriaCam && resourcePlusCounter >= resourceIncomeDelay)
+	{
+		resourcePlusCounter = 0;
+		if (resourceType == EResourceType::wood)
 		{
-			resourcePlusCounter = 0;
-			if (resourceType == EResourceType::wood)
-			{
-				valoriaCam->UpdateWood(true,resourceIncomeValue);
-			}
-			if (resourceType == EResourceType::stone)
-			{
-				valoriaCam->UpdateStone(true,resourceIncomeValue);
-			}
-			if (resourceType == EResourceType::gold)
-			{
-				valoriaCam->UpdateGold(true,resourceIncomeValue);
-			}
-			if (resourceType == EResourceType::science)
-			{
-				valoriaCam->UpdateScience(true,resourceIncomeValue);
-			}
+			valoriaCam->UpdateWood(true,resourceIncomeValue);
+		}
+		if (resourceType == EResourceType::stone)
+		{
+			valoriaCam->UpdateStone(true,resourceIncomeValue);
+		}
+		if (resourceType == EResourceType::gold)
+		{
+			valoriaCam->UpdateGold(true,resourceIncomeValue);
+		}
+		if (resourceType == EResourceType::science)
+		{
+			valoriaCam->UpdateScience(true,resourceIncomeValue);
 		}
 	}
-
 }
 
