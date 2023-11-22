@@ -31,7 +31,15 @@ public:
 	bool IsAllNewWorkersStartedWork(TArray<AValoriaCharacter*> workers);
 	void DestroyAllBanners();
 	void DeselectAllBuildings();
+	void SpawnBanner(ABuilding* building);
+	void UpdateBannerPosition(ABuilding* building);
+	void CheckWhenHittedActorIsBuilding();
+	void CheckWhenHittedActorIsNotBuilding();
+	void CheckWhenHittedActorIsNotPlayer();
+	void CheckWhenHittedActorIsNotPlayerAndBuilding();
+	void CheckWhenHittedActorIsBanner();
 	void CheckWhenHittedActorIsPlayer();
+	void CheckWhenHittedActorIsBarracks(ABuilding* building);
 	void UpdateWood(bool plus,int32 amount);
 	void UpdateGold(bool plus,int32 amount);
 	void UpdateStone(bool plus,int32 amount);
@@ -160,9 +168,12 @@ private:
 	UPROPERTY()
 	APlayerController* playerController;
 
+	FVector CachedDestination;
+	FHitResult Hit;
+	float FollowTime; // For how long it has been pressed
+	int adjustingBannerCounter = 0;
 	bool bAdjustingBanner{true};
 	bool bIsLeftMousePressed{false};
-	int adjustingBannerCounter = 0;
 	bool bBuildingSelected{false};
 	bool bRunCustomDepthSpecialMode{false};
 	bool bMouseIsOnBanner{false};
@@ -171,9 +182,6 @@ private:
 	bool bCourserHitSuccessful;
 	bool bCanPlaceBuilding{false};
 	bool bIsPlacingBuidling {false};
-	FVector CachedDestination;
-	FHitResult Hit;
-	float FollowTime; // For how long it has been pressed
 	bool bIsPlayerSelected{false};
 	bool bCanAdjustBuildingBannerPosition{false};
 

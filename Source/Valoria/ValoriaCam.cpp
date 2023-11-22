@@ -17,7 +17,8 @@
 #include "HUD/ValoriaHUD.h"
 #include "Resources/ResourceMaster.h"
 #include "Valoria/Buildings/BuildingBanner.h"
-// Sets default values
+
+
 AValoriaCam::AValoriaCam()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -27,7 +28,6 @@ AValoriaCam::AValoriaCam()
 	CachedDestination = FVector::ZeroVector;
 	FollowTime = 0.f;
 }
-// Called when the game starts or when spawned
 void AValoriaCam::BeginPlay()
 {
 	Super::BeginPlay();
@@ -41,7 +41,6 @@ void AValoriaCam::BeginPlay()
 		}
 	}
 }
-// Called every frame
 void AValoriaCam::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -199,7 +198,6 @@ void AValoriaCam::DeselectAllBuildings()
 {
 	TArray<AActor*>buildingActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABuilding::StaticClass(), buildingActors);
-
 	for (auto buildingActor : buildingActors)
 	{
 		ABuilding* buildingActorCasted = Cast<ABuilding>(buildingActor);
@@ -225,9 +223,60 @@ void AValoriaCam::DeselectAllBuildings()
 		}
 	}
 }
-
-
-
+void AValoriaCam::CheckWhenHittedActorIsBanner()
+{
+	if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Banner"))
+	{
+		buildingBannerRef = Cast<ABuildingBanner>(Hit.GetActor());
+		if (buildingBannerRef)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Yellow, TEXT("Banner"));
+			buildingBannerRef->bBannerAdjusted = false;
+			bCanAdjustBuildingBannerPosition = true;
+			adjustingBannerCounter = 0;
+			bMovingBanner = true;
+		}
+	}
+}
+void AValoriaCam::SpawnBanner(ABuilding* building)
+{
+	if (GetWorld() && buildingBannerToSpawn)
+	{
+		buildingBannerRef = GetWorld()->SpawnActor<ABuildingBanner>(buildingBannerToSpawn, building->GetActorLocation(), building->GetActorRotation());
+		if (buildingBannerRef)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Orange, TEXT("New Banner spawned!"));
+			FVector bannerLoc = building->flagStarterPoint->GetComponentLocation();
+			bannerLoc.Z += 100.f;
+			building->bBuildingHasBanner = true;
+			AllBanners.Add(buildingBannerRef);
+			building->buildingBannerRelated = buildingBannerRef;
+			buildingBannerRef->buildingRelated = building;
+			buildingBannerRef->SetActorLocation(bannerLoc);
+			building->bannerLocation = bannerLoc;
+		}
+	}
+}
+void AValoriaCam::UpdateBannerPosition(ABuilding* building)
+{
+	building->buildingBannerRelated->bBannerAdjusted = true;
+	bCanAdjustBuildingBannerPosition = false;
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	buildingBannerRef = GetWorld()->SpawnActor<ABuildingBanner>(buildingBannerToSpawn, building->GetActorLocation(), building->GetActorRotation(), SpawnParameters);
+	if (buildingBannerRef)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("Banner Matched"));
+		building->buildingBannerRelated = buildingBannerRef;
+		buildingBannerRef->SetActorLocation(building->bannerLocation);
+		AllBanners.Add(buildingBannerRef);
+		buildingBannerRef->buildingRelated = building;
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Red, TEXT("Banner Error Happened"));
+	}
+}
 void AValoriaCam::OnSelectStarted()
 {
 	DestroyAllBanners();
@@ -290,169 +339,88 @@ void AValoriaCam::OnSelectStarted()
 				bMovingBanner = false;
 			}
 		}
-		if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Banner"))
+		CheckWhenHittedActorIsBanner();
+		CheckWhenHittedActorIsPlayer();
+		CheckWhenHittedActorIsBuilding();
+		CheckWhenHittedActorIsNotBuilding();
+		CheckWhenHittedActorIsNotPlayer();
+		CheckWhenHittedActorIsNotPlayerAndBuilding();
+	}
+}
+void AValoriaCam::CheckWhenHittedActorIsBuilding()
+{
+	if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Building"))
+	{
+		DeselectAllBuildings();
+		DestroyAllBanners();
+		ABuilding* building = Cast<ABuilding>(Hit.GetActor());
+		bBuildingSelected = true;
+		if (playerController && !bCanPlaceBuilding)
 		{
-			buildingBannerRef = Cast<ABuildingBanner>(Hit.GetActor());
-			if (buildingBannerRef)
+			for (auto player : players)
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Yellow, TEXT("Banner"));
-				buildingBannerRef->bBannerAdjusted = false;
-				bCanAdjustBuildingBannerPosition = true;
-				adjustingBannerCounter = 0;
-				bMovingBanner = true;
+				player->SetCheckForStartWork(true);
 			}
 		}
-		CheckWhenHittedActorIsPlayer();
-		if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Building"))
+		if (building->GetConstructionIsBuilt())
 		{
-			bMovingBanner = false;
-			TArray<AActor*>buildingActors;
-			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABuilding::StaticClass(), buildingActors);
-			if (buildingActors.Num() > 0)
+			if (building->GetBuildingType() == EBuildingType::Barracks)
 			{
-				for (auto buildingActor : buildingActors)
-				{
-					ABuilding* buildingActorCasted = Cast<ABuilding>(buildingActor);
-					if (buildingActorCasted)
-					{
-						if (buildingActorCasted->GetBuildingType() == EBuildingType::Barracks && buildingActorCasted->GetBuildingMesh()->bRenderCustomDepth == true)
-						{
-							buildingActorCasted->GetBuildingMesh()->SetRenderCustomDepth(false);
-						}
-						buildingActorCasted->BP_ConstructionHUD(false, 0, nullptr);
-					}
-				}
-			}
-			DestroyAllBanners();
-			ABuilding* building = Cast<ABuilding>(Hit.GetActor());
-			bBuildingSelected = true;
-			if (playerController && !bCanPlaceBuilding)
-			{
-				for (auto player : players)
-				{
-					player->SetCheckForStartWork(true);
-				}
-			}
-			if (building->GetConstructionIsBuilt())
-			{
-				if (building->GetBuildingType() == EBuildingType::Barracks)
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Yellow, TEXT("Building selected"));
-					building->BP_ConstructionHUD(true, 1, buildingRef);
-					building->GetBuildingMesh()->SetRenderCustomDepth(true);
-					building->SetIsBuildingSelected(true);
-					// spawning Banner
-					if (!building->bBuildingHasBanner)
-					{
-						if (GetWorld() && buildingBannerToSpawn)
-						{
-							buildingBannerRef = GetWorld()->SpawnActor<ABuildingBanner>(buildingBannerToSpawn, building->GetActorLocation(), building->GetActorRotation());
-							if (buildingBannerRef)
-							{
-								GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Orange, TEXT("New Banner spawned!"));
-								FVector bannerLoc = building->flagStarterPoint->GetComponentLocation();
-								bannerLoc.Z += 100.f;
-								building->bBuildingHasBanner = true;
-								AllBanners.Add(buildingBannerRef);
-								building->buildingBannerRelated = buildingBannerRef;
-								buildingBannerRef->buildingRelated = building;
-								buildingBannerRef->SetActorLocation(bannerLoc);
-								building->bannerLocation = bannerLoc;
-							}
-						}
-					}
-					else
-					{
-						GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("building currently has an Banner"));
-						if (GetWorld() && buildingBannerToSpawn)
-						{
-							if (!building)
-							{
-								GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, TEXT("Error ! building NULL"));
-								return;
-							}
-							if (!building->buildingBannerRelated)
-							{
-								building->buildingBannerRelated = buildingBannerRef;
-							}
-
-							if (building && building->buildingBannerRelated)
-							{
-								building->buildingBannerRelated->bBannerAdjusted = true;
-								bCanAdjustBuildingBannerPosition = false;
-								FActorSpawnParameters SpawnParameters;
-								SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-								buildingBannerRef = GetWorld()->SpawnActor<ABuildingBanner>(buildingBannerToSpawn, building->GetActorLocation(), building->GetActorRotation(), SpawnParameters);
-								if (buildingBannerRef)
-								{
-									GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("Banner Matched"));
-									building->buildingBannerRelated = buildingBannerRef;
-									buildingBannerRef->SetActorLocation(building->bannerLocation);
-									AllBanners.Add(buildingBannerRef);
-									buildingBannerRef->buildingRelated = building;
-								}
-								else
-								{
-									GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Red, TEXT("Banner Error Happened"));
-								}
-							}
-							else
-							{
-								GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Red, TEXT(" ERROR building->buildingBannerRelated"));
-							}
-						}
-						else
-						{
-							GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Red, TEXT("buildingBannerToSpawn null ERROR"));
-						}
-					}
-				}
-				else
-				{
-					DestroyAllBanners();
-				}
+				CheckWhenHittedActorIsBarracks(building);
 			}
 			else
 			{
-				BP_ConstructionHUD(false, 0, nullptr);
+				DestroyAllBanners();
 			}
 		}
-		if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Building"))
+		else
 		{
-			bBuildingSelected = false;
-			if (playerController)
-			{
-				for (auto player : players)
-				{
-					player->SetCheckForStartWork(false);
-					player->buildingRef = nullptr;
-				}
-			}
-			DeselectAllBuildings();
-		}
-		if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Player"))
-		{
-			if (playerController)
-			{
-				AValoriaHUD* valoriaHUD = Cast<AValoriaHUD>(playerController->GetHUD());
-				if (valoriaHUD)
-				{
-					valoriaHUD->bCanDrawSelection = true;
-					valoriaHUD->MarqueePressed();
-					bIsPlayerSelected = false;
-				}
-			}
-		}
-		if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Player") && !Hit.GetActor()->ActorHasTag("Building"))
-		{
-			if (!Hit.GetActor()->ActorHasTag("Banner"))
-			{
-				bMovingBanner = false;
-			}
-			DeselectAllBuildings();
-
 			BP_ConstructionHUD(false, 0, nullptr);
 		}
+	}
+}
+void AValoriaCam::CheckWhenHittedActorIsNotBuilding()
+{
+	if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Building"))
+	{
+		bBuildingSelected = false;
+		if (playerController)
+		{
+			for (auto player : players)
+			{
+				player->SetCheckForStartWork(false);
+				player->buildingRef = nullptr;
+			}
+		}
+		DeselectAllBuildings();
+	}
+}
+void AValoriaCam::CheckWhenHittedActorIsNotPlayer()
+{
+	if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Player"))
+	{
+		if (playerController)
+		{
+			AValoriaHUD* valoriaHUD = Cast<AValoriaHUD>(playerController->GetHUD());
+			if (valoriaHUD)
+			{
+				valoriaHUD->bCanDrawSelection = true;
+				valoriaHUD->MarqueePressed();
+				bIsPlayerSelected = false;
+			}
+		}
+	}
+}
+void AValoriaCam::CheckWhenHittedActorIsNotPlayerAndBuilding()
+{
+	if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Player") && !Hit.GetActor()->ActorHasTag("Building"))
+	{
+		if (!Hit.GetActor()->ActorHasTag("Banner"))
+		{
+			bMovingBanner = false;
+		}
+		DeselectAllBuildings();
+		BP_ConstructionHUD(false, 0, nullptr);
 	}
 }
 void AValoriaCam::CheckWhenHittedActorIsPlayer()
@@ -546,6 +514,47 @@ void AValoriaCam::CheckWhenHittedActorIsPlayer()
 					valoriaHUD->ReceiveDrawHUD(0, 0);
 				}
 			}
+		}
+	}
+}
+void AValoriaCam::CheckWhenHittedActorIsBarracks(ABuilding* building)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Yellow, TEXT("Building selected"));
+	building->BP_ConstructionHUD(true, 1, buildingRef);
+	building->GetBuildingMesh()->SetRenderCustomDepth(true);
+	building->SetIsBuildingSelected(true);
+	// spawning Banner
+	if (!building->bBuildingHasBanner)
+	{
+		SpawnBanner(building);
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("building currently has an Banner"));
+		if (GetWorld() && buildingBannerToSpawn)
+		{
+			if (!building)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, TEXT("Error ! building NULL"));
+				return;
+			}
+			if (!building->buildingBannerRelated)
+			{
+				building->buildingBannerRelated = buildingBannerRef;
+			}
+
+			if (building && building->buildingBannerRelated)
+			{
+				UpdateBannerPosition(building);
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Red, TEXT(" ERROR building->buildingBannerRelated"));
+			}
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Red, TEXT("buildingBannerToSpawn null ERROR"));
 		}
 	}
 }
@@ -895,13 +904,13 @@ void AValoriaCam::SpawnSoldier(int32 soldierCode, ABuilding* building)
 	}
 }
 
+
+
+
+
+
 //GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, FString::Printf(TEXT("Bool: %s"), bMarqueeSelected ? TEXT("true") : TEXT("false")));
-
 //GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Blue, FString::FromInt(players.Num()));
-
-
-
-
 //FString MyFString = capitalName;
 //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, MyFString);
 
