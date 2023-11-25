@@ -1,5 +1,5 @@
 
-[![Valoria Game](http://img.youtube.com/vi/fiZlJhfJQ4U/0.jpg)](http://www.youtube.com/watch?v=fiZlJhfJQ4U "Valoria RTS Game")
+[![Valoria Game](http://img.youtube.com/vi/fiZlJhfJQ4U/0.jpg)](http://www.youtube.com/watch?v=fiZlJhfJQ4U "Valoria RTS Game Fog of war system implemented")
 
 # Valoria
 Valoria is an exciting real-time strategy game currently under development by my small game studio, Dark Silver Games, and it's powered by Unreal Engine 5. We're thrilled to have you here and extend a warm welcome to anyone who's passionate about game development and real-time strategy games, encouraging you to join our community.
