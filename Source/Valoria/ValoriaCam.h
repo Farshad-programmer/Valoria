@@ -33,18 +33,21 @@ public:
 	void DeselectAllBuildings();
 	void SpawnBanner(ABuilding* building);
 	void UpdateBannerPosition(ABuilding* building);
-	void CheckWhenHittedActorIsBuilding();
-	void CheckWhenHittedActorIsNotBuilding();
-	void CheckWhenHittedActorIsNotPlayer();
-	void CheckWhenHittedActorIsNotPlayerAndBuilding();
-	void CheckWhenHittedActorIsBanner();
-	void CheckWhenHittedActorIsPlayer();
-	void CheckWhenHittedActorIsBarracks(ABuilding* building);
+	void HandleHittedActors();
+	void HandleBuildingHit();
+	void HandleNonBuildingHit();
+	void HandleNonPlayerHit();
+	void HandleNonPlayerAndBuildingHit();
+	void HandleBannerHit();
+	void HandlePlayerHit();
+	void HandleBarracksHit(ABuilding* building);
+	void DefineLocationToMove();
 	void UpdateWood(bool plus,int32 amount);
 	void UpdateGold(bool plus,int32 amount);
 	void UpdateStone(bool plus,int32 amount);
 	void UpdateScience(bool plus,int32 amount);
-
+	bool GetCursorHitResult();
+	void MoveSelectedPawnTowardsCursor();
 	// blueprint callable functions
 
 	UFUNCTION(BlueprintCallable)
@@ -123,6 +126,11 @@ protected:
 	void OnSelectReleased();
 	void OnDeselectStarted();
 	void OnSetDestinationStarted();
+	void SelectPlayerIfHitActorIsPlayer();
+	void MovePlayersToBuildingLocation();
+	void MovePlayersToResourceLocation();
+	void MovePlayersToAIBaseLocation();
+	void MovePlayersToAILocation();
 	void MakeMarqueeReleased();
 	void MovePlayerOnMap();
 	void OnSetDestinationReleased();

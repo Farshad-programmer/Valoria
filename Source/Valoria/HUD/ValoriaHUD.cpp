@@ -15,12 +15,12 @@
 
 
 
+
 void AValoriaHUD::DrawHUD()
 {
 	Super::DrawHUD();
 	HandleMarqueeSelection();
 }
-
 void AValoriaHUD::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -48,20 +48,20 @@ void AValoriaHUD::HandleMarqueeSelection()
 	APlayerController* playerController = GetOwningPlayerController();
 	if (playerController)
 	{
-		SelectedActors.Empty();
 		TArray<AActor*>allSelectedActors;
 		GetActorsInSelectionRectangle(AValoriaCharacter::StaticClass(), startMousePos, currentMousePos, allSelectedActors, false, false);
 		AValoriaCam* valoriaCam = Cast<AValoriaCam>(playerController->GetPawn());
 		for (auto act : allSelectedActors)
 		{
-			if(act->ActorHasTag("Player"))
+			if (act->ActorHasTag("Player"))
 			{
-				if(bIsDrawing)
+				if (bIsDrawing)
 				{
 					SelectedActors.AddUnique(act);
 				}
 			}
 		}
+		DeselectUnheldPlayers(allSelectedActors, valoriaCam);
 		SelectCharactersUnderDrawnRectangle(valoriaCam);
 	}
 }
@@ -75,7 +75,33 @@ void AValoriaHUD::DrawMarquee()
 		DrawRect(FLinearColor(0.f, 0.11f, 0.92f, 0.2f), startMousePos.X, startMousePos.Y, screenW, screenH);
 	}
 }
+void AValoriaHUD::DeselectUnheldPlayers(TArray<AActor*>chars, AValoriaCam* valoriaCamRef)
+{
+	int32 Index = 0;
+	while (Index < SelectedActors.Num())
+	{
+		AActor* SelectedActor = SelectedActors[Index];
+		if (SelectedActor)
+		{
+			int32 CharIndex = chars.Find(SelectedActor);
+			if (CharIndex == -1)
+			{
+				AValoriaCharacter* ValoriaChar = Cast<AValoriaCharacter>(SelectedActor);
+				if (ValoriaChar)
+				{
+					ValoriaChar->SetSelectionNiagaraVisibility(false);
+					ValoriaChar->SetOverlayWidgetVisibility(false);
+					ValoriaChar->SetIsSelected(false);
+					valoriaCamRef->players.Remove(ValoriaChar);
+					SelectedActors.RemoveAt(Index); 
+					continue;
+				}
+			}
+		}
+		Index++;
+	}
 
+}
 void AValoriaHUD::SelectCharactersUnderDrawnRectangle(AValoriaCam* valoriaCam)
 {
 	if ((currentMousePos - startMousePos).Size() > 100.f)
@@ -94,7 +120,6 @@ void AValoriaHUD::SelectCharactersUnderDrawnRectangle(AValoriaCam* valoriaCam)
 		}
 	}
 }
-
 void AValoriaHUD::UpdateSelectedCharacters(AValoriaCam* valoriaCam, AValoriaCharacter* selectedValoria)
 {
 	if (selectedValoria->ActorHasTag("Player"))
@@ -145,7 +170,6 @@ void AValoriaHUD::UpdateSelectedCharacters(AValoriaCam* valoriaCam, AValoriaChar
 		}
 	}
 }
-
 void AValoriaHUD::MarqueePressed()
 {
 	bIsDrawing = true;
@@ -160,7 +184,6 @@ void AValoriaHUD::MarqueePressed()
 		currentMousePos = startMousePos;
 	}
 }
-
 void AValoriaHUD::MarqueeReleased()
 {
 	SelectedActors.Empty();
@@ -176,7 +199,6 @@ void AValoriaHUD::MarqueeReleased()
 		}
 	}
 }
-
 void AValoriaHUD::MarqueeHeld()
 {
 	if (bCanDrawSelection)
@@ -197,7 +219,7 @@ void AValoriaHUD::MarqueeHeld()
 
 
 
-	//for (auto AllSelectedActor : allSelectedActors)
-	//	{
-	//		DrawDebugSphere(GetWorld(),AllSelectedActor->GetActorLocation(),200.f,25,FColor::Yellow);
-	//	}
+//for (auto AllSelectedActor : allSelectedActors)
+//	{
+//		DrawDebugSphere(GetWorld(),AllSelectedActor->GetActorLocation(),200.f,25,FColor::Yellow);
+//	}

@@ -223,7 +223,7 @@ void AValoriaCam::DeselectAllBuildings()
 		}
 	}
 }
-void AValoriaCam::CheckWhenHittedActorIsBanner()
+void AValoriaCam::HandleBannerHit()
 {
 	if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Banner"))
 	{
@@ -339,15 +339,19 @@ void AValoriaCam::OnSelectStarted()
 				bMovingBanner = false;
 			}
 		}
-		CheckWhenHittedActorIsBanner();
-		CheckWhenHittedActorIsPlayer();
-		CheckWhenHittedActorIsBuilding();
-		CheckWhenHittedActorIsNotBuilding();
-		CheckWhenHittedActorIsNotPlayer();
-		CheckWhenHittedActorIsNotPlayerAndBuilding();
+		HandleHittedActors();
 	}
 }
-void AValoriaCam::CheckWhenHittedActorIsBuilding()
+void AValoriaCam::HandleHittedActors()
+{
+	HandleBannerHit();
+	HandlePlayerHit();
+	HandleBuildingHit();
+	HandleNonBuildingHit();
+	HandleNonPlayerHit();
+	HandleNonPlayerAndBuildingHit();
+}
+void AValoriaCam::HandleBuildingHit()
 {
 	if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Building"))
 	{
@@ -366,7 +370,7 @@ void AValoriaCam::CheckWhenHittedActorIsBuilding()
 		{
 			if (building->GetBuildingType() == EBuildingType::Barracks)
 			{
-				CheckWhenHittedActorIsBarracks(building);
+				HandleBarracksHit(building);
 			}
 			else
 			{
@@ -379,7 +383,7 @@ void AValoriaCam::CheckWhenHittedActorIsBuilding()
 		}
 	}
 }
-void AValoriaCam::CheckWhenHittedActorIsNotBuilding()
+void AValoriaCam::HandleNonBuildingHit()
 {
 	if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Building"))
 	{
@@ -395,7 +399,7 @@ void AValoriaCam::CheckWhenHittedActorIsNotBuilding()
 		DeselectAllBuildings();
 	}
 }
-void AValoriaCam::CheckWhenHittedActorIsNotPlayer()
+void AValoriaCam::HandleNonPlayerHit()
 {
 	if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Player"))
 	{
@@ -411,7 +415,7 @@ void AValoriaCam::CheckWhenHittedActorIsNotPlayer()
 		}
 	}
 }
-void AValoriaCam::CheckWhenHittedActorIsNotPlayerAndBuilding()
+void AValoriaCam::HandleNonPlayerAndBuildingHit()
 {
 	if (Hit.GetActor() != nullptr && !Hit.GetActor()->ActorHasTag("Player") && !Hit.GetActor()->ActorHasTag("Building"))
 	{
@@ -423,7 +427,7 @@ void AValoriaCam::CheckWhenHittedActorIsNotPlayerAndBuilding()
 		BP_ConstructionHUD(false, 0, nullptr);
 	}
 }
-void AValoriaCam::CheckWhenHittedActorIsPlayer()
+void AValoriaCam::HandlePlayerHit()
 {
 	if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Player"))
 	{
@@ -517,7 +521,7 @@ void AValoriaCam::CheckWhenHittedActorIsPlayer()
 		}
 	}
 }
-void AValoriaCam::CheckWhenHittedActorIsBarracks(ABuilding* building)
+void AValoriaCam::HandleBarracksHit(ABuilding* building)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Yellow, TEXT("Building selected"));
 	building->BP_ConstructionHUD(true, 1, buildingRef);
@@ -596,97 +600,115 @@ void AValoriaCam::OnDeselectStarted()
 }
 void AValoriaCam::OnSetDestinationStarted()
 {
-
+	DefineLocationToMove();
+}
+void AValoriaCam::DefineLocationToMove()
+{
 	// We flag that the input is being pressed
 	FollowTime += GetWorld()->GetDeltaSeconds();
 	// We look for the location in the world where the player has pressed the input
-	bCourserHitSuccessful = false;
-	//bIsLeftMousePressed = true;
+	bCourserHitSuccessful = GetCursorHitResult();
 
-	if (playerController)
-	{
-		bCourserHitSuccessful = playerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit);
-	}
 	// If we hit a surface, cache the location
 	if (bCourserHitSuccessful)
 	{
 		if (bIsPlayerSelected)
 		{
-			CachedDestination = Hit.Location;
-			// Move towards mouse pointer 
-			APawn* HitedPawn = Cast<APawn>(Hit.GetActor());
-			if (HitedPawn != nullptr && !Hit.GetActor()->ActorHasTag("Player"))
-			{
-				FVector WorldDirection = (CachedDestination - HitedPawn->GetActorLocation()).GetSafeNormal();
-				HitedPawn->AddMovementInput(WorldDirection, 1.0, false);
-			}
+			MoveSelectedPawnTowardsCursor();
 		}
-		if (!bIsPlayerSelected)
+		else
 		{
-			if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Player"))
-			{
-				bIsPlayerSelected = true;
-			}
-		}
-		if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Building"))
-		{
-			ABuilding* building = Cast<ABuilding>(Hit.GetActor());
-
-			if (playerController && !bCanPlaceBuilding && !bIsPlacingBuidling)
-			{
-				if (players.Num() == 1)
-				{
-					players[0]->MoveToLocation(Hit.Location, true, building, nullptr);
-				}
-				else
-				{
-					return;
-				}
-			}
-		}
-		if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Resource"))
-		{
-			AResourceMaster* resource = Cast<AResourceMaster>(Hit.GetActor());
-
-			if (playerController && !bCanPlaceBuilding && !bIsPlacingBuidling)
-			{
-				if (players.Num() == 1)
-				{
-					players[0]->MoveToLocation(Hit.Location, true, nullptr, resource);
-				}
-				else
-				{
-					return;
-				}
-			}
+			SelectPlayerIfHitActorIsPlayer();
 		}
 
-		if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("AIBase"))
+		if (Hit.GetActor() != nullptr)
 		{
-			ABuilding* building = Cast<ABuilding>(Hit.GetActor());
 
-			if (playerController)
+			if (Hit.GetActor()->ActorHasTag("Building"))
 			{
-				for (auto player : players)
-				{
-					player->MoveToLocation(Hit.Location, false, building, nullptr, false, nullptr, true);
-				}
+				MovePlayersToBuildingLocation();
+			}
+			else if (Hit.GetActor()->ActorHasTag("Resource"))
+			{
+				MovePlayersToResourceLocation();
+			}
+
+			else if (Hit.GetActor()->ActorHasTag("AIBase"))
+			{
+				MovePlayersToAIBaseLocation();
+			}
+
+			else if (Hit.GetActor()->ActorHasTag("AI"))
+			{
+				MovePlayersToAILocation();
 			}
 		}
-
-		if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("AI"))
+	}
+}
+void AValoriaCam::SelectPlayerIfHitActorIsPlayer()
+{
+	if (!bIsPlayerSelected)
+	{
+		if (Hit.GetActor() != nullptr && Hit.GetActor()->ActorHasTag("Player"))
 		{
+			bIsPlayerSelected = true;
+		}
+	}
+}
+void AValoriaCam::MovePlayersToBuildingLocation()
+{
+	ABuilding* building = Cast<ABuilding>(Hit.GetActor());
 
-			if (playerController && !bCanPlaceBuilding && !bIsPlacingBuidling)
+	if (playerController && !bCanPlaceBuilding && !bIsPlacingBuidling)
+	{
+		if (players.Num() == 1)
+		{
+			players[0]->MoveToLocation(Hit.Location, true, building, nullptr);
+		}
+		else
+		{
+			return;
+		}
+	}
+}
+void AValoriaCam::MovePlayersToResourceLocation()
+{
+	AResourceMaster* resource = Cast<AResourceMaster>(Hit.GetActor());
+
+	if (playerController && !bCanPlaceBuilding && !bIsPlacingBuidling)
+	{
+		if (players.Num() == 1)
+		{
+			players[0]->MoveToLocation(Hit.Location, true, nullptr, resource);
+		}
+		else
+		{
+			return;			
+		}
+	}
+}
+void AValoriaCam::MovePlayersToAIBaseLocation()
+{
+	ABuilding* building = Cast<ABuilding>(Hit.GetActor());
+
+	if (playerController)
+	{
+		for (auto player : players)
+		{
+			player->MoveToLocation(Hit.Location, false, building, nullptr, false, nullptr, true);
+		}
+	}
+}
+void AValoriaCam::MovePlayersToAILocation()
+{
+	if (playerController && !bCanPlaceBuilding && !bIsPlacingBuidling)
+	{
+		for (auto player : players)
+		{
+			if (player)
 			{
-				for (auto player : players)
-				{
-					if (player)
-					{
-						player->SetRunAway(false);
-						player->MoveToLocation(Hit.GetActor()->GetActorLocation(), false, nullptr, nullptr, true, Hit.GetActor());
-					}
-				}
+				player->SetRunAway(false);
+				player->MoveToLocation(Hit.GetActor()->GetActorLocation(), false, nullptr, nullptr, true, Hit.GetActor());
 			}
 		}
 	}
@@ -850,6 +872,25 @@ void AValoriaCam::UpdateScience(bool plus, int32 amount)
 	else
 	{
 		science -= amount;
+	}
+}
+bool AValoriaCam::GetCursorHitResult()
+{
+	if (playerController)
+	{
+		return playerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit);
+	}
+	return false;
+}
+void AValoriaCam::MoveSelectedPawnTowardsCursor()
+{
+	CachedDestination = Hit.Location;
+	// Move towards mouse pointer 
+	APawn* HitedPawn = Cast<APawn>(Hit.GetActor());
+	if (HitedPawn != nullptr && !Hit.GetActor()->ActorHasTag("Player"))
+	{
+		FVector WorldDirection = (CachedDestination - HitedPawn->GetActorLocation()).GetSafeNormal();
+		HitedPawn->AddMovementInput(WorldDirection, 1.0, false);
 	}
 }
 void AValoriaCam::SpawnSoldier(int32 soldierCode, ABuilding* building)

@@ -21,6 +21,7 @@ public:
 	void DrawMarquee();
 	void UpdateSelectedCharacters(AValoriaCam* valoriaCam, AValoriaCharacter* selectedValoria);
 	void SelectCharactersUnderDrawnRectangle(AValoriaCam* valoriaCam);
+	void DeselectUnheldPlayers(TArray<AActor*>chars,AValoriaCam* valoriaCamRef);
 	void HandleMarqueeSelection();
 	virtual void DrawHUD() override;
 	void MarqueePressed();
@@ -40,4 +41,5 @@ private:
 	int8 marqueeMoveAllowTimerCounter = 0;
 	bool bRunTimer = false;
 	TArray<AActor*> SelectedActors;
+
 };
