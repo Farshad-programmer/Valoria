@@ -11,8 +11,13 @@ AMapBorder::AMapBorder()
 	borderbox->SetupAttachment(GetRootComponent());
 	cityCenterboxChecker = CreateDefaultSubobject<UBoxComponent>(TEXT("city Center box Checker"));
 	cityCenterboxChecker->SetupAttachment(GetRootComponent());
+	cityCenterLocation = CreateDefaultSubobject<UBoxComponent>(TEXT("cityCenter Location"));
+	cityCenterLocation->SetupAttachment(GetRootComponent());
+	barracksLocation = CreateDefaultSubobject<UBoxComponent>(TEXT("barracks Location"));
+	barracksLocation->SetupAttachment(GetRootComponent());
 	borderStatus = EBorderStatus::ownerless;
 }
+
 
 void AMapBorder::BeginPlay()
 {
@@ -29,5 +34,6 @@ void AMapBorder::UpdateBorderOwnerFromBlueprint()
 {
 	UpdateBorderOwner(borderStatus);
 }
+
 
 

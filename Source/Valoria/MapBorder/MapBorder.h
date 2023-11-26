@@ -32,11 +32,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Details,meta = (AllowPrivateAccess = "true"))
 	bool bBorderHasCityCenter{false};
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* cityCenterLocation;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* barracksLocation;
+
 	UFUNCTION(BlueprintCallable)
 	void UpdateBorderOwnerFromBlueprint();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateBorderOwner(EBorderStatus status);
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -47,7 +54,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Details, meta = (AllowPrivateAccess = "true"))
 	UBoxComponent* cityCenterboxChecker;
-
 	
 public:	
 

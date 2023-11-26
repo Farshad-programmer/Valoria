@@ -8,3 +8,4 @@ enum class EAIStatus:uint8
 	neutral,
 	enemy
 };
+

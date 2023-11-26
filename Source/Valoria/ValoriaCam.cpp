@@ -893,6 +893,8 @@ void AValoriaCam::MoveSelectedPawnTowardsCursor()
 		HitedPawn->AddMovementInput(WorldDirection, 1.0, false);
 	}
 }
+
+
 void AValoriaCam::SpawnSoldier(int32 soldierCode, ABuilding* building)
 {
 	if (building == nullptr)return;
@@ -943,6 +945,18 @@ void AValoriaCam::SpawnSoldier(int32 soldierCode, ABuilding* building)
 	default:
 		break;
 	}
+}
+
+void AValoriaCam::HandleNeighborRequest(AValoriaAI* AIRef, int32 woodRequestNumber, int32 goldRequestNumber,
+	int32 stoneRequestNumber, int32 ScienceRequestNumber)
+{
+	bHasNewReqeustFromNeighbor = true;
+	woodRequest = woodRequestNumber;
+	stoneRequest = stoneRequestNumber;
+	goldRequest = goldRequestNumber;
+	scienceRequest = ScienceRequestNumber;
+
+	// todo
 }
 
 

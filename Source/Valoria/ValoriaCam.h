@@ -15,6 +15,10 @@ class ABuilding;
 class ABuildingBanner;
 class AValoriaInfantry;
 class UCameraComponent;
+class AValoriaAI;
+
+
+
 UCLASS()
 class VALORIA_API AValoriaCam : public APawn
 {
@@ -48,6 +52,7 @@ public:
 	void UpdateScience(bool plus,int32 amount);
 	bool GetCursorHitResult();
 	void MoveSelectedPawnTowardsCursor();
+	void HandleNeighborRequest(AValoriaAI* AIRef,int32 woodRequestNumber,int32 goldRequestNumber,int32 stoneRequestNumber,int32 ScienceRequestNumber);
 	// blueprint callable functions
 
 	UFUNCTION(BlueprintCallable)
@@ -167,6 +172,21 @@ private:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= Game, meta=(AllowPrivateAccess = "true"))
 	int32 science {20};
 
+	UPROPERTY(BlueprintReadWrite,meta=(AllowPrivateAccess = "true"))
+	int32 woodRequest {0};
+
+	UPROPERTY(BlueprintReadWrite ,meta=(AllowPrivateAccess = "true"))
+	int32 stoneRequest {0};
+
+	UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
+	int32 goldRequest {0};
+
+	UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
+	int32 scienceRequest {0};
+
+	UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
+	bool bHasNewReqeustFromNeighbor{false};
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	bool bMovingBanner{false};
 
@@ -192,6 +212,7 @@ private:
 	bool bIsPlacingBuidling {false};
 	bool bIsPlayerSelected{false};
 	bool bCanAdjustBuildingBannerPosition{false};
+	
 
 	// Private functions
 	void RenderCustomDepthHandle();

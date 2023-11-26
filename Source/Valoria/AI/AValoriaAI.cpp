@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Valoria/MapBorder/MapBorder.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Valoria/ValoriaCam.h"
 #include "Valoria/Buildings/CityCenter.h"
 #include "Valoria/Characters/ValoriaWorker.h"
 #include "Valoria/Buildings/Barracks.h"
@@ -35,6 +36,9 @@ void AValoriaAI::BeginPlay()
 
 	FTimerHandle AIStartStatusHandler;
 	GetWorldTimerManager().SetTimer(AIStartStatusHandler, this, &AValoriaAI::InitialAIStatus, 0.2f, false);
+
+	FTimerHandle AIUpgradeTimerHandler;
+	GetWorldTimerManager().SetTimer(AIUpgradeTimerHandler, this, &AValoriaAI::UpdateAIStuff, 3.f, true);
 }
 void AValoriaAI::Tick(float DeltaTime)
 {
@@ -54,6 +58,8 @@ void AValoriaAI::InitialAIStatus()
 	SpawnAIFirstCityCenter();
 	SpawnAIFirstWorkers();
 	FindAPlaceForMakingBarracksforAI();
+
+	playerRef = Cast<AValoriaCam>(UGameplayStatics::GetPlayerPawn(this, 0));
 }
 void AValoriaAI::SpawnAIFirstCityCenter()
 {
@@ -66,8 +72,7 @@ void AValoriaAI::SpawnAIFirstCityCenter()
 		if (mapBorderRef && mapBorderRef->borderStatus == EBorderStatus::ownerless)
 		{
 			bspawning = false;
-			FVector cityCenterSpawnedLocation = mapBorderRef->GetActorLocation();
-			cityCenterSpawnedLocation.Z -= 500.f;
+			FVector cityCenterSpawnedLocation = mapBorderRef->cityCenterLocation->GetComponentLocation();
 			AIBaseCenterLocation = cityCenterSpawnedLocation;
 			if (GetWorld() && cityCenterClass)
 			{
@@ -102,6 +107,7 @@ void AValoriaAI::SpawnAIFirstWorkers()
 				Spawnedworker->unitAIOwner = this;
 				FName myTag = FName(*tag);
 				Spawnedworker->Tags.Add(myTag);
+				AIAllUnitNumber++;
 				Spawnedworker->SetCapitalCode(capitalCode);
 				baseUnit++;
 			}
@@ -122,6 +128,7 @@ void AValoriaAI::SpawnSoldier()
 				spawnedInfantry->Tags.Add(myTag);
 				spawnedInfantry->SetCapitalCode(capitalCode);
 				infantryNumber++;
+				AIAllUnitNumber++;
 				baseUnit++;
 				unitInCapital++;
 				spawnedInfantry->enemyStatus = enemyStatus;
@@ -213,18 +220,7 @@ void AValoriaAI::FindAPlaceForMakingBarracksforAI()
 	if (mapBorderRef == nullptr)return;
 
 	bool randBool = UKismetMathLibrary::RandomBool();
-	FVector location = mapBorderRef->GetActorLocation();
-	location.Z = -630.f;
-	if (randBool)
-	{
-		location.X += (UKismetMathLibrary::RandomFloatInRange(1500.f, 3000.f));
-		location.Y += (UKismetMathLibrary::RandomFloatInRange(1500.f, 3000.f));
-	}
-	else
-	{
-		location.X += (UKismetMathLibrary::RandomFloatInRange(-1500.f, -3000.f));
-		location.Y += (UKismetMathLibrary::RandomFloatInRange(-1500.f, -3000.f));
-	}
+	FVector location = mapBorderRef->barracksLocation->GetComponentLocation();
 
 	if (GetWorld() && barracksClass)
 	{
@@ -264,9 +260,101 @@ void AValoriaAI::UpdateAIUnits()
 		}
 	}
 }
+
+void AValoriaAI::UpdateAIStuff()
+{
+	wood = (wood + woodUpgradeRate) * AIRank;
+	stone = (stone + stoneUpgradeRate) * AIRank;
+	gold = (gold + goldUpgradeRate) * AIRank;
+	science = (science + scieneUpgradeRate) * AIRank;
+}
+
+
 void AValoriaAI::AIMoveToBuilding()
 {
 	Spawnedworker->AIMoveToBuildingLocation(this);
+}
+
+void AValoriaAI::ManageAIActions()
+{
+	int32 reqestedWood = 0;
+	int32 reqestedGold = 0;
+	int32 reqestedStone = 0;
+	int32 reqestedScience = 0;
+	if (AIAllUnitNumber > 10)
+	{
+		InspectPlayerResources();
+		if (bNeedAction && playerRef)
+		{
+			if (bAskWood)
+			{
+				reqestedWood = wood;
+			}
+			if (bAskWood)
+			{
+				reqestedGold = gold;
+			}
+			if (bAskWood)
+			{
+				reqestedStone = stone;
+			}
+			if (bAskWood)
+			{
+				reqestedScience = science;
+			}
+			playerRef->HandleNeighborRequest(this, reqestedWood,reqestedGold,reqestedStone,reqestedScience );
+			bAskWood = false;
+			bAskStone = false;
+			bAskGold = false;
+			bAskScience = false;
+			bNeedAction = false;
+		}
+	}
+}
+
+void AValoriaAI::InspectPlayerForces()
+{
+	// todo
+}
+
+void AValoriaAI::InspectPlayerResources()
+{
+	if (playerRef)
+	{
+		int32 playerWood = playerRef->GetWood();
+		int32 playerGold = playerRef->GetGold();
+		int32 playerStone = playerRef->GetStone();
+		int32 playerScience = playerRef->GetScience();
+
+		if (playerWood > wood * 2)
+		{
+			bAskWood = true;
+			bNeedAction = true;
+		}
+		if (playerStone > stone * 2)
+		{
+			bAskStone = true;
+			bNeedAction = true;
+		}
+		if (playerGold > gold * 2)
+		{
+			bAskGold = true;
+			bNeedAction = true;
+		}
+		if (playerScience > science * 2)
+		{
+			bAskScience = true;
+			bNeedAction = true;
+		}
+		if (playerWood <= wood * 2 && playerStone <= stone * 2 && playerGold <= gold * 2 && playerScience <= science * 2)
+		{
+			bAskWood = false;
+			bAskStone = false;
+			bAskGold = false;
+			bAskScience = false;
+			bNeedAction = false;
+		}
+	}
 }
 
 

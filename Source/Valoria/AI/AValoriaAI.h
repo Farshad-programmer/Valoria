@@ -12,7 +12,7 @@ class AValoriaWorker;
 class ABarracks;
 class AMapBorder;
 class AValoriaInfantry;
-
+class AValoriaCam;
 
 
 UCLASS()
@@ -71,6 +71,12 @@ public:
 	int32 capitalToAttack = 0;
 	int32 attackCounter {2}; // To determine the target of the attack = some enemies only attack bases and some attack soldiers 
 	FString tag;
+	int32 woodUpgradeRate{1};
+	int32 stoneUpgradeRate{1};
+	int32 goldUpgradeRate{1};
+	int32 scieneUpgradeRate{1};
+	int32 AIRank{1};
+	int32 AIAllUnitNumber = 0;
 
 protected:
 	virtual void BeginPlay() override;
@@ -88,7 +94,11 @@ private:
 	bool bBaseToAttackIdentified{false};
 	bool bOrderUnitsToAttackBase{false};
 	bool bOrderUnitsToAttackUnits{false};
-
+	bool bAskGold{false};
+	bool bAskStone{false};
+	bool bAskWood{false};
+	bool bAskScience{false};
+	bool bNeedAction{false};
 	// Subclasses
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category= Game, meta=(AllowPrivateAccess = "true"))
@@ -106,6 +116,8 @@ private:
 	UPROPERTY()
 	AValoriaWorker* Spawnedworker;
 
+	UPROPERTY()
+	AValoriaCam* playerRef ;
 	// Timer handles
 
 	FTimerHandle moveAITimerhandler;
@@ -120,8 +132,10 @@ private:
 	void CheckingUnitNumberInBase();
 	void FindAPlaceForMakingBarracksforAI();
 	void UpdateAIUnits();
-
-	
+	void UpdateAIStuff();
+	void ManageAIActions();
+	void InspectPlayerForces();
+	void InspectPlayerResources();
 	UFUNCTION()
 	void InitialAIStatus();
 
